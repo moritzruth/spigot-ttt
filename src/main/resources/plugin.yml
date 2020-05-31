@@ -1,0 +1,23 @@
+name: TTT
+version: 1.0.0
+api-version: "1.14"
+main: de.moritzruth.spigot_ttt.TTTPlugin
+depend:
+  - CorpseReborn
+  - ActionBarAPI
+
+commands:
+  start:
+    usage: /start
+    permission: ttt.start
+    description: Starts the TTT game
+
+  abort:
+    usage: /abort
+    permission: ttt.abort
+    description: Aborts the TTT game
+
+  additemspawn:
+    usage: /additemspawn
+    permission: ttt.additemspawn
+    description: Add an item spawn
