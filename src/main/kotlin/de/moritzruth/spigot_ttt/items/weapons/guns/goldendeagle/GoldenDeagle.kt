@@ -27,7 +27,7 @@ object GoldenDeagle: Gun<GoldenDeagleState>(), BuyableItem {
                 "",
                 "${ChatColor.GRAY}Schaden: ${LoreHelper.damage(null)}",
                 "${ChatColor.GRAY}Cooldown: ${LoreHelper.cooldown(cooldown)}",
-                "${ChatColor.GRAY}Magazin: ${LoreHelper.magazineSize(magazineSize)} Schuss"
+                "${ChatColor.GRAY}Magazin: ${LoreHelper.uses(magazineSize)} Schuss"
             )
         }
     }

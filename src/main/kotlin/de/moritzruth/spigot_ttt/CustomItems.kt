@@ -19,4 +19,5 @@ object CustomItems {
     val pistol = Material.IRON_HOE
     val shotgun = Material.IRON_AXE
     val knife = Material.IRON_SWORD
+    val baseballBat = Material.STICK
 }

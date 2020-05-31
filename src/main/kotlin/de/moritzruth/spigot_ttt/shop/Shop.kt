@@ -28,7 +28,7 @@ object Shop {
             val tttItem = itemsIterator.next()
             val itemStack = tttItem.itemStack.clone()
             val meta = itemStack.itemMeta!!
-            meta.setDisplayName(meta.displayName + "${ChatColor.RESET} ${ChatColor.WHITE}${ChatColor.BOLD}$${tttItem.price}")
+            meta.setDisplayName(meta.displayName + "${ChatColor.RESET} - ${ChatColor.BOLD}$${tttItem.price}")
             itemStack.itemMeta = meta
 
             tttPlayer.player.inventory.setItem(index, itemStack)

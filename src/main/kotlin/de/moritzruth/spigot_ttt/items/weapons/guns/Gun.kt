@@ -37,7 +37,7 @@ abstract class Gun<StateT: GunState>: TTTItem, SelectableItem {
                 "",
                 "${ChatColor.GRAY}Schaden: ${LoreHelper.damage(damage)}",
                 "${ChatColor.GRAY}Cooldown: ${LoreHelper.cooldown(cooldown)}",
-                "${ChatColor.GRAY}Magazin: ${LoreHelper.magazineSize(magazineSize)} Schuss"
+                "${ChatColor.GRAY}Magazin: ${LoreHelper.uses(magazineSize)} Schuss"
         )
 
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES)

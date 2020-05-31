@@ -14,7 +14,7 @@ import java.util.*
 object Knife: TTTItem, BuyableItem {
     override val displayName = "${ChatColor.RED}${ChatColor.BOLD}Knife"
     override val spawning = false
-    override val listener = KnifeListener(this)
+    override val listener = KnifeListener
     override val itemStack = ItemStack(CustomItems.knife)
     override val buyableBy: EnumSet<TTTPlayer.Role> = EnumSet.of(TRAITOR)
     override val price = 1
@@ -33,7 +33,6 @@ object Knife: TTTItem, BuyableItem {
         )
 
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
-
         itemStack.itemMeta = meta
     }
 }
