@@ -52,6 +52,13 @@ object GeneralGameEventsListener: Listener {
         if (GameManager.phase !== GamePhase.COMBAT) {
             event.isCancelled = true
         }
+
+        val player = event.entity
+        if (player is Player) {
+            plugin.server.scheduler.runTask(plugin, fun() {
+                player.noDamageTicks = 0
+            })
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

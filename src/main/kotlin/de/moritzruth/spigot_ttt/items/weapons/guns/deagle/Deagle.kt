@@ -26,7 +26,7 @@ object Deagle: Gun<DeagleState>(), BuyableItem {
     override val recoil = 10
     override val buyableBy: EnumSet<TTTPlayer.Role> = EnumSet.of(TRAITOR, DETECTIVE)
     override val price = 1
-    override val type = TTTItem.Type.NORMAL_WEAPON
+    override val type = TTTItem.Type.PISTOL_LIKE
 
     override fun getState(tttPlayer: TTTPlayer) = tttPlayer.stateContainer.get(DeagleState::class) { DeagleState() }
 }

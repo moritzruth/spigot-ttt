@@ -23,9 +23,10 @@ interface TTTItem {
     val type: Type
 
     enum class Type(val maxItemsOfTypeInInventory: Int?) {
-        NORMAL_WEAPON(2),
-        SPECIAL_WEAPON(2),
-        OTHER(null);
+        MELEE(1),
+        PISTOL_LIKE(1),
+        HEAVY_WEAPON(1),
+        SPECIAL(null);
 
         val position by lazy { values().indexOf(this) }
     }

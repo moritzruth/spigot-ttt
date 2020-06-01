@@ -1,11 +1,13 @@
 package de.moritzruth.spigot_ttt.items
 
 import de.moritzruth.spigot_ttt.game.GameManager
+import de.moritzruth.spigot_ttt.items.cloaking_device.CloakingDevice
 import de.moritzruth.spigot_ttt.items.weapons.baseball_bat.BaseballBat
 import de.moritzruth.spigot_ttt.items.weapons.guns.deagle.Deagle
 import de.moritzruth.spigot_ttt.items.weapons.guns.deagle.GoldenDeagle
 import de.moritzruth.spigot_ttt.items.weapons.guns.glock.Glock
 import de.moritzruth.spigot_ttt.items.weapons.guns.pistol.Pistol
+import de.moritzruth.spigot_ttt.items.weapons.guns.pistol.Rifle
 import de.moritzruth.spigot_ttt.items.weapons.guns.shotgun.Shotgun
 import de.moritzruth.spigot_ttt.items.weapons.knife.Knife
 import de.moritzruth.spigot_ttt.plugin
@@ -21,7 +23,7 @@ object ItemManager {
 
     private val spawnLocationsConfig = ConfigurationFile("spawnLocations")
 
-    val items: Set<TTTItem> = setOf(Pistol, Knife, Glock, Deagle, Shotgun, GoldenDeagle, BaseballBat)
+    val items: Set<TTTItem> = setOf(Pistol, Knife, Glock, Deagle, Shotgun, GoldenDeagle, BaseballBat, CloakingDevice, Rifle)
     private val spawningItems = items.filter(TTTItem::spawning)
 
     fun registerListeners() {

@@ -13,6 +13,9 @@ object CustomItems {
     val jackal = Material.LIGHT_BLUE_STAINED_GLASS_PANE
     val sidekick = Material.LIGHT_BLUE_STAINED_GLASS_PANE
 
+    // Special Items
+    val cloakingDevice = Material.COBWEB
+
     // Weapons
     val deagle = Material.GOLDEN_HOE
     val glock = Material.STONE_HOE
@@ -20,4 +23,5 @@ object CustomItems {
     val shotgun = Material.IRON_AXE
     val knife = Material.IRON_SWORD
     val baseballBat = Material.STICK
+    val rifle = Material.DIAMOND_HOE
 }

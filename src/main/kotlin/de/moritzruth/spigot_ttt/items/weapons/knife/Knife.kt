@@ -18,7 +18,7 @@ object Knife: TTTItem, BuyableItem {
     override val itemStack = ItemStack(CustomItems.knife)
     override val buyableBy: EnumSet<TTTPlayer.Role> = EnumSet.of(TRAITOR)
     override val price = 1
-    override val type = TTTItem.Type.SPECIAL_WEAPON
+    override val type = TTTItem.Type.MELEE
 
     init {
         val meta = itemStack.itemMeta!!

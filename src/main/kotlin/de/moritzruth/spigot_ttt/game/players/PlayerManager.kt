@@ -30,7 +30,6 @@ object PlayerManager {
     fun letRemainingRoleWin() {
         GameManager.ensurePhase(GamePhase.COMBAT)
 
-        println(stillLivingRoles)
         if (stillLivingRoles.count() == 1) {
             GameManager.letRoleWin(stillLivingRoles[0])
         }

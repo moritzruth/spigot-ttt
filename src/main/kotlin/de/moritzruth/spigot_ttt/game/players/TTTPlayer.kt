@@ -17,19 +17,36 @@ import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import kotlin.properties.Delegates
 
 class TTTPlayer(player: Player, role: Role) {
     var alive = true
     var lastDeathReason: DeathReason? = null
 
-    var player by Delegates.observable(player) { _, _, player -> player.scoreboard = scoreboard.scoreboard }
+    var player by Delegates.observable(player) { _, _, _ -> initializePlayer() }
 
-    var role by Delegates.observable(role) { _, _, _ -> scoreboard.updateRole() }
+    var role by Delegates.observable(Role.TRAITOR) { _, _, _ -> scoreboard.updateRole() }
     val roleHistory = mutableListOf<Role>()
 
     var itemInHand by Delegates.observable<TTTItem?>(null) { _, oldItem, newItem -> onItemInHandChanged(oldItem, newItem) }
     var credits by Delegates.observable(10) { _, _, _ -> scoreboard.updateCredits() }
+    var invisible by Delegates.observable(false) { _, _, value ->
+        if (value) {
+            PlayerManager.tttPlayers.forEach {
+                if (it.alive && it.role != role) {
+                    it.player.hidePlayer(plugin, player)
+                }
+            }
+
+            // for the translucent effect seen by teammates
+            player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 0, false, false))
+        } else {
+            plugin.server.onlinePlayers.forEach { it.showPlayer(plugin, player) }
+            player.removePotionEffect(PotionEffectType.INVISIBILITY)
+        }
+    }
 
     val scoreboard = TTTScoreboard(this)
     val stateContainer = StateContainer()
@@ -37,8 +54,12 @@ class TTTPlayer(player: Player, role: Role) {
     private val discordUser get() = DiscordInterface.getUserByPlayerUUID(player.uniqueId)
 
     init {
-        player.scoreboard = scoreboard.scoreboard
+        initializePlayer()
         scoreboard.initialize()
+    }
+
+    private fun initializePlayer() {
+        player.scoreboard = scoreboard.scoreboard
     }
 
     private fun onItemInHandChanged(oldItem: TTTItem?, newItem: TTTItem?) {
@@ -90,6 +111,7 @@ class TTTPlayer(player: Player, role: Role) {
         stateContainer.clear()
 
         setMuted(false)
+        invisible = false
 
         alive = true
         player.gameMode = GameMode.SURVIVAL

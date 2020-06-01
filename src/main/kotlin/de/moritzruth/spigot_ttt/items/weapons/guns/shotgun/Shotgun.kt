@@ -24,7 +24,7 @@ object Shotgun: Gun<ShotgunState>() {
     override val magazineSize = 8
     override val reloadTime get() = reloadTimePerBullet * magazineSize
     override val recoil = 20
-    override val type = TTTItem.Type.NORMAL_WEAPON
+    override val type = TTTItem.Type.HEAVY_WEAPON
 
     override val itemMaterial = CustomItems.shotgun
     override val itemStack = ItemStack(itemMaterial).apply {

@@ -15,7 +15,7 @@ import java.util.*
 object BaseballBat: TTTItem, BuyableItem, SelectableItem {
     override val displayName = "${ChatColor.RESET}${ChatColor.BOLD}Baseball-Schläger"
     override val spawning = false
-    override val type = TTTItem.Type.SPECIAL_WEAPON
+    override val type = TTTItem.Type.MELEE
     override val itemStack = ItemStack(CustomItems.baseballBat)
     override val listener = BaseballBatListener
     override val buyableBy = EnumSet.of(TRAITOR, JACKAL)

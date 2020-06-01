@@ -20,7 +20,7 @@ object Pistol: Gun<PistolState>() {
         itemMeta = getItemMeta(this)
     }
     override val recoil = 5
-    override val type = TTTItem.Type.NORMAL_WEAPON
+    override val type = TTTItem.Type.PISTOL_LIKE
 
     override fun getState(tttPlayer: TTTPlayer) = tttPlayer.stateContainer.get(PistolState::class) { PistolState() }
 }
