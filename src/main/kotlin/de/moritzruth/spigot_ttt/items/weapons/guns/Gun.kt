@@ -2,49 +2,57 @@ package de.moritzruth.spigot_ttt.items.weapons.guns
 
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
+import de.moritzruth.spigot_ttt.game.players.IState
+import de.moritzruth.spigot_ttt.game.players.InversedStateContainer
+import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.items.SelectableItem
+import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
+import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.items.weapons.LoreHelper
+import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.noop
 import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
 import org.bukkit.*
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
+import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.ItemMeta
+import org.bukkit.scheduler.BukkitTask
+import kotlin.reflect.KClass
 
-abstract class Gun<StateT: GunState>: TTTItem, SelectableItem {
-
-    @Suppress("LeakingThis")
-    override val listener: Listener = GunListener(this)
-
-    abstract val damage: Double
-    abstract val cooldown: Double
-    abstract val reloadTime: Double
-    abstract val magazineSize: Int
-    abstract val itemMaterial: Material
-    abstract val recoil: Int
-
-    abstract fun getState(tttPlayer: TTTPlayer): StateT
-
-    open fun computeActualDamage(tttPlayer: TTTPlayer, receiver: Player) = damage
-
-    protected fun getItemMeta(itemStack: ItemStack): ItemMeta {
-        val meta = itemStack.itemMeta!!
-        meta.setDisplayName(displayName)
-        meta.lore = listOf(
-                "",
-                "${ChatColor.GRAY}Schaden: ${LoreHelper.damage(damage)}",
-                "${ChatColor.GRAY}Cooldown: ${LoreHelper.cooldown(cooldown)}",
-                "${ChatColor.GRAY}Magazin: ${LoreHelper.uses(magazineSize)} Schuss"
-        )
-
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
-        return meta
+abstract class Gun(
+    stateClass: KClass<out State>,
+    displayName: String,
+    additionalLore: List<String>? = null,
+    val damage: Double,
+    val cooldown: Double,
+    val magazineSize: Int,
+    val reloadTime: Double,
+    itemMaterial: Material,
+    val recoil: Int
+): TTTItem, Selectable {
+    override val itemStack = ItemStack(itemMaterial).applyMeta {
+        setDisplayName(displayName)
+        lore = listOf(
+            "",
+            "${ChatColor.GRAY}Schaden: ${LoreHelper.damage(if (damage < 0) null else damage)}",
+            "${ChatColor.GRAY}Cooldown: ${LoreHelper.cooldown(cooldown)}",
+            "${ChatColor.GRAY}Magazin: ${LoreHelper.uses(magazineSize)} Schuss"
+        ) + run {
+            if (additionalLore == null) emptyList()
+            else listOf("") + additionalLore
+        }
+        addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
     }
 
-    protected fun updateLevel(tttPlayer: TTTPlayer, state: StateT = getState(tttPlayer)) {
+    val isc = InversedStateContainer(stateClass)
+
+    protected fun updateLevel(tttPlayer: TTTPlayer, state: State = isc.get(tttPlayer)) {
         tttPlayer.player.level = state.remainingShots
     }
 
@@ -54,11 +62,7 @@ abstract class Gun<StateT: GunState>: TTTItem, SelectableItem {
         player.teleport(location)
     }
 
-    open fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: StateT = getState(tttPlayer)) {
-        if (state.cooldownOrReloadTask !== null) throw ActionInProgressError()
-    }
-
-    fun shoot(tttPlayer: TTTPlayer, item: ItemStack, state: StateT = getState(tttPlayer)) {
+    fun shoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.get(tttPlayer)) {
         onBeforeShoot(tttPlayer, item, state)
 
         if (state.remainingShots == 0) {
@@ -102,7 +106,7 @@ abstract class Gun<StateT: GunState>: TTTItem, SelectableItem {
         }
     }
 
-    open fun reload(tttPlayer: TTTPlayer, item: ItemStack, state: StateT = getState(tttPlayer)) {
+    open fun reload(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.get(tttPlayer)) {
         if (state.cooldownOrReloadTask !== null) throw ActionInProgressError()
         if (state.remainingShots == magazineSize) return
 
@@ -115,6 +119,16 @@ abstract class Gun<StateT: GunState>: TTTItem, SelectableItem {
         // TODO: Add sound
     }
 
+    open fun computeActualDamage(tttPlayer: TTTPlayer, receiver: Player) = if (damage < 0 ) 1000.0 else damage
+
+    open fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.get(tttPlayer)) {
+        if (state.cooldownOrReloadTask !== null) throw ActionInProgressError()
+    }
+
+    override fun reset(tttPlayer: TTTPlayer) {
+        isc.get(tttPlayer).cooldownOrReloadTask?.cancel()
+    }
+
     override fun onSelect(tttPlayer: TTTPlayer) {
         updateLevel(tttPlayer)
     }
@@ -123,5 +137,35 @@ abstract class Gun<StateT: GunState>: TTTItem, SelectableItem {
         tttPlayer.player.level = 0
     }
 
+    override val listener = object : Listener {
+        @EventHandler(ignoreCancelled = true)
+        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
+            if (event.isRelevant(this@Gun)) event.isCancelled = true
+        }
+
+        @EventHandler
+        fun onPlayerInteract(event: PlayerInteractEvent) {
+            if (!event.isRelevant(this@Gun)) return
+            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+
+            try {
+                when(event.action) {
+                    Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> reload(tttPlayer, event.item!!)
+                    Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> shoot(tttPlayer, event.item!!)
+                    else -> noop()
+                }
+            } catch (e: ActionInProgressError) {}
+        }
+    }
+
     class ActionInProgressError: RuntimeException("The gun is on cooldown or reloading")
+
+    open class State(magazineSize: Int): IState {
+        var cooldownOrReloadTask: BukkitTask? = null
+        var remainingShots = magazineSize
+    }
+
+    companion object {
+        const val INFINITE_DAMAGE: Double = -1.0
+    }
 }

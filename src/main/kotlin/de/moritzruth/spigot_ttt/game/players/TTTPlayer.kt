@@ -7,7 +7,7 @@ import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.players.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.items.ItemManager
-import de.moritzruth.spigot_ttt.items.SelectableItem
+import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.shop.Shop
@@ -63,11 +63,11 @@ class TTTPlayer(player: Player, role: Role) {
     }
 
     private fun onItemInHandChanged(oldItem: TTTItem?, newItem: TTTItem?) {
-        if (oldItem !== null && oldItem is SelectableItem) {
+        if (oldItem !== null && oldItem is Selectable) {
             oldItem.onDeselect(this)
         }
 
-        if (newItem !== null && newItem is SelectableItem) {
+        if (newItem !== null && newItem is Selectable) {
             newItem.onSelect(this)
         }
     }
@@ -103,7 +103,7 @@ class TTTPlayer(player: Player, role: Role) {
         }
 
         itemInHand?.apply {
-            if (this is SelectableItem) {
+            if (this is Selectable) {
                 this.onDeselect(this@TTTPlayer)
             }
         }

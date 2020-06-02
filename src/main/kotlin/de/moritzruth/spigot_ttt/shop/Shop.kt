@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.shop
 
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.items.BuyableItem
+import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.ItemManager
 import org.bukkit.ChatColor
 
@@ -14,10 +14,7 @@ object Shop {
     }.toList()
     private val ITEMS_PER_PAGE = SHOP_SLOTS.count()
 
-    @Suppress("UNCHECKED_CAST")
-    fun getBuyableItems(tttPlayer: TTTPlayer): Set<BuyableItem> = ItemManager.items.filter {
-        if (it is BuyableItem) it.buyableBy.contains(tttPlayer.role) else false
-    }.toSet() as Set<BuyableItem>
+    fun getBuyableItems(tttPlayer: TTTPlayer) = ItemManager.items.filter { it is Buyable && it.buyableBy.contains(tttPlayer.role) }.toSet()
 
     fun show(tttPlayer: TTTPlayer) {
         val itemsIterator = getBuyableItems(tttPlayer).iterator()
@@ -28,7 +25,7 @@ object Shop {
             val tttItem = itemsIterator.next()
             val itemStack = tttItem.itemStack.clone()
             val meta = itemStack.itemMeta!!
-            meta.setDisplayName(meta.displayName + "${ChatColor.RESET} - ${ChatColor.BOLD}$${tttItem.price}")
+            meta.setDisplayName(meta.displayName + "${ChatColor.RESET} - ${ChatColor.BOLD}$${(tttItem as Buyable).price}")
             itemStack.itemMeta = meta
 
             tttPlayer.player.inventory.setItem(index, itemStack)

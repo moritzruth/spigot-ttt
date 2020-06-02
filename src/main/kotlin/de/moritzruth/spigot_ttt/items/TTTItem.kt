@@ -1,26 +1,32 @@
 package de.moritzruth.spigot_ttt.items
 
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import org.bukkit.entity.Player
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import java.util.*
 
-interface SelectableItem: TTTItem {
+interface Selectable {
     fun onSelect(tttPlayer: TTTPlayer)
     fun onDeselect(tttPlayer: TTTPlayer)
 }
 
-interface BuyableItem: TTTItem {
+interface Buyable {
     val buyableBy: EnumSet<TTTPlayer.Role>
     val price: Int
 }
 
+// Marker
+interface Spawning
+
 interface TTTItem {
-    val displayName: String
-    val listener: Listener
+    val listener: Listener?
     val itemStack: ItemStack
-    val spawning: Boolean
     val type: Type
+
+    fun reset(tttPlayer: TTTPlayer) {}
 
     enum class Type(val maxItemsOfTypeInInventory: Int?) {
         MELEE(1),
@@ -31,3 +37,7 @@ interface TTTItem {
         val position by lazy { values().indexOf(this) }
     }
 }
+
+fun PlayerInteractEvent.isRelevant(tttItem: TTTItem): Boolean = item?.itemMeta?.displayName == tttItem.itemStack.itemMeta!!.displayName
+fun EntityDamageByEntityEvent.isRelevant(tttItem: TTTItem): Boolean = damager is Player && entity is Player &&
+            (damager as Player).inventory.itemInMainHand.itemMeta?.displayName == tttItem.itemStack.itemMeta!!.displayName

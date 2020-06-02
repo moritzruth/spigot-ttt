@@ -78,6 +78,7 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
         scoreboard.registerNewTeam(DEFAULT_TEAM_NAME).apply {
             setAllowFriendlyFire(true)
             setCanSeeFriendlyInvisibles(false)
+            color = ChatColor.GREEN
             setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS)
             setOption(Team.Option.DEATH_MESSAGE_VISIBILITY, Team.OptionStatus.NEVER)
             setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)

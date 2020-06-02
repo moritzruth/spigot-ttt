@@ -20,9 +20,11 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("reflect"))
     implementation("net.dv8tion:JDA:4.1.1_155")
-    implementation(files("./libs/CorpseReborn.jar"))
-    implementation(files("./libs/ActionBarAPI.jar"))
+    compileOnly(files("./libs/CorpseReborn.jar"))
+    compileOnly(files("./libs/ActionBarAPI.jar"))
+    compileOnly(files("./libs/ProtocolLib.jar"))
     compileOnly("org.spigotmc", "spigot-api", "1.14.4-R0.1-SNAPSHOT")
 }
 

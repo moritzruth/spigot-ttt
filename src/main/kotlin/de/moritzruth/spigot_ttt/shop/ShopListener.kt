@@ -3,7 +3,7 @@ package de.moritzruth.spigot_ttt.shop
 import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.items.BuyableItem
+import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.ChatColor
@@ -34,7 +34,7 @@ object ShopListener: Listener {
                 Shop.SHOP_SLOTS.contains(event.slot)
         ) {
             val tttItem = ItemManager.getItemByItemStack(itemStack)
-            if (tttItem === null || tttItem !is BuyableItem || !tttItem.buyableBy.contains(tttPlayer.role)) return
+            if (tttItem === null || tttItem !is Buyable || !tttItem.buyableBy.contains(tttPlayer.role)) return
 
             if (tttPlayer.credits < tttItem.price) {
                 ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast nicht genug Credits")

@@ -15,6 +15,7 @@ object CustomItems {
 
     // Special Items
     val cloakingDevice = Material.COBWEB
+    val radar = Material.IRON_BLOCK
 
     // Weapons
     val deagle = Material.GOLDEN_HOE

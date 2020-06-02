@@ -1,20 +1,29 @@
 package de.moritzruth.spigot_ttt.game.players
 
 import kotlin.reflect.KClass
+import kotlin.reflect.KVisibility
 
-interface State
+interface IState {
+}
 
 class StateContainer {
-    private val instances = mutableSetOf<State>()
+    private val instances = mutableSetOf<IState>()
 
     @Suppress("UNCHECKED_CAST")
-    fun <T: State> get(stateClass: KClass<T>, createInstance: () -> T): T {
-        return (instances.find { stateClass.isInstance(it) } ?: createInstance().also {
-            instances.add(it)
-        }) as T
-    }
+    fun <T: IState> get(stateClass: KClass<T>): T =
+        instances.find { state -> stateClass.isInstance(state) } as T? ?: run {
+            val parameterlessConstructor = stateClass.constructors
+                .find { it.parameters.size == 0 && it.visibility == KVisibility.PUBLIC }
+                ?: throw NoSuchMethodException("The stateClass has no public parameterless constructor")
+
+            parameterlessConstructor.call().also { instances.add(it) }
+        }
 
     fun clear() {
         instances.clear()
     }
+}
+
+class InversedStateContainer<T: IState>(private val stateClass: KClass<T>) {
+    fun get(tttPlayer: TTTPlayer) = tttPlayer.stateContainer.get(stateClass)
 }
