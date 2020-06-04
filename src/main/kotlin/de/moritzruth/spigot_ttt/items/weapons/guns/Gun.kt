@@ -40,7 +40,7 @@ abstract class Gun(
         setDisplayName(displayName)
         lore = listOf(
             "",
-            "${ChatColor.GRAY}Schaden: ${LoreHelper.damage(if (damage < 0) null else damage)}",
+            "${ChatColor.GRAY}Schaden: ${LoreHelper.damage(if (damage < 0) null else (damage / 2))}",
             "${ChatColor.GRAY}Cooldown: ${LoreHelper.cooldown(cooldown)}",
             "${ChatColor.GRAY}Magazin: ${LoreHelper.uses(magazineSize)} Schuss"
         ) + run {

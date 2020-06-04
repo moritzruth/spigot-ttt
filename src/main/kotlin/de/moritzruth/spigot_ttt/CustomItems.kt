@@ -18,9 +18,10 @@ object CustomItems {
     val radar = Material.IRON_HELMET
 
     // Weapons
-    val deagle = Material.GOLDEN_HOE
+    val deagle = Material.IRON_HOE
+    val goldenDeagle = Material.GOLDEN_HOE
     val glock = Material.STONE_HOE
-    val pistol = Material.IRON_HOE
+    val pistol = Material.WOODEN_HOE
     val shotgun = Material.IRON_AXE
     val knife = Material.IRON_SWORD
     val baseballBat = Material.STICK
