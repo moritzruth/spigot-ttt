@@ -7,6 +7,7 @@ import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.*
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -86,7 +87,8 @@ object CloakingDevice: TTTItem, Buyable, Selectable {
             if (!event.isRelevant(CloakingDevice)) return
             val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
 
-            setEnabled(tttPlayer, null)
+            if (event.action.isRightClick) setEnabled(tttPlayer, null)
+            event.isCancelled = true
         }
     }
 
