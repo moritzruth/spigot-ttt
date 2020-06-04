@@ -27,7 +27,7 @@ class TTTPlayer(player: Player, role: Role) {
 
     var player by Delegates.observable(player) { _, _, _ -> initializePlayer() }
 
-    var role by Delegates.observable(Role.TRAITOR) { _, _, _ -> scoreboard.updateRole() }
+    var role by Delegates.observable(role) { _, _, _ -> scoreboard.updateRole() }
     val roleHistory = mutableListOf<Role>()
 
     var itemInHand by Delegates.observable<TTTItem?>(null) { _, oldItem, newItem -> onItemInHandChanged(oldItem, newItem) }
@@ -118,6 +118,7 @@ class TTTPlayer(player: Player, role: Role) {
         player.gameMode = GameMode.SURVIVAL
         player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
         player.health = 20.0
+        player.walkSpeed = 0.2F // yes, this is the default value
 
         player.inventory.clear()
     }
@@ -182,4 +183,6 @@ class TTTPlayer(player: Player, role: Role) {
 
         val position by lazy { values().indexOf(this) }
     }
+
+    override fun toString() = "TTTPlayer(${player.name} is $role)"
 }

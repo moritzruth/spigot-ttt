@@ -29,7 +29,7 @@ object DiscordBot: ListenerAdapter() {
         jda = JDABuilder.createDefault(plugin.config.getString("discord-token")).build()
 
         jda.presence.setStatus(OnlineStatus.ONLINE)
-        jda.presence.activity = Activity.of(Activity.ActivityType.CUSTOM_STATUS, "Schick mir eine PN mit deinem Minecraft-Namen")
+        jda.presence.activity = Activity.of(Activity.ActivityType.DEFAULT, "Schick mir eine PN mit deinem Minecraft-Namen")
 
         jda.addEventListener(this)
     }

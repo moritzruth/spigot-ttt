@@ -47,11 +47,13 @@ object Radar: TTTItem, Buyable {
                     val tttPlayerOfPacket = PlayerManager.getTTTPlayer(playerOfPacket) ?: return
                     if (tttPlayerOfPacket.alive) {
                         // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
-                        val modifiers = packet.metadata[0].value as Byte
-                        packet.metadata[0].setValue(
-                                if (isc.get(tttPlayer).enabled) modifiers or 0x40
-                                else modifiers and 0b10111111.toByte()
-                        )
+                        try {
+                            val modifiers = packet.metadata[0].value as Byte // TODO: Fix this
+                            packet.metadata[0].setValue(
+                                    if (isc.get(tttPlayer).enabled) modifiers or 0x40
+                                    else modifiers and 0b10111111.toByte()
+                            )
+                        } catch (ignored: Exception) {}
                     }
                 }
             })
