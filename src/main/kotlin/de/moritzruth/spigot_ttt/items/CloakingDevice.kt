@@ -10,6 +10,7 @@ import de.moritzruth.spigot_ttt.utils.applyMeta
 import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerToggleSprintEvent
 import org.bukkit.inventory.ItemFlag
@@ -66,6 +67,11 @@ object CloakingDevice: TTTItem, Buyable, Selectable {
     }
 
     override val listener = object : Listener {
+        @EventHandler
+        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
+            if (event.isRelevant(CloakingDevice)) event.isCancelled = true
+        }
+
         @EventHandler
         fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) {
             val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return

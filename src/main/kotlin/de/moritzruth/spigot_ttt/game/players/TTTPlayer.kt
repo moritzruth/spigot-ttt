@@ -108,6 +108,7 @@ class TTTPlayer(player: Player, role: Role) {
             }
         }
 
+        ItemManager.items.forEach { it.reset(this) }
         stateContainer.clear()
 
         setMuted(false)

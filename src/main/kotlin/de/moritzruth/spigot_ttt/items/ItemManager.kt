@@ -23,11 +23,9 @@ object ItemManager {
     private val spawnLocationsConfig = ConfigurationFile("spawnLocations")
 
     val items: Set<TTTItem> = setOf(
-        Pistol,
-        Knife, Glock, Deagle,
-        Shotgun, GoldenDeagle, BaseballBat,
+        Pistol, Knife, Glock, Deagle, Shotgun, GoldenDeagle, BaseballBat,
         CloakingDevice, Rifle,
-        EnderPearl, Radar
+        EnderPearl, Radar, HealingPotion
     )
     private val spawningItems = items.filter { it is Spawning }
 

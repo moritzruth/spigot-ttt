@@ -8,7 +8,7 @@ import org.bukkit.scheduler.BukkitTask
 import java.time.Instant
 import kotlin.math.roundToInt
 
-fun startItemDamageProgress(item: ItemStack, duration: Double, startProgress: Double = 0.0, onFinish: () -> Unit): BukkitTask {
+fun startItemDamageProgress(item: ItemStack, duration: Double, startProgress: Double = 0.0, fromRight: Boolean = false, onFinish: () -> Unit): BukkitTask {
     val startedAt = Instant.now().toEpochMilli()
 
     var task: BukkitTask? = null
@@ -20,7 +20,13 @@ fun startItemDamageProgress(item: ItemStack, duration: Double, startProgress: Do
         val maxDurability = getMaxDurability(item.type)
 
         val damageMeta = item.itemMeta!! as Damageable
-        damageMeta.damage = maxDurability - (maxDurability * progress).roundToInt()
+
+        if (fromRight) {
+            damageMeta.damage = (maxDurability * progress).roundToInt()
+        } else {
+            damageMeta.damage = maxDurability - (maxDurability * progress).roundToInt()
+        }
+
         item.itemMeta = damageMeta as ItemMeta
 
         if (progress >= 1) {

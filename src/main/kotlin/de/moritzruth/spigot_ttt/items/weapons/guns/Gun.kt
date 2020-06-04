@@ -47,6 +47,7 @@ abstract class Gun(
             if (additionalLore == null) emptyList()
             else listOf("") + additionalLore
         }
+
         addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
     }
 

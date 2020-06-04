@@ -8,7 +8,8 @@ val maxDurabilitiesOfItems = mapOf(
         Material.GOLDEN_HOE to 32,
         Material.IRON_HOE to 250,
         Material.DIAMOND_HOE to 1561,
-        Material.IRON_AXE to 250
+        Material.IRON_AXE to 250,
+        Material.IRON_HELMET to 165
 )
 
 fun getMaxDurability(material: Material) = maxDurabilitiesOfItems[material] ?: throw Exception("The maximum durability of this item is not defined")
