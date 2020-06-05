@@ -19,6 +19,7 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import java.util.*
 import kotlin.properties.Delegates
 
 class TTTPlayer(player: Player, role: Role) {
@@ -84,7 +85,7 @@ class TTTPlayer(player: Player, role: Role) {
         Shop.hide(this)
         setMuted(true)
 
-        PlayerManager.letRemainingRoleWin()
+        PlayerManager.letRemainingRoleGroupWin()
     }
 
     fun resetAfterGameEnd() {
@@ -166,23 +167,32 @@ class TTTPlayer(player: Player, role: Role) {
 
     fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
 
+    enum class RoleGroup(val primaryRole: Role, val additionalRoles: EnumSet<Role> = EnumSet.noneOf(Role::class.java)) {
+        INNOCENT(Role.INNOCENT, EnumSet.of(Role.DETECTIVE)),
+        JACKAL(Role.JACKAL, EnumSet.of(Role.SIDEKICK)),
+        TRAITOR(Role.TRAITOR);
+
+        companion object {
+            fun getGroupOf(role: Role) = values().find { it.primaryRole == role || it.additionalRoles.contains(role) }
+        }
+    }
+
     enum class Role(
         val chatColor: ChatColor,
         val displayName: String,
-        val iconItemMaterial: Material
+        val iconItemMaterial: Material,
+        val canOwnCredits: Boolean = false
     ) {
         INNOCENT(ChatColor.GREEN, "Innocent", CustomItems.innocent),
-        DETECTIVE(ChatColor.YELLOW, "Detective", CustomItems.detective),
-        TRAITOR(ChatColor.RED, "Traitor", CustomItems.traitor),
-        JACKAL(ChatColor.AQUA, "Jackal", CustomItems.jackal),
-        SIDEKICK(ChatColor.AQUA, "Sidekick", CustomItems.sidekick);
+        DETECTIVE(ChatColor.YELLOW, "Detective", CustomItems.detective, true),
+        TRAITOR(ChatColor.RED, "Traitor", CustomItems.traitor, true),
+        JACKAL(ChatColor.AQUA, "Jackal", CustomItems.jackal, true),
+        SIDEKICK(ChatColor.AQUA, "Sidekick", CustomItems.sidekick, true);
 
         val coloredDisplayName = "$chatColor$displayName${ChatColor.RESET}"
 
-        val isInnocentRole get() = this === INNOCENT || this === DETECTIVE
-        val isJackalRole get() = this === JACKAL || this === SIDEKICK
-
         val position by lazy { values().indexOf(this) }
+        val group by lazy { RoleGroup.getGroupOf(this) }
     }
 
     override fun toString() = "TTTPlayer(${player.name} is $role)"

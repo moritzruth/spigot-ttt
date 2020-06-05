@@ -53,7 +53,9 @@ object Radar: TTTItem, Buyable {
                                     if (isc.get(tttPlayer).enabled) modifiers or 0x40
                                     else modifiers and 0b10111111.toByte()
                             )
-                        } catch (ignored: Exception) {}
+                        } catch (ignored: Exception) {
+                            // Idk why this throws exceptions, but it works anyways
+                        }
                     }
                 }
             })

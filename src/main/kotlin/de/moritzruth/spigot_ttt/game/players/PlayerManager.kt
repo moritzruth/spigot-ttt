@@ -15,7 +15,8 @@ object PlayerManager {
     val tttPlayers= mutableListOf<TTTPlayer>()
 
     val availablePlayers get() = plugin.server.onlinePlayers.filter { it.gameMode === GameMode.SURVIVAL }
-    val stillLivingRoles get() = tttPlayers.filter { it.alive }.map { it.role }.distinct()
+    val stillLivingRoles get() = tttPlayers.filter { it.alive }.map { it.role }.toSet()
+    val stillLivingRoleGroups get() = stillLivingRoles.map { it.group }.toSet()
     val playersJoinedDuringRound = mutableSetOf<Player>()
 
     fun getTTTPlayer(player: Player) = tttPlayers.find { it.player === player }
@@ -37,11 +38,12 @@ object PlayerManager {
         tttPlayers.clear()
     }
 
-    fun letRemainingRoleWin() {
+    fun letRemainingRoleGroupWin() {
         GameManager.ensurePhase(GamePhase.COMBAT)
 
-        if (stillLivingRoles.count() == 1) {
-            GameManager.letRoleWin(stillLivingRoles[0])
+        val stillLivingRoleGroups = stillLivingRoleGroups
+        if (stillLivingRoleGroups.count() == 1) {
+            GameManager.letRoleWin(stillLivingRoleGroups.first()!!.primaryRole)
         }
     }
 

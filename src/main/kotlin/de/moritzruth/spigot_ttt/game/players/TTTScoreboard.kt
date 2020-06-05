@@ -4,7 +4,6 @@ import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.Timers
 import de.moritzruth.spigot_ttt.plugin
-import de.moritzruth.spigot_ttt.shop.Shop
 import org.bukkit.ChatColor
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.RenderType
@@ -117,17 +116,23 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
         val phase = GameManager.phase
 
         if (phase === GamePhase.COMBAT) {
-            if (tttPlayer.role.isJackalRole || tttPlayer.role === TTTPlayer.Role.TRAITOR) {
+            if (tttPlayer.role.group == TTTPlayer.RoleGroup.JACKAL || tttPlayer.role === TTTPlayer.Role.TRAITOR) {
                 val specialTeam = scoreboard.getTeam(SPECIAL_TEAM_NAME)!!
                 specialTeam.color = tttPlayer.role.chatColor
 
                 PlayerManager.tttPlayers.forEach {
-                    if ((tttPlayer.role.isJackalRole && it.role.isJackalRole) || (tttPlayer.role === TTTPlayer.Role.TRAITOR && it.role === TTTPlayer.Role.TRAITOR)) {
+                    val bothPlayersAreJackalGroup =
+                            tttPlayer.role.group == TTTPlayer.RoleGroup.JACKAL &&
+                            it.role.group == TTTPlayer.RoleGroup.JACKAL
+
+                    if (bothPlayersAreJackalGroup ||
+                            (tttPlayer.role === TTTPlayer.Role.TRAITOR && it.role === TTTPlayer.Role.TRAITOR)) {
                         specialTeam.addEntry(it.player.displayName)
                     } else {
                         defaultTeam.addEntry(it.player.displayName)
                     }
                 }
+
                 return
             }
         }
@@ -153,7 +158,7 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
     fun showCorrectSidebarScoreboard() {
         setSidebar(when {
             GameManager.phase === null -> INACTIVE_OBJECTIVE
-            GameManager.phase !== GamePhase.PREPARING && Shop.getBuyableItems(tttPlayer).isNotEmpty() -> ACTIVE_WITH_CREDITS_OBJECTIVE
+            GameManager.phase !== GamePhase.PREPARING && tttPlayer.role.canOwnCredits -> ACTIVE_WITH_CREDITS_OBJECTIVE
             else -> ACTIVE_OBJECTIVE
         })
     }

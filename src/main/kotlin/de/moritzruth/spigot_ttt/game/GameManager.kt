@@ -30,6 +30,7 @@ object GameManager {
         GameMessenger.win(role)
         phase = GamePhase.OVER
         Timers.cancelCurrentTask()
+        Shop.stopCreditsTimer()
         ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
 
         PlayerManager.tttPlayers.forEach {
@@ -59,8 +60,8 @@ object GameManager {
         phase = null
         Timers.cancelCurrentTask()
         resetWorld()
-
         PlayerManager.resetAfterGame()
+        Shop.stopCreditsTimer()
 
         if (broadcast) {
             GameMessenger.aborted()
@@ -91,13 +92,12 @@ object GameManager {
         ensurePhase(GamePhase.PREPARING)
 
         phase = GamePhase.COMBAT
-
         PlayerManager.tttPlayers.forEach { Shop.show(it) }
-
         ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
+        Shop.startCreditsTimer()
 
-        GameMessenger.combatPhaseStarted()
         Timers.playTimerSound()
+        GameMessenger.combatPhaseStarted()
 
         Timers.startCombatPhaseTimer(plugin.config.getInt("duration.combat", 480)) {
             if (PlayerManager.stillLivingRoles.contains(TTTPlayer.Role.INNOCENT)) {

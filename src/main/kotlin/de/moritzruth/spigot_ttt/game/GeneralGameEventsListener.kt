@@ -15,12 +15,11 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.*
-import org.bukkit.event.player.AsyncPlayerChatEvent
-import org.bukkit.event.player.PlayerItemHeldEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.*
 
 object GeneralGameEventsListener: Listener {
+    val BLOCKED_COMMANDS = setOf("me", "tell")
+
     fun register() {
         plugin.server.pluginManager.registerEvents(this, plugin)
     }
@@ -40,6 +39,16 @@ object GeneralGameEventsListener: Listener {
     @EventHandler
     fun onFoodLevelChange(event: FoodLevelChangeEvent) {
         event.foodLevel = 20
+    }
+
+    @EventHandler
+    fun onPlayerCommandPreprocess(event: PlayerCommandPreprocessEvent) {
+        if (BLOCKED_COMMANDS.find { event.message.startsWith("/$it") } != null) {
+            if (GameManager.phase != null) {
+                event.player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}Dieser Befehl ist blockiert.")
+                event.isCancelled = true
+            }
+        }
     }
 
     @EventHandler

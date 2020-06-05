@@ -9,3 +9,6 @@ duration:
   preparing: 20
   combat: 480
   over: 10
+
+first-credits-after: 5
+credits-interval: 10
