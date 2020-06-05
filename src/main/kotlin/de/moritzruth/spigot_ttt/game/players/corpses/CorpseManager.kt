@@ -19,7 +19,6 @@ object CorpseManager {
     }
 
     fun destroyAll() {
-        println(corpses)
         corpses.forEach(TTTCorpse::destroy)
         corpses.clear()
     }

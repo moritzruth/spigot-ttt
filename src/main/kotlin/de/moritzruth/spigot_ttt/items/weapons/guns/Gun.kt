@@ -32,7 +32,7 @@ abstract class Gun(
     val cooldown: Double,
     val magazineSize: Int,
     val reloadTime: Double,
-    itemMaterial: Material
+    val itemMaterial: Material
 ): TTTItem, Selectable {
     override val itemStack = ItemStack(itemMaterial).applyMeta {
         setDisplayName(displayName)

@@ -13,9 +13,9 @@ object GoldenDeagle: Gun(
     stateClass = State::class,
     displayName = "${ChatColor.GOLD}${ChatColor.BOLD}Golden Deagle",
     damage = INFINITE_DAMAGE,
-    cooldown = 1.4,
-    magazineSize = 2,
-    reloadTime = 10.0,
+    cooldown = 1.0,
+    magazineSize = 1,
+    reloadTime = 20.0,
     itemMaterial = CustomItems.goldenDeagle
 ), Buyable {
     override val buyableBy = EnumSet.of(TRAITOR, DETECTIVE)

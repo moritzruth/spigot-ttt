@@ -50,7 +50,7 @@ object Knife: TTTItem, Buyable {
             if (distance > 1.5) event.isCancelled = true else {
                 // Break the item
                 val item = damagerTTTPlayer.player.inventory.itemInMainHand
-                val damageableMeta = item.itemMeta!! as Damageable
+                val damageableMeta = item.itemMeta as Damageable
                 damageableMeta.damage = 1000
                 item.itemMeta = damageableMeta as ItemMeta
 

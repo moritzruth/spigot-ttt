@@ -160,6 +160,7 @@ class TTTPlayer(player: Player, role: Role) {
     fun addItem(item: TTTItem) {
         checkAddItemPreconditions(item)
         player.inventory.addItem(item.itemStack.clone())
+        updateItemInHand()
     }
 
     class AlreadyHasItemException: Exception("The player already owns this item")
