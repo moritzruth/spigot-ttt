@@ -41,15 +41,24 @@ object Shotgun: Gun(
         }
     }
 
+    override fun onDeselect(tttPlayer: TTTPlayer) {
+        val ownState = isc.get(tttPlayer) as State
+        ownState.reloadUpdateTask?.cancel()
+        ownState.reloadUpdateTask = null
+        super.onDeselect(tttPlayer)
+    }
+
     override fun reload(tttPlayer: TTTPlayer, item: ItemStack, state: Gun.State) {
         val ownState = state as State
         if (ownState.remainingShots == magazineSize) return
 
-        ownState.cooldownOrReloadTask = startItemDamageProgress(item,
-            reloadTime, ownState.remainingShots.toDouble() / magazineSize
-        ) {
-            ownState.cooldownOrReloadTask = null
-        }
+        ownState.reloadingItem = item
+
+        ownState.cooldownOrReloadTask = startItemDamageProgress(
+                item,
+                reloadTime,
+                ownState.remainingShots.toDouble() / magazineSize
+        ) { ownState.cooldownOrReloadTask = null }
 
         ownState.reloadUpdateTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
             ownState.remainingShots++
@@ -60,6 +69,7 @@ object Shotgun: Gun(
             if (ownState.remainingShots == magazineSize) {
                 ownState.reloadUpdateTask?.cancel()
                 ownState.reloadUpdateTask = null
+                ownState.reloadingItem = null
             }
         }, secondsToTicks(RELOAD_TIME_PER_BULLET).toLong(), secondsToTicks(
             RELOAD_TIME_PER_BULLET
@@ -83,6 +93,7 @@ object Shotgun: Gun(
 
         ownState.reloadUpdateTask?.cancel()
         ownState.reloadUpdateTask = null
+        ownState.reloadingItem = null
     }
 
     class State: Gun.State(magazineSize) {

@@ -19,6 +19,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.Damageable
+import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.scheduler.BukkitTask
 import kotlin.reflect.KClass
 
@@ -101,10 +103,12 @@ abstract class Gun(
     }
 
     open fun reload(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.get(tttPlayer)) {
-        if (state.cooldownOrReloadTask !== null) throw ActionInProgressError()
+        if (state.cooldownOrReloadTask != null) throw ActionInProgressError()
         if (state.remainingShots == magazineSize) return
 
+        state.reloadingItem = item
         state.cooldownOrReloadTask = startItemDamageProgress(item, reloadTime) {
+            state.reloadingItem = null
             state.cooldownOrReloadTask = null
             state.remainingShots = magazineSize
             updateLevel(tttPlayer, state)
@@ -129,6 +133,18 @@ abstract class Gun(
 
     override fun onDeselect(tttPlayer: TTTPlayer) {
         tttPlayer.player.level = 0
+
+        val state = isc.get(tttPlayer)
+        val reloadingItem = state.reloadingItem
+
+        if (reloadingItem != null) {
+            state.cooldownOrReloadTask?.cancel()
+            state.cooldownOrReloadTask = null
+            state.reloadingItem = null
+            val meta = reloadingItem.itemMeta as Damageable
+            meta.damage = 0
+            reloadingItem.itemMeta = meta as ItemMeta
+        }
     }
 
     override val listener = object : Listener {
@@ -154,7 +170,8 @@ abstract class Gun(
 
     class ActionInProgressError: RuntimeException("The gun is on cooldown or reloading")
 
-    open class State(magazineSize: Int): IState {
+    abstract class State(magazineSize: Int): IState {
+        var reloadingItem: ItemStack? = null
         var cooldownOrReloadTask: BukkitTask? = null
         var remainingShots = magazineSize
     }
