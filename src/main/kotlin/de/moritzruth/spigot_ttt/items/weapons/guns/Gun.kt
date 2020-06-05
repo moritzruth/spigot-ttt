@@ -2,10 +2,7 @@ package de.moritzruth.spigot_ttt.items.weapons.guns
 
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
-import de.moritzruth.spigot_ttt.game.players.IState
-import de.moritzruth.spigot_ttt.game.players.InversedStateContainer
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
@@ -84,13 +81,16 @@ abstract class Gun(
                 val entity = rayTraceResult.hitEntity
 
                 if (entity is Player) {
-                    val actualDamage = computeActualDamage(tttPlayer, entity)
+                    val damagedTTTPlayer = PlayerManager.getTTTPlayer(entity)
 
-                    PlayerManager.getTTTPlayer(entity)?.itemOfLastDamage = this
+                    if (damagedTTTPlayer != null) {
+                        damagedTTTPlayer.damageInfo = DamageInfo(tttPlayer, DeathReason.Item(this))
+                        val actualDamage = computeActualDamage(tttPlayer, entity)
 
-                    entity.damage(actualDamage)
-                    tttPlayer.player.playSound(tttPlayer.player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 2f, 1.2f)
-                    entity.velocity = tttPlayer.player.location.direction.multiply(actualDamage / 20)
+                        entity.damage(actualDamage)
+                        tttPlayer.player.playSound(tttPlayer.player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 2f, 1.2f)
+                        entity.velocity = tttPlayer.player.location.direction.multiply(Math.min(actualDamage / 20, 3.0))
+                    }
                 }
             }
         }

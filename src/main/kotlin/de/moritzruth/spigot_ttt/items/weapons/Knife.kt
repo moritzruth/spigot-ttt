@@ -1,6 +1,8 @@
 package de.moritzruth.spigot_ttt.items.weapons
 
 import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.game.players.DamageInfo
+import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.TRAITOR
@@ -40,19 +42,19 @@ object Knife: TTTItem, Buyable {
         fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
             if (!event.isRelevant(Knife)) return
 
-            val damagerPlayer = event.damager as Player
+            val damagerTTTPlayer = PlayerManager.getTTTPlayer(event.damager as Player) ?: return
             val damagedTTTPlayer = PlayerManager.getTTTPlayer(event.entity as Player) ?: return
 
-            val distance = damagerPlayer.location.distance(damagedTTTPlayer.player.location)
+            val distance = damagerTTTPlayer.player.location.distance(damagedTTTPlayer.player.location)
 
             if (distance > 1.5) event.isCancelled = true else {
                 // Break the item
-                val item = damagerPlayer.inventory.itemInMainHand
+                val item = damagerTTTPlayer.player.inventory.itemInMainHand
                 val damageableMeta = item.itemMeta!! as Damageable
                 damageableMeta.damage = 1000
                 item.itemMeta = damageableMeta as ItemMeta
 
-                damagedTTTPlayer.itemOfLastDamage = Knife
+                damagedTTTPlayer.damageInfo = DamageInfo(damagerTTTPlayer, DeathReason.Item(Knife))
                 event.damage = 1000.0
             }
         }

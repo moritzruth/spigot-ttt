@@ -81,11 +81,13 @@ object GeneralGameEventsListener: Listener {
         val tttPlayer = PlayerManager.getTTTPlayer(event.entity as Player) ?: return
 
         if (tttPlayer.player.health - event.finalDamage <= 0) {
-            val item = tttPlayer.itemOfLastDamage
+            val damageInfo = tttPlayer.damageInfo
 
-            val reason = if (item != null) {
-                tttPlayer.itemOfLastDamage = null
-                DeathReason.Item(item)
+            val reason = if (damageInfo != null) {
+                tttPlayer.damageInfo = null
+                damageInfo.damager.credits += 1
+
+                damageInfo.deathReason
             } else when(event.cause) {
                 EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
                 EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
