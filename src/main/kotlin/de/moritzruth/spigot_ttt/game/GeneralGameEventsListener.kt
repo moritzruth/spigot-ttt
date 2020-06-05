@@ -43,6 +43,13 @@ object GeneralGameEventsListener: Listener {
 
     @EventHandler
     fun onPlayerCommandPreprocess(event: PlayerCommandPreprocessEvent) {
+        if(event.message.startsWith("/rl") && GameManager.phase != null) { // /reload is not blocked
+            event.player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}The server may not be reloaded while the game is running")
+            event.player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}You can force reload by using ${ChatColor.WHITE}/reload")
+            event.isCancelled = true
+            return
+        }
+
         if (BLOCKED_COMMANDS.find { event.message.startsWith("/$it") } != null) {
             if (GameManager.phase != null) {
                 event.player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}Dieser Befehl ist blockiert.")
