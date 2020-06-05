@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.items.weapons
 
 import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.TRAITOR
 import de.moritzruth.spigot_ttt.items.Buyable
@@ -40,9 +41,9 @@ object Knife: TTTItem, Buyable {
             if (!event.isRelevant(Knife)) return
 
             val damagerPlayer = event.damager as Player
-            val damagedPlayer = event.entity as Player
+            val damagedTTTPlayer = PlayerManager.getTTTPlayer(event.entity as Player) ?: return
 
-            val distance = damagerPlayer.location.distance(damagedPlayer.location)
+            val distance = damagerPlayer.location.distance(damagedTTTPlayer.player.location)
 
             if (distance > 1.5) event.isCancelled = true else {
                 // Break the item
@@ -51,6 +52,7 @@ object Knife: TTTItem, Buyable {
                 damageableMeta.damage = 1000
                 item.itemMeta = damageableMeta as ItemMeta
 
+                damagedTTTPlayer.itemOfLastDamage = Knife
                 event.damage = 1000.0
             }
         }

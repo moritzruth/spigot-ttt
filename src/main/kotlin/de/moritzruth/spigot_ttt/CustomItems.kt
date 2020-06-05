@@ -5,6 +5,8 @@ import org.bukkit.Material
 object CustomItems {
     val textureless = Material.WHITE_STAINED_GLASS_PANE
     val deathReason = Material.GRAY_STAINED_GLASS_PANE
+    val questionMark = Material.IRON_BLOCK
+    val time = Material.CLOCK
 
     // Roles
     val innocent = Material.GREEN_STAINED_GLASS_PANE

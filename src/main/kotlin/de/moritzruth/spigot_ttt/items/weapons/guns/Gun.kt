@@ -93,6 +93,8 @@ abstract class Gun(
                 if (entity is Player) {
                     val actualDamage = computeActualDamage(tttPlayer, entity)
 
+                    PlayerManager.getTTTPlayer(entity)?.itemOfLastDamage = this
+
                     entity.damage(actualDamage)
                     tttPlayer.player.playSound(tttPlayer.player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 2f, 1.2f)
                     entity.velocity = tttPlayer.player.location.direction.multiply(actualDamage / 20)

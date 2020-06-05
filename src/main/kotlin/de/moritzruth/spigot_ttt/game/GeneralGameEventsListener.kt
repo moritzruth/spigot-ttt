@@ -1,8 +1,8 @@
 package de.moritzruth.spigot_ttt.game
 
 import de.moritzruth.spigot_ttt.TTTPlugin
+import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.ChatColor
@@ -19,8 +19,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.golde.bukkit.corpsereborn.CorpseAPI.events.CorpseClickEvent
-import java.time.Instant
 
 object GeneralGameEventsListener: Listener {
     fun register() {
@@ -74,7 +72,25 @@ object GeneralGameEventsListener: Listener {
         val tttPlayer = PlayerManager.getTTTPlayer(event.entity as Player) ?: return
 
         if (tttPlayer.player.health - event.finalDamage <= 0) {
-            tttPlayer.kill()
+            val item = tttPlayer.itemOfLastDamage
+
+            val reason = if (item != null) {
+                tttPlayer.itemOfLastDamage = null
+                DeathReason.Item(item)
+            } else when(event.cause) {
+                EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
+                EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
+                EntityDamageEvent.DamageCause.ENTITY_EXPLOSION -> DeathReason.EXPLOSION
+                EntityDamageEvent.DamageCause.DROWNING -> DeathReason.DROWNED
+                EntityDamageEvent.DamageCause.FIRE,
+                EntityDamageEvent.DamageCause.FIRE_TICK,
+                EntityDamageEvent.DamageCause.LAVA,
+                EntityDamageEvent.DamageCause.HOT_FLOOR -> DeathReason.FIRE
+                EntityDamageEvent.DamageCause.POISON, EntityDamageEvent.DamageCause.WITHER -> DeathReason.POISON
+                else -> DeathReason.SUICIDE
+            }
+
+            tttPlayer.kill(reason)
 
 //                gameManager.playerManager.tttPlayers.forEach {
 //                    it.player.playSound(tttPlayer.player.location, Sound.ENTITY_PLAYER_DEATH, SoundCategory.PLAYERS, 2f, 1f)
@@ -97,23 +113,6 @@ object GeneralGameEventsListener: Listener {
     @EventHandler
     fun onBlockBreak(event: BlockBreakEvent) {
         if (event.player.gameMode !== GameMode.CREATIVE) event.isCancelled = true
-    }
-
-    @EventHandler
-    fun onCorpseClick(event: CorpseClickEvent) {
-        // bug: always ClickType.UNKNOWN
-        // if (event.clickType !== ClickType.RIGHT) return
-
-        val tttCorpse = CorpseManager.getTTTCorpse(event.corpse)
-
-        if (tttCorpse !== null) {
-            if(Instant.now().toEpochMilli() - tttCorpse.timestamp.toEpochMilli() < 200) return
-
-            event.clicker.openInventory(tttCorpse.inventory)
-            tttCorpse.identify(event.clicker)
-        }
-
-        event.isCancelled = true
     }
 
     @EventHandler

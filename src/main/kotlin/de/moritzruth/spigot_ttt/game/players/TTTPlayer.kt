@@ -47,6 +47,7 @@ class TTTPlayer(player: Player, role: Role) {
             player.removePotionEffect(PotionEffectType.INVISIBILITY)
         }
     }
+    var itemOfLastDamage: TTTItem? = null
 
     val scoreboard = TTTScoreboard(this)
     val stateContainer = StateContainer()

@@ -2,6 +2,7 @@ package de.moritzruth.spigot_ttt.game
 
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.corpses.CorpseListener
 import de.moritzruth.spigot_ttt.game.players.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.plugin
@@ -21,6 +22,7 @@ object GameManager {
         ItemManager.registerListeners()
         GeneralGameEventsListener.register()
         ShopListener.register()
+        CorpseListener.register()
     }
 
     fun letRoleWin(role: TTTPlayer.Role?) {

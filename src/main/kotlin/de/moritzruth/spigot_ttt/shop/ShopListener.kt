@@ -23,7 +23,7 @@ object ShopListener: Listener {
         if (event.whoClicked !is Player) return
         val tttPlayer = PlayerManager.getTTTPlayer(event.whoClicked as Player) ?: return
 
-        if (event.click === ClickType.CREATIVE) return
+        if (event.click === ClickType.CREATIVE || event.clickedInventory?.holder != event.whoClicked) return
         event.isCancelled = true
 
         val itemStack = event.currentItem
