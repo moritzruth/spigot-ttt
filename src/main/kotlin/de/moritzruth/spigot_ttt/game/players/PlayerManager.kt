@@ -16,6 +16,7 @@ object PlayerManager {
 
     val availablePlayers get() = plugin.server.onlinePlayers.filter { it.gameMode === GameMode.SURVIVAL }
     val stillLivingRoles get() = tttPlayers.filter { it.alive }.map { it.role }.distinct()
+    val playersJoinedDuringRound = mutableSetOf<Player>()
 
     fun getTTTPlayer(player: Player) = tttPlayers.find { it.player === player }
 
@@ -23,7 +24,16 @@ object PlayerManager {
             .apply { tttPlayers.forEach { getOrPut(it.role) { mutableSetOf() }.add(it) } }
             .toMap()
 
-    fun reset() {
+    fun resetAfterGame() {
+        playersJoinedDuringRound.forEach {
+            teleportPlayerToWorldSpawn(it)
+
+            plugin.server.scheduler.runTask(plugin, fun() {
+                it.gameMode = GameMode.SURVIVAL
+            })
+        }
+
+        tttPlayers.forEach(TTTPlayer::resetAfterGameEnd)
         tttPlayers.clear()
     }
 
@@ -43,7 +53,8 @@ object PlayerManager {
                 teleportPlayerToWorldSpawn(player)
                 player.gameMode = GameMode.SURVIVAL
             } else {
-                player.gameMode = GameMode.SURVIVAL
+                player.gameMode = GameMode.SPECTATOR
+                playersJoinedDuringRound.add(player)
                 player.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}Du schaust jetzt zu.")
             }
         } else {
@@ -64,6 +75,7 @@ object PlayerManager {
     }
 
     fun onPlayerQuit(player: Player) {
+        playersJoinedDuringRound.remove(player)
         val tttPlayer = getTTTPlayer(player) ?: return
 
         when(GameManager.phase) {

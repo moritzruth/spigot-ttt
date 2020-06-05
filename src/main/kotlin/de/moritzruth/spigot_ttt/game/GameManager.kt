@@ -41,8 +41,7 @@ object GameManager {
             phase = null
             resetWorld()
 
-            PlayerManager.tttPlayers.forEach(TTTPlayer::resetAfterGameEnd)
-            PlayerManager.reset()
+            PlayerManager.resetAfterGame()
         }
 
         plugin.broadcast("", false)
@@ -61,8 +60,7 @@ object GameManager {
         Timers.cancelCurrentTask()
         resetWorld()
 
-        PlayerManager.tttPlayers.forEach(TTTPlayer::resetAfterGameEnd)
-        PlayerManager.reset()
+        PlayerManager.resetAfterGame()
 
         if (broadcast) {
             GameMessenger.aborted()
