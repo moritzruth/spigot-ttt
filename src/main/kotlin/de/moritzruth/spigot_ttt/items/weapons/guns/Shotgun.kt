@@ -25,7 +25,6 @@ object Shotgun: Gun(
     cooldown = 0.8,
     magazineSize = MAGAZINE_SIZE,
     reloadTime = RELOAD_TIME_PER_BULLET * MAGAZINE_SIZE,
-    recoil = 20,
     itemMaterial = CustomItems.shotgun,
     additionalLore = listOf("${ChatColor.RED}Weniger Schaden auf Distanz")
 ), Spawning {

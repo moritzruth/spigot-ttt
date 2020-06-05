@@ -13,8 +13,7 @@ object Pistol: Gun(
     cooldown = 0.8,
     magazineSize = 10,
     reloadTime = 2.0,
-    itemMaterial = CustomItems.pistol,
-    recoil = 5
+    itemMaterial = CustomItems.pistol
 ), Spawning {
     override val type = TTTItem.Type.PISTOL_LIKE
 

@@ -14,8 +14,7 @@ object Rifle: Gun(
     cooldown = 0.1,
     magazineSize = 40,
     reloadTime = 2.0,
-    itemMaterial = CustomItems.rifle,
-    recoil = 1
+    itemMaterial = CustomItems.rifle
 ), Spawning {
     override val type = TTTItem.Type.HEAVY_WEAPON
 

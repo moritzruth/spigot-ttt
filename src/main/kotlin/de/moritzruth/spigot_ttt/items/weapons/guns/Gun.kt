@@ -33,8 +33,7 @@ abstract class Gun(
     val cooldown: Double,
     val magazineSize: Int,
     val reloadTime: Double,
-    itemMaterial: Material,
-    val recoil: Int
+    itemMaterial: Material
 ): TTTItem, Selectable {
     override val itemStack = ItemStack(itemMaterial).applyMeta {
         setDisplayName(displayName)
@@ -55,12 +54,6 @@ abstract class Gun(
 
     protected fun updateLevel(tttPlayer: TTTPlayer, state: State = isc.get(tttPlayer)) {
         tttPlayer.player.level = state.remainingShots
-    }
-
-    private fun applyRecoil(player: Player) {
-        val location = player.location
-        location.pitch -= recoil
-        player.teleport(location)
     }
 
     fun shoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.get(tttPlayer)) {
@@ -101,8 +94,6 @@ abstract class Gun(
                 }
             }
         }
-
-        applyRecoil(tttPlayer.player)
 
         state.cooldownOrReloadTask = startItemDamageProgress(item, cooldown) {
             state.cooldownOrReloadTask = null

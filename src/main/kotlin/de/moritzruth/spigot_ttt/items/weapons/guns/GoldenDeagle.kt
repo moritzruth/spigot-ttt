@@ -16,8 +16,7 @@ object GoldenDeagle: Gun(
     cooldown = 1.4,
     magazineSize = 2,
     reloadTime = 10.0,
-    itemMaterial = CustomItems.goldenDeagle,
-    recoil = 10
+    itemMaterial = CustomItems.goldenDeagle
 ), Buyable {
     override val buyableBy = EnumSet.of(TRAITOR, DETECTIVE)
     override val price = 3
