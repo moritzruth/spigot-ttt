@@ -13,15 +13,15 @@ import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.ChatColor
-import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.BlockBreakEvent
-import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.entity.*
+import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityDamageEvent
+import org.bukkit.event.entity.EntityPickupItemEvent
+import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
 
 object GeneralGameEventsListener : Listener {
@@ -33,21 +33,10 @@ object GeneralGameEventsListener : Listener {
     }
 
     @EventHandler
-    fun onPlayerJoin(event: PlayerJoinEvent) {
-        event.joinMessage = "${TTTPlugin.prefix}${event.player.displayName} ${ChatColor.GOLD}hat das Spiel betreten."
-        PlayerManager.onPlayerJoin(event.player)
-    }
+    fun onPlayerJoin(event: PlayerJoinEvent) = PlayerManager.onPlayerJoin(event.player)
 
     @EventHandler
-    fun onPlayerQuit(event: PlayerQuitEvent) {
-        event.quitMessage = "${TTTPlugin.prefix}${event.player.displayName} ${ChatColor.GOLD}hat das Spiel verlassen."
-        PlayerManager.onPlayerQuit(event.player)
-    }
-
-    @EventHandler
-    fun onFoodLevelChange(event: FoodLevelChangeEvent) {
-        event.foodLevel = 20
-    }
+    fun onPlayerQuit(event: PlayerQuitEvent) = PlayerManager.onPlayerQuit(event.player)
 
     @EventHandler
     fun onPlayerCommandPreprocess(event: PlayerCommandPreprocessEvent) {
@@ -129,16 +118,6 @@ object GeneralGameEventsListener : Listener {
     @EventHandler
     fun onPlayerDeath(event: PlayerDeathEvent) {
         event.deathMessage = null
-    }
-
-    @EventHandler
-    fun onBlockPlace(event: BlockPlaceEvent) {
-        if (event.player.gameMode !== GameMode.CREATIVE) event.isCancelled = true
-    }
-
-    @EventHandler
-    fun onBlockBreak(event: BlockBreakEvent) {
-        if (event.player.gameMode !== GameMode.CREATIVE) event.isCancelled = true
     }
 
     @EventHandler

@@ -17,6 +17,8 @@ class TTTPlugin: JavaPlugin() {
         GameManager.initialize()
 
         DiscordBot.start()
+
+        TTTListener.register()
     }
 
     override fun onDisable() {
