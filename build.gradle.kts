@@ -22,6 +22,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
     implementation("net.dv8tion:JDA:4.1.1_155")
+    implementation("com.google.guava:guava:29.0-jre")
     compileOnly(files("./libs/CorpseReborn.jar"))
     compileOnly(files("./libs/ActionBarAPI.jar"))
     compileOnly(files("./libs/ProtocolLib.jar"))
