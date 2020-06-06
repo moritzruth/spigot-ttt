@@ -1,4 +1,4 @@
-package de.moritzruth.spigot_ttt.items
+package de.moritzruth.spigot_ttt.items.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
 import de.moritzruth.spigot_ttt.game.players.IState
@@ -6,6 +6,10 @@ import de.moritzruth.spigot_ttt.game.players.InversedStateContainer
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.*
+import de.moritzruth.spigot_ttt.items.Buyable
+import de.moritzruth.spigot_ttt.items.Selectable
+import de.moritzruth.spigot_ttt.items.TTTItem
+import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.ChatColor
@@ -20,7 +24,9 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.*
 
-object CloakingDevice: TTTItem, Buyable, Selectable {
+object CloakingDevice: TTTItem,
+    Buyable,
+    Selectable {
     override val itemStack = ItemStack(CustomItems.cloakingDevice).applyMeta {
         setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}###${ChatColor.RESET}${ChatColor.GRAY} Cloaking Device ${ChatColor.MAGIC}###")
         lore = listOf(
@@ -40,7 +46,7 @@ object CloakingDevice: TTTItem, Buyable, Selectable {
         setEnabled(tttPlayer, false)
 
     fun setEnabled(tttPlayer: TTTPlayer, value: Boolean?) {
-        val state = isc.get(tttPlayer)
+        val state = isc.getOrCreate(tttPlayer)
         if (state.enabled == value) return
 
         if (value ?: !state.enabled) {
@@ -77,7 +83,7 @@ object CloakingDevice: TTTItem, Buyable, Selectable {
         fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) {
             val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
 
-            if (event.isSprinting && isc.get(tttPlayer).enabled) {
+            if (event.isSprinting && isc.getOrCreate(tttPlayer).enabled) {
                 event.isCancelled = true
             }
         }
@@ -87,7 +93,10 @@ object CloakingDevice: TTTItem, Buyable, Selectable {
             if (!event.isRelevant(CloakingDevice)) return
             val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
 
-            if (event.action.isRightClick) setEnabled(tttPlayer, null)
+            if (event.action.isRightClick) setEnabled(
+                tttPlayer,
+                null
+            )
             event.isCancelled = true
         }
     }

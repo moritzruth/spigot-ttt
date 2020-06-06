@@ -24,7 +24,6 @@ import kotlin.properties.Delegates
 
 class TTTPlayer(player: Player, role: Role) {
     var alive = true
-    var lastDeathReason: DeathReason? = null
 
     var player by Delegates.observable(player) { _, _, _ -> initializePlayer() }
 
@@ -79,7 +78,6 @@ class TTTPlayer(player: Player, role: Role) {
 
         player.gameMode = GameMode.SPECTATOR
         alive = false
-        lastDeathReason = reason
         CorpseManager.spawn(this, reason)
 
         Shop.hide(this)
@@ -94,9 +92,9 @@ class TTTPlayer(player: Player, role: Role) {
         }
 
         // Required to be delayed because of a Minecraft bug which sometimes turns players invisible
-        plugin.server.scheduler.runTask(plugin) { ->
+        plugin.server.scheduler.runTask(plugin, fun() {
             reset()
-        }
+        })
     }
 
     fun reset() {
@@ -110,7 +108,7 @@ class TTTPlayer(player: Player, role: Role) {
             }
         }
 
-        ItemManager.items.forEach { it.reset(this) }
+        ItemManager.ITEMS.forEach { it.reset(this) }
         stateContainer.clear()
 
         setMuted(false)
@@ -125,9 +123,7 @@ class TTTPlayer(player: Player, role: Role) {
         player.inventory.clear()
     }
 
-    fun teleportToSpawn() {
-        teleportPlayerToWorldSpawn(player)
-    }
+    fun teleportToSpawn() = teleportPlayerToWorldSpawn(player)
 
     fun setMuted(muted: Boolean) {
         val discordUser = discordUser
@@ -166,7 +162,7 @@ class TTTPlayer(player: Player, role: Role) {
     class AlreadyHasItemException: Exception("The player already owns this item")
     class TooManyItemsOfTypeException: Exception("The player already owns too much items of this type")
 
-    fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
+    private fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
 
     enum class RoleGroup(val primaryRole: Role, val additionalRoles: EnumSet<Role> = EnumSet.noneOf(Role::class.java)) {
         INNOCENT(Role.INNOCENT, EnumSet.of(Role.DETECTIVE)),

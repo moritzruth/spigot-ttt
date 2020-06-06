@@ -1,7 +1,10 @@
-package de.moritzruth.spigot_ttt.items
+package de.moritzruth.spigot_ttt.items.impl
 
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.*
+import de.moritzruth.spigot_ttt.items.Buyable
+import de.moritzruth.spigot_ttt.items.TTTItem
+import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import org.bukkit.ChatColor
 import org.bukkit.Material

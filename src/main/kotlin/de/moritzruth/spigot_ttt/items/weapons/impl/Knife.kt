@@ -1,4 +1,4 @@
-package de.moritzruth.spigot_ttt.items.weapons
+package de.moritzruth.spigot_ttt.items.weapons.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
 import de.moritzruth.spigot_ttt.game.players.DamageInfo
@@ -9,6 +9,7 @@ import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.TRAITOR
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
+import de.moritzruth.spigot_ttt.items.weapons.LoreHelper
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player

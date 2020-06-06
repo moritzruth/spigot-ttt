@@ -21,7 +21,7 @@ object Shop {
 
     private var creditsTimer: BukkitTask? = null
 
-    fun getBuyableItems(tttPlayer: TTTPlayer) = ItemManager.items.filter { it is Buyable && it.buyableBy.contains(tttPlayer.role) }.toSet()
+    fun getBuyableItems(tttPlayer: TTTPlayer) = ItemManager.ITEMS.filter { it is Buyable && it.buyableBy.contains(tttPlayer.role) }.toSet()
 
     fun show(tttPlayer: TTTPlayer) {
         val itemsIterator = getBuyableItems(tttPlayer).iterator()

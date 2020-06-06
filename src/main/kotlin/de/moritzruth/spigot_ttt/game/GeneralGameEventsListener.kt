@@ -29,7 +29,7 @@ object GeneralGameEventsListener : Listener {
 
     fun register() {
         plugin.server.pluginManager.registerEvents(this, plugin)
-        ProtocolLibrary.getProtocolManager().addPacketListener(PacketListener)
+        ProtocolLibrary.getProtocolManager().addPacketListener(packetListener)
     }
 
     @EventHandler
@@ -133,42 +133,7 @@ object GeneralGameEventsListener : Listener {
         }
     }
 
-    @EventHandler
-    fun onPlayerItemHeld(event: PlayerItemHeldEvent) {
-        val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
-
-        val itemStack = event.player.inventory.getItem(event.newSlot)
-
-        tttPlayer.itemInHand =
-                if (itemStack == null || itemStack.type === Material.AIR) null
-                else ItemManager.getItemByItemStack(itemStack)
-    }
-
-    @EventHandler
-    fun onEntityPickupItem(event: EntityPickupItemEvent) {
-        if (event.entity !is Player) {
-            return
-        }
-
-        val player = event.entity as Player
-        val tttPlayer = PlayerManager.getTTTPlayer(player) ?: return
-
-        val tttItem = ItemManager.getItemByItemStack(event.item.itemStack)
-
-        if (tttItem != null) {
-            if (kotlin.runCatching { tttPlayer.checkAddItemPreconditions(tttItem) }.isSuccess) {
-                plugin.server.scheduler.runTask(plugin, fun() {
-                    tttPlayer.updateItemInHand()
-                })
-
-                return
-            }
-        }
-
-        event.isCancelled = true
-    }
-
-    private object PacketListener : PacketAdapter(plugin, PacketType.Play.Server.PLAYER_INFO) {
+    private val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.PLAYER_INFO) {
         override fun onPacketSending(event: PacketEvent) {
             val packet = WrapperPlayServerPlayerInfo(event.packet)
 

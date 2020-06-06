@@ -1,8 +1,8 @@
 package de.moritzruth.spigot_ttt.items
 
 import de.moritzruth.spigot_ttt.TTTPlugin
-import de.moritzruth.spigot_ttt.utils.NoOpTabCompleter
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.NoOpTabCompleter
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -23,7 +23,7 @@ class AddItemSpawnCommand: CommandExecutor {
             return true
         }
 
-        ItemManager.addItemSpawnLocation(sender.location)
+        ItemSpawner.addItemSpawnLocation(sender.location)
         sender.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}Ein Waffenspawn wurde an deiner Position hinzugefügt.")
 
         return true

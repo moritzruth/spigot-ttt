@@ -2,6 +2,7 @@ package de.moritzruth.spigot_ttt.items
 
 import com.comphenix.protocol.events.PacketListener
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -12,6 +13,11 @@ import java.util.*
 interface Selectable {
     fun onSelect(tttPlayer: TTTPlayer)
     fun onDeselect(tttPlayer: TTTPlayer)
+}
+
+interface DropHandler {
+    fun onDrop(tttPlayer: TTTPlayer, itemEntity: Item)
+    fun onPickup(tttPlayer: TTTPlayer, itemEntity: Item)
 }
 
 interface Buyable {
@@ -35,11 +41,9 @@ interface TTTItem {
         PISTOL_LIKE(1),
         HEAVY_WEAPON(1),
         SPECIAL(null);
-
-        val position by lazy { values().indexOf(this) }
     }
 }
 
-fun PlayerInteractEvent.isRelevant(tttItem: TTTItem): Boolean = item?.itemMeta?.displayName == tttItem.itemStack.itemMeta!!.displayName
+fun PlayerInteractEvent.isRelevant(tttItem: TTTItem): Boolean = item?.type == tttItem.itemStack.type
 fun EntityDamageByEntityEvent.isRelevant(tttItem: TTTItem): Boolean = damager is Player && entity is Player &&
-            (damager as Player).inventory.itemInMainHand.itemMeta?.displayName == tttItem.itemStack.itemMeta!!.displayName
+            (damager as Player).inventory.itemInMainHand.type == tttItem.itemStack.type

@@ -1,79 +1,129 @@
 package de.moritzruth.spigot_ttt.items
 
 import com.comphenix.protocol.ProtocolLibrary
+import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.items.weapons.BaseballBat
-import de.moritzruth.spigot_ttt.items.weapons.Knife
-import de.moritzruth.spigot_ttt.items.weapons.guns.Deagle
-import de.moritzruth.spigot_ttt.items.weapons.guns.Glock
-import de.moritzruth.spigot_ttt.items.weapons.guns.Pistol
-import de.moritzruth.spigot_ttt.items.weapons.guns.Shotgun
+import de.moritzruth.spigot_ttt.game.players.IState
+import de.moritzruth.spigot_ttt.game.players.PlayerManager
+import de.moritzruth.spigot_ttt.items.impl.CloakingDevice
+import de.moritzruth.spigot_ttt.items.impl.EnderPearl
+import de.moritzruth.spigot_ttt.items.impl.HealingPotion
+import de.moritzruth.spigot_ttt.items.impl.Radar
 import de.moritzruth.spigot_ttt.items.weapons.guns.deagle.GoldenDeagle
+import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Deagle
+import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Glock
+import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Pistol
+import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Shotgun
 import de.moritzruth.spigot_ttt.items.weapons.guns.pistol.Rifle
+import de.moritzruth.spigot_ttt.items.weapons.impl.BaseballBat
+import de.moritzruth.spigot_ttt.items.weapons.impl.Knife
 import de.moritzruth.spigot_ttt.plugin
-import de.moritzruth.spigot_ttt.utils.ConfigurationFile
-import org.bukkit.Location
+import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Item
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityPickupItemEvent
+import org.bukkit.event.entity.ItemDespawnEvent
+import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.inventory.ItemStack
-import kotlin.math.roundToInt
 
 object ItemManager {
-    private const val CONFIG_PATH = "spawn-locations"
-
-    private val spawnLocationsConfig = ConfigurationFile("spawnLocations")
-
-    val items: Set<TTTItem> = setOf(
-        Pistol, Knife, Glock, Deagle, Shotgun, GoldenDeagle, BaseballBat,
+    val ITEMS: Set<TTTItem> = setOf(
+        Pistol,
+        Knife, Glock, Deagle, Shotgun, GoldenDeagle,
+        BaseballBat,
         CloakingDevice, Rifle,
         EnderPearl, Radar, HealingPotion
     )
-    private val spawningItems = items.filter { it is Spawning }
+
+    val droppedItemStates = mutableMapOf<Int, IState>()
 
     fun registerListeners() {
-        for (item in items) {
+        plugin.server.pluginManager.registerEvents(listener, plugin)
+
+        for (item in ITEMS) {
             if (item.listener != null) plugin.server.pluginManager.registerEvents(item.listener!!, plugin)
             if (item.packetListener != null) ProtocolLibrary.getProtocolManager().addPacketListener(item.packetListener!!)
         }
     }
 
-    private fun getItemByMaterial(material: Material) = items.find { tttItem -> material === tttItem.itemStack.type }
+    private fun getItemByMaterial(material: Material) = ITEMS.find { tttItem -> material === tttItem.itemStack.type }
     fun getItemByItemStack(itemStack: ItemStack) = getItemByMaterial(itemStack.type)
 
-    private fun getSpawnLocations(): Set<Location> {
-        return spawnLocationsConfig.getStringList(CONFIG_PATH).map {
-            val (x, y, z) = it.split(":").map(String::toDouble)
-            Location(GameManager.world, x, y, z)
-        }.toSet()
-    }
-
-    private fun setSpawnLocations(spawnLocations: Set<Location>) {
-        spawnLocationsConfig.set(CONFIG_PATH, spawnLocations.map {
-            "${it.x}:${it.y}:${it.z}"
-        })
-    }
-
-    fun spawnWeapons() {
-        for (location in getSpawnLocations()) {
-            GameManager.world.dropItem(location, spawningItems.random().itemStack.clone())
-        }
-    }
-
-    fun removeItemEntities() {
+    fun reset() {
+        droppedItemStates.clear()
         GameManager.world.getEntitiesByClass(Item::class.java).forEach {
             it.remove()
         }
     }
 
-    fun addItemSpawnLocation(location: Location) {
-        val spawnLocations = getSpawnLocations().toMutableSet()
+    val listener = object : Listener {
+        @EventHandler
+        fun onPlayerItemHeld(event: PlayerItemHeldEvent) {
+            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+            val itemStack = event.player.inventory.getItem(event.newSlot)
 
-        spawnLocations.add(roundLocationToHalfBlock(location))
-        setSpawnLocations(spawnLocations)
-        spawnLocationsConfig.save()
+            tttPlayer.itemInHand =
+                if (itemStack == null || itemStack.type === Material.AIR) null
+                else getItemByItemStack(itemStack)
+        }
+
+        @EventHandler
+        fun onPlayerDropItem(event: PlayerDropItemEvent) {
+            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+            val tttItem = getItemByItemStack(event.itemDrop.itemStack) ?: return
+
+            if (tttItem.type != TTTItem.Type.SPECIAL) {
+                if (tttItem is DropHandler) {
+                    tttItem.onDrop(tttPlayer, event.itemDrop)
+                }
+
+                plugin.server.scheduler.runTask(plugin, fun() {
+                    tttPlayer.updateItemInHand()
+                })
+            } else {
+                ActionBarAPI.sendActionBar(event.player, "${ChatColor.RED}Du kannst dieses Item nicht droppen")
+                event.isCancelled = true
+            }
+        }
+
+        @EventHandler
+        fun onItemDespawn(event: ItemDespawnEvent) {
+            if (getItemByItemStack(event.entity.itemStack) != null) {
+                event.entity.ticksLived = 1
+                event.isCancelled = true
+            }
+        }
+
+        @EventHandler
+        fun onEntityPickupItem(event: EntityPickupItemEvent) {
+            if (event.entity !is Player) {
+                return
+            }
+
+            val player = event.entity as Player
+            val tttPlayer = PlayerManager.getTTTPlayer(player) ?: return
+
+            val tttItem = getItemByItemStack(event.item.itemStack)
+
+            if (tttItem != null) {
+                if (runCatching { tttPlayer.checkAddItemPreconditions(tttItem) }.isSuccess) {
+                    plugin.server.scheduler.runTask(plugin, fun() {
+                        tttPlayer.updateItemInHand()
+                    })
+
+                    if (tttItem is DropHandler) {
+                        tttItem.onPickup(tttPlayer, event.item)
+                    }
+
+                    return
+                }
+            }
+
+            event.isCancelled = true
+        }
     }
-
-    private fun roundLocationToHalfBlock(location: Location) = Location(location.world, roundToHalf(location.x), roundToHalf(location.y), roundToHalf(location.z))
-
-    private fun roundToHalf(number: Double): Double = (number * 2).roundToInt() / 2.0
 }

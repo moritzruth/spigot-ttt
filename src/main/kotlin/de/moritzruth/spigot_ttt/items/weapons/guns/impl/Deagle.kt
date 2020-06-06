@@ -1,8 +1,9 @@
-package de.moritzruth.spigot_ttt.items.weapons.guns
+package de.moritzruth.spigot_ttt.items.weapons.guns.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
 import de.moritzruth.spigot_ttt.items.Spawning
 import de.moritzruth.spigot_ttt.items.TTTItem
+import de.moritzruth.spigot_ttt.items.weapons.guns.Gun
 import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import org.bukkit.ChatColor
 

@@ -5,6 +5,7 @@ import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.corpses.CorpseListener
 import de.moritzruth.spigot_ttt.game.players.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.items.ItemManager
+import de.moritzruth.spigot_ttt.items.ItemSpawner
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.shop.Shop
 import de.moritzruth.spigot_ttt.shop.ShopListener
@@ -51,7 +52,7 @@ object GameManager {
 
     fun resetWorld() {
         CorpseManager.destroyAll()
-        ItemManager.removeItemEntities()
+        ItemManager.reset()
     }
 
     fun abortGame(broadcast: Boolean = false) {
@@ -81,7 +82,7 @@ object GameManager {
         PlayerManager.tttPlayers.forEach { it.reset(); it.teleportToSpawn() }
         GameMessenger.preparingPhaseStarted()
         Timers.playTimerSound()
-        ItemManager.spawnWeapons()
+        ItemSpawner.spawnWeapons()
 
         Timers.startPreparingPhaseTimer(plugin.config.getInt("duration.preparing", 20)) {
             startCombatPhase()

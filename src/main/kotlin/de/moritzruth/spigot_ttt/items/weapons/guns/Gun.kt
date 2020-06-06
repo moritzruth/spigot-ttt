@@ -3,18 +3,17 @@ package de.moritzruth.spigot_ttt.items.weapons.guns
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.players.*
-import de.moritzruth.spigot_ttt.items.Selectable
-import de.moritzruth.spigot_ttt.items.TTTItem
-import de.moritzruth.spigot_ttt.items.isRelevant
+import de.moritzruth.spigot_ttt.items.*
 import de.moritzruth.spigot_ttt.items.weapons.LoreHelper
+import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.noop
 import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
 import org.bukkit.*
+import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemFlag
@@ -22,10 +21,14 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.scheduler.BukkitTask
+import java.time.Duration
+import java.time.Instant
 import kotlin.reflect.KClass
 
+typealias ClickAction = org.bukkit.event.block.Action
+
 abstract class Gun(
-    stateClass: KClass<out State>,
+    private val stateClass: KClass<out State>,
     displayName: String,
     additionalLore: List<String>? = null,
     val damage: Double,
@@ -33,7 +36,7 @@ abstract class Gun(
     val magazineSize: Int,
     val reloadTime: Double,
     val itemMaterial: Material
-): TTTItem, Selectable {
+): TTTItem, Selectable, DropHandler {
     override val itemStack = ItemStack(itemMaterial).applyMeta {
         setDisplayName(displayName)
         lore = listOf(
@@ -51,12 +54,12 @@ abstract class Gun(
 
     val isc = InversedStateContainer(stateClass)
 
-    protected fun updateLevel(tttPlayer: TTTPlayer, state: State = isc.get(tttPlayer)) {
+    protected fun updateLevel(tttPlayer: TTTPlayer, state: State = isc.getOrCreate(tttPlayer)) {
         tttPlayer.player.level = state.remainingShots
     }
 
-    fun shoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.get(tttPlayer)) {
-        onBeforeShoot(tttPlayer, item, state)
+    fun shoot(tttPlayer: TTTPlayer, itemStack: ItemStack, state: State = isc.getOrCreate(tttPlayer)) {
+        onBeforeShoot(tttPlayer, itemStack, state)
 
         if (state.remainingShots == 0) {
             GameManager.world.playSound(tttPlayer.player.location, Sound.BLOCK_ANVIL_PLACE, SoundCategory.PLAYERS, 1f, 1.3f)
@@ -91,40 +94,35 @@ abstract class Gun(
 
                         entity.damage(actualDamage)
                         tttPlayer.player.playSound(tttPlayer.player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 2f, 1.2f)
-                        entity.velocity = tttPlayer.player.location.direction.multiply(Math.min(actualDamage / 20, 3.0))
+                        entity.velocity = tttPlayer.player.location.direction.multiply(
+                            (actualDamage / 20).coerceAtMost(3.0)
+                        )
                     }
                 }
             }
         }
 
-        state.cooldownOrReloadTask = startItemDamageProgress(item, cooldown) {
-            state.cooldownOrReloadTask = null
-        }
+        state.currentAction = Action.Cooldown(this, itemStack, state)
     }
 
-    open fun reload(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.get(tttPlayer)) {
-        if (state.cooldownOrReloadTask != null) throw ActionInProgressError()
+    open fun reload(tttPlayer: TTTPlayer, itemStack: ItemStack, state: State = isc.getOrCreate(tttPlayer)) {
+        if (state.currentAction != null) throw ActionInProgressError()
         if (state.remainingShots == magazineSize) return
 
-        state.reloadingItem = item
-        state.cooldownOrReloadTask = startItemDamageProgress(item, reloadTime) {
-            state.reloadingItem = null
-            state.cooldownOrReloadTask = null
-            state.remainingShots = magazineSize
-            updateLevel(tttPlayer, state)
-        }
+        state.currentAction = Action.Reloading(this, itemStack, state, tttPlayer).also { it.start() }
 
         // TODO: Add sound
     }
 
     open fun computeActualDamage(tttPlayer: TTTPlayer, receiver: Player) = if (damage < 0 ) 1000.0 else damage
 
-    open fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.get(tttPlayer)) {
-        if (state.cooldownOrReloadTask !== null) throw ActionInProgressError()
+    open fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.getOrCreate(tttPlayer)) {
+        if (state.currentAction !== null) throw ActionInProgressError()
     }
 
     override fun reset(tttPlayer: TTTPlayer) {
-        isc.get(tttPlayer).cooldownOrReloadTask?.cancel()
+        val currentAction = isc.get(tttPlayer)?.currentAction ?: return
+        currentAction.task.cancel()
     }
 
     override fun onSelect(tttPlayer: TTTPlayer) {
@@ -134,16 +132,53 @@ abstract class Gun(
     override fun onDeselect(tttPlayer: TTTPlayer) {
         tttPlayer.player.level = 0
 
-        val state = isc.get(tttPlayer)
-        val reloadingItem = state.reloadingItem
+        val state = isc.get(tttPlayer) ?: return
+        val currentAction = state.currentAction
 
-        if (reloadingItem != null) {
-            state.cooldownOrReloadTask?.cancel()
-            state.cooldownOrReloadTask = null
-            state.reloadingItem = null
-            val meta = reloadingItem.itemMeta as Damageable
+        if (currentAction is Action.Reloading) {
+            state.currentAction = null
+            currentAction.task.cancel()
+
+            val meta = currentAction.itemStack.itemMeta as Damageable
             meta.damage = 0
-            reloadingItem.itemMeta = meta as ItemMeta
+            currentAction.itemStack.itemMeta = meta as ItemMeta
+        }
+    }
+
+    override fun onDrop(tttPlayer: TTTPlayer, itemEntity: Item) {
+        val state = isc.get(tttPlayer) ?: return
+
+        when(val currentAction = state.currentAction) {
+            is Action.Reloading -> {
+                state.currentAction = null
+                currentAction.task.cancel()
+            }
+            is Action.Cooldown -> {
+                currentAction.pause()
+            }
+        }
+
+        itemEntity.setItemStack(itemStack.clone())
+
+        ItemManager.droppedItemStates[itemEntity.entityId] = state
+        isc.remove(tttPlayer)
+        return
+    }
+
+    override fun onPickup(tttPlayer: TTTPlayer, itemEntity: Item) {
+        val state = ItemManager.droppedItemStates[itemEntity.entityId] as State?
+
+        if (state != null) {
+            tttPlayer.stateContainer.put(stateClass, state)
+            val currentAction = state.currentAction ?: return
+
+            plugin.server.scheduler.runTask(plugin, fun() {
+                currentAction.itemStack = tttPlayer.player.inventory.find { it.type == itemEntity.itemStack.type }!!
+
+                if (currentAction is Action.Cooldown) {
+                    currentAction.resume()
+                }
+            })
         }
     }
 
@@ -160,20 +195,65 @@ abstract class Gun(
 
             try {
                 when(event.action) {
-                    Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> reload(tttPlayer, event.item!!)
-                    Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> shoot(tttPlayer, event.item!!)
+                    ClickAction.LEFT_CLICK_AIR, ClickAction.LEFT_CLICK_BLOCK -> reload(tttPlayer, event.item!!)
+                    ClickAction.RIGHT_CLICK_AIR, ClickAction.RIGHT_CLICK_BLOCK -> shoot(tttPlayer, event.item!!)
                     else -> noop()
                 }
             } catch (e: ActionInProgressError) {}
         }
     }
 
-    class ActionInProgressError: RuntimeException("The gun is on cooldown or reloading")
+    class ActionInProgressError: RuntimeException("The gun has an ongoing action which may not be canceled")
 
     abstract class State(magazineSize: Int): IState {
-        var reloadingItem: ItemStack? = null
-        var cooldownOrReloadTask: BukkitTask? = null
+        var currentAction: Action? = null
         var remainingShots = magazineSize
+    }
+
+    sealed class Action(var itemStack: ItemStack) {
+        val startedAt = Instant.now()!!
+        abstract var task: BukkitTask; protected set
+
+        open class Reloading(
+            private val gun: Gun,
+            itemStack: ItemStack,
+            protected val state: State,
+            protected val tttPlayer: TTTPlayer
+        ): Action(itemStack) {
+            override lateinit var task: BukkitTask
+
+            open fun start() {
+                task = startItemDamageProgress(itemStack, gun.reloadTime) {
+                    state.currentAction = null
+                    state.remainingShots = gun.magazineSize
+                    gun.updateLevel(tttPlayer, state)
+                }
+            }
+        }
+
+        class Cooldown(private val gun: Gun, itemStack: ItemStack, private val state: State): Action(itemStack) {
+            override var task = startTask()
+            private var pausedProgress: Double? = null
+
+            private fun startTask() = startItemDamageProgress(
+                itemStack = itemStack,
+                duration = gun.cooldown,
+                startProgress = pausedProgress ?: 0.0
+            ) {
+                state.currentAction = null
+            }
+
+            fun resume() {
+                if (task.isCancelled) task = startTask()
+            }
+
+            fun pause() {
+                if (!task.isCancelled) {
+                    task.cancel()
+                    pausedProgress = (Duration.between(startedAt, Instant.now()).toMillis().toDouble() / 1000) / gun.cooldown
+                }
+            }
+        }
     }
 
     companion object {

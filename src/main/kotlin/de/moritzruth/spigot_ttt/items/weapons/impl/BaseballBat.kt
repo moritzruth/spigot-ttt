@@ -1,4 +1,4 @@
-package de.moritzruth.spigot_ttt.items.weapons
+package de.moritzruth.spigot_ttt.items.weapons.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer

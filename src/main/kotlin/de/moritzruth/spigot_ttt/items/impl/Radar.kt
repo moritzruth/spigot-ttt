@@ -1,4 +1,4 @@
-package de.moritzruth.spigot_ttt.items
+package de.moritzruth.spigot_ttt.items.impl
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata
 import com.comphenix.protocol.PacketType
@@ -9,6 +9,9 @@ import de.moritzruth.spigot_ttt.game.players.IState
 import de.moritzruth.spigot_ttt.game.players.InversedStateContainer
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.items.Buyable
+import de.moritzruth.spigot_ttt.items.TTTItem
+import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.isRightClick
@@ -37,11 +40,11 @@ object Radar: TTTItem, Buyable {
     override fun reset(tttPlayer: TTTPlayer) {
         setEnabled(tttPlayer, false)
 
-        isc.get(tttPlayer).progressTask?.cancel()
+        isc.getOrCreate(tttPlayer).progressTask?.cancel()
     }
 
     fun use(tttPlayer: TTTPlayer, item: ItemStack) {
-        val state = isc.get(tttPlayer)
+        val state = isc.getOrCreate(tttPlayer)
         if (state.progressTask != null) return
 
         setEnabled(tttPlayer, true)
@@ -56,7 +59,7 @@ object Radar: TTTItem, Buyable {
     }
 
     private fun setEnabled(tttPlayer: TTTPlayer, value: Boolean) {
-        val state = isc.get(tttPlayer)
+        val state = isc.getOrCreate(tttPlayer)
 
         if (state.enabled != value) {
             state.enabled = value
@@ -101,7 +104,7 @@ object Radar: TTTItem, Buyable {
                 // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
                 try {
                     val modifiers = packet.metadata[0].value as Byte
-                    packet.metadata[0].value = if (isc.get(tttPlayer).enabled) modifiers or 0x40
+                    packet.metadata[0].value = if (isc.getOrCreate(tttPlayer).enabled) modifiers or 0x40
                     else modifiers and 0b10111111.toByte()
                 } catch (ignored: Exception) {
                     // Idk why this throws exceptions, but it works anyways
