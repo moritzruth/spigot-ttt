@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.items
 
+import com.comphenix.protocol.ProtocolLibrary
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.items.weapons.BaseballBat
 import de.moritzruth.spigot_ttt.items.weapons.Knife
@@ -31,11 +32,8 @@ object ItemManager {
 
     fun registerListeners() {
         for (item in items) {
-            val listener = item.listener
-
-            if (listener != null) {
-                plugin.server.pluginManager.registerEvents(listener, plugin)
-            }
+            if (item.listener != null) plugin.server.pluginManager.registerEvents(item.listener!!, plugin)
+            if (item.packetListener != null) ProtocolLibrary.getProtocolManager().addPacketListener(item.packetListener!!)
         }
     }
 

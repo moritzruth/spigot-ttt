@@ -2,7 +2,6 @@ package de.moritzruth.spigot_ttt.items
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata
 import com.comphenix.protocol.PacketType
-import com.comphenix.protocol.ProtocolLibrary
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import de.moritzruth.spigot_ttt.CustomItems
@@ -34,32 +33,6 @@ object Radar: TTTItem, Buyable {
     override val price = 2
 
     val isc = InversedStateContainer(State::class)
-
-    init {
-        ProtocolLibrary
-            .getProtocolManager()
-            .addPacketListener(object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {
-                override fun onPacketSending(event: PacketEvent) {
-                    val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
-                    val packet = WrapperPlayServerEntityMetadata(event.packet)
-
-                    val playerOfPacket = plugin.server.onlinePlayers.find { it.entityId == packet.entityID } ?: return
-                    val tttPlayerOfPacket = PlayerManager.getTTTPlayer(playerOfPacket) ?: return
-                    if (tttPlayerOfPacket.alive) {
-                        // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
-                        try {
-                            val modifiers = packet.metadata[0].value as Byte // TODO: Fix this
-                            packet.metadata[0].setValue(
-                                    if (isc.get(tttPlayer).enabled) modifiers or 0x40
-                                    else modifiers and 0b10111111.toByte()
-                            )
-                        } catch (ignored: Exception) {
-                            // Idk why this throws exceptions, but it works anyways
-                        }
-                    }
-                }
-            })
-    }
 
     override fun reset(tttPlayer: TTTPlayer) {
         setEnabled(tttPlayer, false)
@@ -114,6 +87,26 @@ object Radar: TTTItem, Buyable {
             }
 
             event.isCancelled = true
+        }
+    }
+
+    override val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {
+        override fun onPacketSending(event: PacketEvent) {
+            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+            val packet = WrapperPlayServerEntityMetadata(event.packet)
+
+            val playerOfPacket = plugin.server.onlinePlayers.find { it.entityId == packet.entityID } ?: return
+            val tttPlayerOfPacket = PlayerManager.getTTTPlayer(playerOfPacket) ?: return
+            if (tttPlayerOfPacket.alive) {
+                // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
+                try {
+                    val modifiers = packet.metadata[0].value as Byte
+                    packet.metadata[0].value = if (isc.get(tttPlayer).enabled) modifiers or 0x40
+                    else modifiers and 0b10111111.toByte()
+                } catch (ignored: Exception) {
+                    // Idk why this throws exceptions, but it works anyways
+                }
+            }
         }
     }
 

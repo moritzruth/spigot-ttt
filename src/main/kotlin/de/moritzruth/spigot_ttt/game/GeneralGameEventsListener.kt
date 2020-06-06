@@ -1,5 +1,12 @@
 package de.moritzruth.spigot_ttt.game
 
+import com.comphenix.packetwrapper.WrapperPlayServerPlayerInfo
+import com.comphenix.protocol.PacketType
+import com.comphenix.protocol.ProtocolLibrary
+import com.comphenix.protocol.events.PacketAdapter
+import com.comphenix.protocol.events.PacketEvent
+import com.comphenix.protocol.wrappers.EnumWrappers
+import com.comphenix.protocol.wrappers.PlayerInfoData
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
@@ -17,11 +24,12 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.*
 import org.bukkit.event.player.*
 
-object GeneralGameEventsListener: Listener {
-    val BLOCKED_COMMANDS = setOf("me", "tell")
+object GeneralGameEventsListener : Listener {
+    private val BLOCKED_COMMANDS = setOf("me", "tell")
 
     fun register() {
         plugin.server.pluginManager.registerEvents(this, plugin)
+        ProtocolLibrary.getProtocolManager().addPacketListener(PacketListener)
     }
 
     @EventHandler
@@ -43,7 +51,7 @@ object GeneralGameEventsListener: Listener {
 
     @EventHandler
     fun onPlayerCommandPreprocess(event: PlayerCommandPreprocessEvent) {
-        if(event.message.startsWith("/rl") && GameManager.phase != null) { // /reload is not blocked
+        if (event.message.startsWith("/rl") && GameManager.phase != null) { // /reload is not blocked
             event.player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}The server may not be reloaded while the game is running")
             event.player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}You can force reload by using ${ChatColor.WHITE}/reload")
             event.isCancelled = true
@@ -95,7 +103,7 @@ object GeneralGameEventsListener: Listener {
                 damageInfo.damager.credits += 1
 
                 damageInfo.deathReason
-            } else when(event.cause) {
+            } else when (event.cause) {
                 EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
                 EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
                 EntityDamageEvent.DamageCause.ENTITY_EXPLOSION -> DeathReason.EXPLOSION
@@ -179,5 +187,29 @@ object GeneralGameEventsListener: Listener {
         }
 
         event.isCancelled = true
+    }
+
+    private object PacketListener : PacketAdapter(plugin, PacketType.Play.Server.PLAYER_INFO) {
+        override fun onPacketSending(event: PacketEvent) {
+            val packet = WrapperPlayServerPlayerInfo(event.packet)
+
+            if (packet.action == EnumWrappers.PlayerInfoAction.UPDATE_GAME_MODE ||
+                    packet.action == EnumWrappers.PlayerInfoAction.ADD_PLAYER) {
+
+                packet.data = packet.data.map { info ->
+                    val tttPlayer = PlayerManager.tttPlayers.find { it.player.uniqueId == info.profile.uuid }
+
+                    if (tttPlayer == null) info
+                    else PlayerInfoData(
+                            info.profile,
+                            info.latency,
+                            if (info.gameMode == EnumWrappers.NativeGameMode.SPECTATOR)
+                                EnumWrappers.NativeGameMode.SURVIVAL
+                            else info.gameMode,
+                            info.displayName
+                    )
+                }.toMutableList()
+            }
+        }
     }
 }

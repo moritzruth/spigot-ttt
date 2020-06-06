@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.items
 
+import com.comphenix.protocol.events.PacketListener
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import org.bukkit.entity.Player
 import org.bukkit.event.Listener
@@ -22,7 +23,8 @@ interface Buyable {
 interface Spawning
 
 interface TTTItem {
-    val listener: Listener?
+    val listener: Listener? get() = null
+    val packetListener: PacketListener? get() = null
     val itemStack: ItemStack
     val type: Type
 
