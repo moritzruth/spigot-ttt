@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.game
 
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
@@ -35,7 +35,7 @@ object GameMessenger {
         }
     }
 
-    fun win(winnerRole: TTTPlayer.Role?) {
+    fun win(winnerRole: Role?) {
         val winner = when(winnerRole) {
             null -> {
                 plugin.broadcast("Niemand hat gewonnen")
@@ -45,14 +45,14 @@ object GameMessenger {
 
                 return
             }
-            TTTPlayer.Role.JACKAL, TTTPlayer.Role.SIDEKICK -> "Der ${TTTPlayer.Role.JACKAL.chatColor}Jackal"
-            TTTPlayer.Role.TRAITOR -> "Die ${TTTPlayer.Role.TRAITOR.chatColor}Traitor"
-            TTTPlayer.Role.INNOCENT, TTTPlayer.Role.DETECTIVE -> "Die ${TTTPlayer.Role.INNOCENT.chatColor}Innocents"
+            Role.JACKAL, Role.SIDEKICK -> "Der ${Role.JACKAL.chatColor}Jackal"
+            Role.TRAITOR -> "Die ${Role.TRAITOR.chatColor}Traitor"
+            Role.INNOCENT, Role.DETECTIVE -> "Die ${Role.INNOCENT.chatColor}Innocents"
         }
 
         val winnerMessage = when(winnerRole) {
-            TTTPlayer.Role.JACKAL, TTTPlayer.Role.SIDEKICK -> "hat gewonnen"
-            TTTPlayer.Role.TRAITOR, TTTPlayer.Role.INNOCENT, TTTPlayer.Role.DETECTIVE -> "haben gewonnen"
+            Role.JACKAL, Role.SIDEKICK -> "hat gewonnen"
+            Role.TRAITOR, Role.INNOCENT, Role.DETECTIVE -> "haben gewonnen"
         }
 
         plugin.broadcast("${ChatColor.GOLD}$winner ${ChatColor.GOLD}${winnerMessage}")
@@ -69,13 +69,13 @@ object GameMessenger {
         plugin.broadcast("${ChatColor.RED}Das Spiel wurde abgebrochen.")
     }
 
-    fun corpseIdentified(by: String, who: String, role: TTTPlayer.Role) {
+    fun corpseIdentified(by: String, who: String, role: Role) {
         plugin.broadcast("$by ${ChatColor.GOLD}hat die Leiche von ${ChatColor.WHITE}$who ${ChatColor.GOLD}identifiziert. Er/Sie war ${role.coloredDisplayName}")
     }
 
     fun roles() {
         val playersByRole = PlayerManager.getPlayersByRole()
-        val roles = playersByRole.keys.sortedBy(TTTPlayer.Role::position)
+        val roles = playersByRole.keys.sortedBy(Role::position)
 
         for (role in roles) {
             val entries = playersByRole.getValue(role).map { tttPlayer ->

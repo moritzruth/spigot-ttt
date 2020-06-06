@@ -9,12 +9,12 @@ import de.moritzruth.spigot_ttt.items.impl.CloakingDevice
 import de.moritzruth.spigot_ttt.items.impl.EnderPearl
 import de.moritzruth.spigot_ttt.items.impl.HealingPotion
 import de.moritzruth.spigot_ttt.items.impl.Radar
-import de.moritzruth.spigot_ttt.items.weapons.guns.deagle.GoldenDeagle
+import de.moritzruth.spigot_ttt.items.weapons.guns.impl.GoldenDeagle
 import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Deagle
 import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Glock
 import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Pistol
 import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Shotgun
-import de.moritzruth.spigot_ttt.items.weapons.guns.pistol.Rifle
+import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Rifle
 import de.moritzruth.spigot_ttt.items.weapons.impl.BaseballBat
 import de.moritzruth.spigot_ttt.items.weapons.impl.Knife
 import de.moritzruth.spigot_ttt.plugin

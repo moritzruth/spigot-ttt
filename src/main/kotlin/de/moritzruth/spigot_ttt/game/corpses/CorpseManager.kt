@@ -1,4 +1,4 @@
-package de.moritzruth.spigot_ttt.game.players.corpses
+package de.moritzruth.spigot_ttt.game.corpses
 
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer

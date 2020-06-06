@@ -1,13 +1,12 @@
-package de.moritzruth.spigot_ttt.items.weapons.guns.deagle
+package de.moritzruth.spigot_ttt.items.weapons.guns.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.DETECTIVE
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.TRAITOR
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.weapons.guns.Gun
 import org.bukkit.ChatColor
-import java.util.*
 
 object GoldenDeagle: Gun(
     stateClass = State::class,
@@ -18,7 +17,7 @@ object GoldenDeagle: Gun(
     reloadTime = 20.0,
     itemMaterial = CustomItems.goldenDeagle
 ), Buyable {
-    override val buyableBy = EnumSet.of(TRAITOR, DETECTIVE)
+    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL, Role.DETECTIVE)
     override val price = 3
     override val type = TTTItem.Type.PISTOL_LIKE
 

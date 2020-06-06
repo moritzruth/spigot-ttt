@@ -16,12 +16,12 @@ object PlayerManager {
 
     val availablePlayers get() = plugin.server.onlinePlayers.filter { it.gameMode === GameMode.SURVIVAL }
     val stillLivingRoles get() = tttPlayers.filter { it.alive }.map { it.role }.toSet()
-    val stillLivingRoleGroups get() = stillLivingRoles.map { it.group }.toSet()
-    val playersJoinedDuringRound = mutableSetOf<Player>()
+    private val stillLivingRoleGroups get() = stillLivingRoles.map { it.group }.toSet()
+    private val playersJoinedDuringRound = mutableSetOf<Player>()
 
     fun getTTTPlayer(player: Player) = tttPlayers.find { it.player === player }
 
-    fun getPlayersByRole() = mutableMapOf<TTTPlayer.Role, MutableSet<TTTPlayer>>()
+    fun getPlayersByRole() = mutableMapOf<Role, MutableSet<TTTPlayer>>()
             .apply { tttPlayers.forEach { getOrPut(it.role) { mutableSetOf() }.add(it) } }
             .toMap()
 
@@ -100,22 +100,22 @@ object PlayerManager {
 
         if (playerCount >= plugin.config.getInt("min-players-for.detective", 5)) {
             val player = playersWithoutRole.random()
-            tttPlayers.add(TTTPlayer(player, TTTPlayer.Role.DETECTIVE))
+            tttPlayers.add(TTTPlayer(player, Role.DETECTIVE))
             playersWithoutRole.remove(player)
         }
 
         if (playerCount >= plugin.config.getInt("min-players-for.jackal", 6)) {
             val player = playersWithoutRole.random()
-            tttPlayers.add(TTTPlayer(player, TTTPlayer.Role.JACKAL))
+            tttPlayers.add(TTTPlayer(player, Role.JACKAL))
             playersWithoutRole.remove(player)
         }
 
         for (index in 1..traitorCount) {
             val player = playersWithoutRole.random()
-            tttPlayers.add(TTTPlayer(player, TTTPlayer.Role.TRAITOR))
+            tttPlayers.add(TTTPlayer(player, Role.TRAITOR))
             playersWithoutRole.remove(player)
         }
 
-        playersWithoutRole.forEach { tttPlayers.add(TTTPlayer(it, TTTPlayer.Role.INNOCENT)) }
+        playersWithoutRole.forEach { tttPlayers.add(TTTPlayer(it, Role.INNOCENT)) }
     }
 }

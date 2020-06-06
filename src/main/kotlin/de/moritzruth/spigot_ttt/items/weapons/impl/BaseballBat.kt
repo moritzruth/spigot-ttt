@@ -1,9 +1,9 @@
 package de.moritzruth.spigot_ttt.items.weapons.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.JACKAL
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.TRAITOR
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.util.Vector
-import java.util.*
 
 object BaseballBat: TTTItem, Buyable, Selectable {
     override val type = TTTItem.Type.MELEE
@@ -35,7 +34,7 @@ object BaseballBat: TTTItem, Buyable, Selectable {
         )
         addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
     }
-    override val buyableBy = EnumSet.of(TRAITOR, JACKAL)
+    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
     override val price = 1
 
     override fun onSelect(tttPlayer: TTTPlayer) {

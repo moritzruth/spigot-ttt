@@ -1,11 +1,10 @@
 package de.moritzruth.spigot_ttt.game.players
 
-import de.moritzruth.spigot_ttt.CustomItems
 import de.moritzruth.spigot_ttt.discord.DiscordBot
 import de.moritzruth.spigot_ttt.discord.DiscordInterface
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
-import de.moritzruth.spigot_ttt.game.players.corpses.CorpseManager
+import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
@@ -13,18 +12,15 @@ import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.shop.Shop
 import de.moritzruth.spigot_ttt.utils.hotbarContents
 import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
-import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import java.util.*
 import kotlin.properties.Delegates
 
 class TTTPlayer(player: Player, role: Role) {
     var alive = true
-
     var player by Delegates.observable(player) { _, _, _ -> initializePlayer() }
 
     var role by Delegates.observable(role) { _, _, _ -> scoreboard.updateRole() }
@@ -163,34 +159,6 @@ class TTTPlayer(player: Player, role: Role) {
     class TooManyItemsOfTypeException: Exception("The player already owns too much items of this type")
 
     private fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
-
-    enum class RoleGroup(val primaryRole: Role, val additionalRoles: EnumSet<Role> = EnumSet.noneOf(Role::class.java)) {
-        INNOCENT(Role.INNOCENT, EnumSet.of(Role.DETECTIVE)),
-        JACKAL(Role.JACKAL, EnumSet.of(Role.SIDEKICK)),
-        TRAITOR(Role.TRAITOR);
-
-        companion object {
-            fun getGroupOf(role: Role) = values().find { it.primaryRole == role || it.additionalRoles.contains(role) }
-        }
-    }
-
-    enum class Role(
-        val chatColor: ChatColor,
-        val displayName: String,
-        val iconItemMaterial: Material,
-        val canOwnCredits: Boolean = false
-    ) {
-        INNOCENT(ChatColor.GREEN, "Innocent", CustomItems.innocent),
-        DETECTIVE(ChatColor.YELLOW, "Detective", CustomItems.detective, true),
-        TRAITOR(ChatColor.RED, "Traitor", CustomItems.traitor, true),
-        JACKAL(ChatColor.AQUA, "Jackal", CustomItems.jackal, true),
-        SIDEKICK(ChatColor.AQUA, "Sidekick", CustomItems.sidekick, true);
-
-        val coloredDisplayName = "$chatColor$displayName${ChatColor.RESET}"
-
-        val position by lazy { values().indexOf(this) }
-        val group by lazy { RoleGroup.getGroupOf(this) }
-    }
 
     override fun toString() = "TTTPlayer(${player.name} is $role)"
 }

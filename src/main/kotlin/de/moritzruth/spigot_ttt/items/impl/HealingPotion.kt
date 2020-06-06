@@ -1,7 +1,8 @@
 package de.moritzruth.spigot_ttt.items.impl
 
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.*
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
@@ -18,7 +19,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.PotionMeta
 import org.bukkit.potion.PotionData
 import org.bukkit.potion.PotionType
-import java.util.*
 
 object HealingPotion: TTTItem, Buyable {
     override val itemStack = ItemStack(Material.POTION).apply {
@@ -35,7 +35,7 @@ object HealingPotion: TTTItem, Buyable {
         addItemFlags(ItemFlag.HIDE_POTION_EFFECTS)
     }
     override val type = TTTItem.Type.SPECIAL
-    override val buyableBy = EnumSet.of(TRAITOR, JACKAL, SIDEKICK, DETECTIVE)
+    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL, Role.DETECTIVE)
     override val price = 1
 
     override val listener = object : Listener {

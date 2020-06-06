@@ -1,11 +1,7 @@
 package de.moritzruth.spigot_ttt.items.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
-import de.moritzruth.spigot_ttt.game.players.IState
-import de.moritzruth.spigot_ttt.game.players.InversedStateContainer
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.*
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
@@ -22,7 +18,6 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import java.util.*
 
 object CloakingDevice: TTTItem,
     Buyable,
@@ -37,7 +32,7 @@ object CloakingDevice: TTTItem,
     }
     override val type = TTTItem.Type.SPECIAL
     override val price = 2
-    override val buyableBy = EnumSet.of(DETECTIVE, TRAITOR, JACKAL)
+    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
 
     val isc = InversedStateContainer(State::class)
 

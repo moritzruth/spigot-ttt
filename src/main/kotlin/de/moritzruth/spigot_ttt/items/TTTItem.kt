@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.items
 
 import com.comphenix.protocol.events.PacketListener
+import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
@@ -21,7 +22,7 @@ interface DropHandler {
 }
 
 interface Buyable {
-    val buyableBy: EnumSet<TTTPlayer.Role>
+    val buyableBy: EnumSet<Role>
     val price: Int
 }
 

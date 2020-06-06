@@ -1,7 +1,7 @@
-package de.moritzruth.spigot_ttt.game.players.corpses
+package de.moritzruth.spigot_ttt.game.corpses
 
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -37,7 +37,7 @@ object CorpseListener: Listener {
             if(Instant.now().toEpochMilli() - tttCorpse.timestamp.toEpochMilli() < 200) return
 
             event.clicker.openInventory(tttCorpse.inventory)
-            if (tttPlayer.role == TTTPlayer.Role.DETECTIVE) tttCorpse.inspect(tttPlayer.player)
+            if (tttPlayer.role == Role.DETECTIVE) tttCorpse.inspect(tttPlayer.player)
             else tttCorpse.identify(tttPlayer.player)
         }
 

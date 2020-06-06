@@ -1,9 +1,9 @@
 package de.moritzruth.spigot_ttt.game
 
+import de.moritzruth.spigot_ttt.game.corpses.CorpseListener
+import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.players.corpses.CorpseListener
-import de.moritzruth.spigot_ttt.game.players.corpses.CorpseManager
+import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.items.ItemSpawner
 import de.moritzruth.spigot_ttt.plugin
@@ -26,7 +26,7 @@ object GameManager {
         CorpseListener.register()
     }
 
-    fun letRoleWin(role: TTTPlayer.Role?) {
+    fun letRoleWin(role: Role?) {
         ensurePhase(GamePhase.COMBAT)
         GameMessenger.win(role)
         phase = GamePhase.OVER
@@ -101,8 +101,8 @@ object GameManager {
         GameMessenger.combatPhaseStarted()
 
         Timers.startCombatPhaseTimer(plugin.config.getInt("duration.combat", 480)) {
-            if (PlayerManager.stillLivingRoles.contains(TTTPlayer.Role.INNOCENT)) {
-                letRoleWin(TTTPlayer.Role.INNOCENT)
+            if (PlayerManager.stillLivingRoles.contains(Role.INNOCENT)) {
+                letRoleWin(Role.INNOCENT)
             } else {
                 letRoleWin(null)
             }

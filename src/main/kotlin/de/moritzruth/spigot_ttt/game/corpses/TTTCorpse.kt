@@ -1,9 +1,9 @@
-package de.moritzruth.spigot_ttt.game.players.corpses
+package de.moritzruth.spigot_ttt.game.corpses
 
 import de.moritzruth.spigot_ttt.CustomItems
 import de.moritzruth.spigot_ttt.game.GameMessenger
 import de.moritzruth.spigot_ttt.game.players.DeathReason
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
@@ -17,17 +17,17 @@ import org.golde.bukkit.corpsereborn.CorpseAPI.CorpseAPI
 import org.golde.bukkit.corpsereborn.nms.Corpses
 import java.time.Instant
 
-class TTTCorpse(private val player: Player, location: Location, private val role: TTTPlayer.Role, private val reason: DeathReason) {
+class TTTCorpse(private val player: Player, location: Location, private val role: Role, private val reason: DeathReason) {
     val corpse: Corpses.CorpseData?
     val inventory = player.server.createInventory(null, InventoryType.HOPPER, "${role.chatColor}${player.displayName}")
     val timestamp: Instant = Instant.now()
-    var identified = false; private set
-    var inspected = false
+    private var identified = false
+    private var inspected = false
         private set(value) {
             field = value
             updateTimeItem()
         }
-    var wholeMinutesSinceDeath = 0; private set
+    private var wholeMinutesSinceDeath = 0; private set
     private var updateTimeListener: BukkitTask
 
     init {

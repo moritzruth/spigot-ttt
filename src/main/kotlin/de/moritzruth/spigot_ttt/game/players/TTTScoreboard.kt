@@ -77,7 +77,6 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
         scoreboard.registerNewTeam(DEFAULT_TEAM_NAME).apply {
             setAllowFriendlyFire(true)
             setCanSeeFriendlyInvisibles(false)
-            color = ChatColor.GREEN
             setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS)
             setOption(Team.Option.DEATH_MESSAGE_VISIBILITY, Team.OptionStatus.NEVER)
             setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
@@ -116,17 +115,14 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
         val phase = GameManager.phase
 
         if (phase === GamePhase.COMBAT) {
-            if (tttPlayer.role.group == TTTPlayer.RoleGroup.JACKAL || tttPlayer.role === TTTPlayer.Role.TRAITOR) {
+            if (tttPlayer.role.group == RoleGroup.JACKAL || tttPlayer.role === Role.TRAITOR) {
                 val specialTeam = scoreboard.getTeam(SPECIAL_TEAM_NAME)!!
                 specialTeam.color = tttPlayer.role.chatColor
+                defaultTeam.color = Role.INNOCENT.chatColor
 
                 PlayerManager.tttPlayers.forEach {
-                    val bothPlayersAreJackalGroup =
-                            tttPlayer.role.group == TTTPlayer.RoleGroup.JACKAL &&
-                            it.role.group == TTTPlayer.RoleGroup.JACKAL
-
-                    if (bothPlayersAreJackalGroup ||
-                            (tttPlayer.role === TTTPlayer.Role.TRAITOR && it.role === TTTPlayer.Role.TRAITOR)) {
+                    if (RoleGroup.JACKAL.bothAre(tttPlayer, it) ||
+                        RoleGroup.TRAITOR.bothAre(tttPlayer, it)) {
                         specialTeam.addEntry(it.player.displayName)
                     } else {
                         defaultTeam.addEntry(it.player.displayName)

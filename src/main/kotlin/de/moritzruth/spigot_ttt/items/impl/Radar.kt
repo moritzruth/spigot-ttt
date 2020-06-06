@@ -5,10 +5,7 @@ import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import de.moritzruth.spigot_ttt.CustomItems
-import de.moritzruth.spigot_ttt.game.players.IState
-import de.moritzruth.spigot_ttt.game.players.InversedStateContainer
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
@@ -32,7 +29,7 @@ object Radar: TTTItem, Buyable {
         setDisplayName("${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar")
     }
     override val type = TTTItem.Type.SPECIAL
-    override val buyableBy = EnumSet.of(TTTPlayer.Role.TRAITOR, TTTPlayer.Role.JACKAL)
+    override val buyableBy: EnumSet<Role> = EnumSet.of(Role.TRAITOR, Role.DETECTIVE, Role.JACKAL)
     override val price = 2
 
     val isc = InversedStateContainer(State::class)

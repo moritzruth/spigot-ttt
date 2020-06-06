@@ -1,11 +1,7 @@
 package de.moritzruth.spigot_ttt.items.weapons.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
-import de.moritzruth.spigot_ttt.game.players.DamageInfo
-import de.moritzruth.spigot_ttt.game.players.DeathReason
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer.Role.TRAITOR
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
@@ -20,7 +16,6 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.ItemMeta
-import java.util.*
 
 object Knife: TTTItem, Buyable {
     override val itemStack = ItemStack(CustomItems.knife).applyMeta {
@@ -34,7 +29,7 @@ object Knife: TTTItem, Buyable {
         )
         addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
     }
-    override val buyableBy: EnumSet<TTTPlayer.Role> = EnumSet.of(TRAITOR)
+    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
     override val price = 1
     override val type = TTTItem.Type.MELEE
 

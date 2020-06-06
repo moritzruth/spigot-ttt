@@ -1,4 +1,4 @@
-package de.moritzruth.spigot_ttt.items.weapons.guns.pistol
+package de.moritzruth.spigot_ttt.items.weapons.guns.impl
 
 import de.moritzruth.spigot_ttt.CustomItems
 import de.moritzruth.spigot_ttt.items.Spawning
