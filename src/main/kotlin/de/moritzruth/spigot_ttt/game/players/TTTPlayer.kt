@@ -84,8 +84,9 @@ class TTTPlayer(player: Player, role: Role) {
                 player.foodLevel -= 2
                 staminaCooldown = 4
             } else {
-                if (staminaCooldown == 0) player.foodLevel += 2
-                else staminaCooldown -= 1
+                if (staminaCooldown == 0) {
+                    if (player.foodLevel < 20) player.foodLevel += 2
+                } else staminaCooldown -= 1
             }
         }, 0, secondsToTicks(0.5).toLong())
     }
