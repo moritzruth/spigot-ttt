@@ -36,7 +36,7 @@ object GameManager {
 
         PlayerManager.tttPlayers.forEach {
             it.setMuted(false)
-            Shop.hide(it)
+//            Shop.hide(it)
         }
 
         Timers.startOverPhaseTimer(plugin.config.getInt("duration.over", 10)) {

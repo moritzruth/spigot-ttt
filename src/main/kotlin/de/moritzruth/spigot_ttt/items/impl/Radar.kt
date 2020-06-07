@@ -11,6 +11,7 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
@@ -29,6 +30,14 @@ object Radar: TTTItem, Buyable {
 
     override val itemStack = ItemStack(CustomItems.radar).applyMeta {
         setDisplayName(DISPLAY_NAME)
+        lore = listOf(
+            "",
+            "${ChatColor.GOLD}Zeigt dir alle 30 Sekunden",
+            "${ChatColor.GOLD}für 10 Sekunden die Positionen",
+            "${ChatColor.GOLD}aller Spieler"
+        )
+
+        hideInfo()
     }
     override val type = TTTItem.Type.SPECIAL
     override val buyableBy: EnumSet<Role> = EnumSet.of(Role.TRAITOR, Role.DETECTIVE, Role.JACKAL)
