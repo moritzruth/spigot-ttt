@@ -35,7 +35,6 @@ object GameManager {
         ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
 
         PlayerManager.tttPlayers.forEach {
-            it.setMuted(false)
             Shop.clear(it)
         }
 

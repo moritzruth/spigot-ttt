@@ -1,7 +1,5 @@
 package de.moritzruth.spigot_ttt.game.players
 
-import de.moritzruth.spigot_ttt.discord.DiscordBot
-import de.moritzruth.spigot_ttt.discord.DiscordInterface
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
@@ -66,8 +64,6 @@ class TTTPlayer(player: Player, role: Role) {
     val scoreboard = TTTScoreboard(this)
     val stateContainer = StateContainer(this)
 
-    private val discordUser get() = DiscordInterface.getUserByPlayerUUID(player.uniqueId)
-
     init {
         adjustPlayer()
         scoreboard.initialize()
@@ -88,12 +84,10 @@ class TTTPlayer(player: Player, role: Role) {
 
         player.gameMode = GameMode.SPECTATOR
         alive = false
-
         TTTCorpse.spawn(this, reason)
-        credits = 0
 
+        credits = 0
         Shop.clear(this)
-        setMuted(true)
 
         PlayerManager.letRemainingRoleGroupWin()
     }
@@ -162,7 +156,6 @@ class TTTPlayer(player: Player, role: Role) {
 
         stateContainer.resetAndClear()
 
-        setMuted(false)
         invisible = false
 
         player.gameMode = GameMode.SURVIVAL
@@ -180,14 +173,6 @@ class TTTPlayer(player: Player, role: Role) {
     }
 
     fun teleportToSpawn() = teleportPlayerToWorldSpawn(player)
-
-    fun setMuted(muted: Boolean) {
-        val discordUser = discordUser
-
-        if (discordUser != null) {
-            DiscordBot.setMuted(discordUser, muted)
-        }
-    }
 
     fun updateItemInHand() {
         val itemStack = player.inventory.itemInMainHand

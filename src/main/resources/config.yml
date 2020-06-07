@@ -3,8 +3,6 @@ min-players-for:
   detective: 5
   jackal: 6
 
-discord-token: xxx
-
 duration:
   preparing: 20
   combat: 480

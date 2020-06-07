@@ -1,6 +1,5 @@
 package de.moritzruth.spigot_ttt
 
-import de.moritzruth.spigot_ttt.discord.DiscordBot
 import de.moritzruth.spigot_ttt.game.GameManager
 import org.bukkit.ChatColor
 import org.bukkit.plugin.java.JavaPlugin
@@ -16,14 +15,11 @@ class TTTPlugin: JavaPlugin() {
         CommandManager.initializeCommands()
         GameManager.initialize()
 
-        DiscordBot.start()
-
         TTTListener.register()
     }
 
     override fun onDisable() {
         GameManager.resetWorld()
-        DiscordBot.stop()
     }
 
     fun broadcast(message: String, withPrefix: Boolean = true) {
