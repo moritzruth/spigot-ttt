@@ -7,15 +7,17 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.items.weapons.LoreHelper
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.hideInfo
+import de.moritzruth.spigot_ttt.utils.isLeftClick
 import org.bukkit.ChatColor
+import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.bukkit.inventory.ItemFlag
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.Damageable
-import org.bukkit.inventory.meta.ItemMeta
 
 object Knife: TTTItem, Buyable {
     override val itemStack = ItemStack(CustomItems.knife).applyMeta {
@@ -27,13 +29,23 @@ object Knife: TTTItem, Buyable {
             "${ChatColor.RED}Nur einmal verwendbar",
             "${ChatColor.RED}Nur aus nächster Nähe"
         )
-        addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
+        hideInfo()
     }
     override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
     override val price = 1
     override val type = TTTItem.Type.MELEE
 
     override val listener = object : Listener {
+        @EventHandler
+        fun onPlayerInteract(event: PlayerInteractEvent) {
+            if (!event.isRelevant(Knife)) return
+
+            if (event.action.isLeftClick) {
+                event.player.inventory.clear(event.player.inventory.heldItemSlot)
+                event.player.playSound(event.player.location, Sound.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1F, 1F)
+            }
+        }
+
         @EventHandler(ignoreCancelled = true)
         fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
             if (!event.isRelevant(Knife)) return
@@ -44,12 +56,6 @@ object Knife: TTTItem, Buyable {
             val distance = damagerTTTPlayer.player.location.distance(damagedTTTPlayer.player.location)
 
             if (distance > 1.5) event.isCancelled = true else {
-                // Break the item
-                val item = damagerTTTPlayer.player.inventory.itemInMainHand
-                val damageableMeta = item.itemMeta as Damageable
-                damageableMeta.damage = 1000
-                item.itemMeta = damageableMeta as ItemMeta
-
                 damagedTTTPlayer.damageInfo = DamageInfo(damagerTTTPlayer, DeathReason.Item(Knife))
                 event.damage = 1000.0
             }
