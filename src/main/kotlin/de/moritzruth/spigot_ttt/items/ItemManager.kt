@@ -5,10 +5,7 @@ import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.IState
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.items.impl.CloakingDevice
-import de.moritzruth.spigot_ttt.items.impl.EnderPearl
-import de.moritzruth.spigot_ttt.items.impl.HealingPotion
-import de.moritzruth.spigot_ttt.items.impl.Radar
+import de.moritzruth.spigot_ttt.items.impl.*
 import de.moritzruth.spigot_ttt.items.weapons.guns.impl.*
 import de.moritzruth.spigot_ttt.items.weapons.impl.BaseballBat
 import de.moritzruth.spigot_ttt.items.weapons.impl.Knife
@@ -31,7 +28,7 @@ object ItemManager {
         Knife, Glock, Deagle, Shotgun, SidekickDeagle,
         BaseballBat,
         CloakingDevice, Rifle,
-        EnderPearl, Radar, HealingPotion
+        EnderPearl, Radar, HealingPotion, Fireball
     )
 
     val droppedItemStates = mutableMapOf<Int, IState>()
