@@ -19,8 +19,12 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
+import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.event.player.*
+import org.bukkit.event.player.AsyncPlayerChatEvent
+import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
 object GeneralGameEventsListener : Listener {
     private val BLOCKED_COMMANDS = setOf("me", "tell")
@@ -51,6 +55,11 @@ object GeneralGameEventsListener : Listener {
                 event.isCancelled = true
             }
         }
+    }
+
+    @EventHandler
+    fun onFoodLevelChange(event: FoodLevelChangeEvent) {
+//        event.isCancelled = true
     }
 
     @EventHandler

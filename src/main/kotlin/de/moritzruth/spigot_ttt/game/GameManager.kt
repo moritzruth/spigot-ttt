@@ -36,7 +36,7 @@ object GameManager {
 
         PlayerManager.tttPlayers.forEach {
             it.setMuted(false)
-//            Shop.hide(it)
+            Shop.hide(it)
         }
 
         Timers.startOverPhaseTimer(plugin.config.getInt("duration.over", 10)) {
@@ -78,7 +78,11 @@ object GameManager {
         PlayerManager.createTTTPlayers()
         phase = GamePhase.PREPARING
 
-        PlayerManager.tttPlayers.forEach { it.reset(); it.teleportToSpawn() }
+        PlayerManager.tttPlayers.forEach {
+            it.reset()
+            it.teleportToSpawn()
+            it.activateStamina()
+        }
         GameMessenger.preparingPhaseStarted()
         Timers.playTimerSound()
         ItemSpawner.spawnWeapons()

@@ -6,7 +6,6 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
@@ -23,11 +22,6 @@ object TTTListener: Listener {
     @EventHandler
     fun onBlockBreak(event: BlockBreakEvent) {
         if (event.player.gameMode !== GameMode.CREATIVE) event.isCancelled = true
-    }
-
-    @EventHandler
-    fun onFoodLevelChange(event: FoodLevelChangeEvent) {
-        event.foodLevel = 20
     }
 
     @EventHandler

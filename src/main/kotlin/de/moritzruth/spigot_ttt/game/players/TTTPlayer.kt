@@ -11,12 +11,14 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.shop.Shop
 import de.moritzruth.spigot_ttt.utils.hotbarContents
+import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import org.bukkit.scheduler.BukkitTask
 import kotlin.properties.Delegates
 
 class TTTPlayer(player: Player, role: Role) {
@@ -45,6 +47,9 @@ class TTTPlayer(player: Player, role: Role) {
     }
     var damageInfo: DamageInfo? = null
 
+    private var staminaCooldown: Int = 0
+    private var staminaTask: BukkitTask? = null
+
     val scoreboard = TTTScoreboard(this)
     val stateContainer = StateContainer()
 
@@ -69,11 +74,28 @@ class TTTPlayer(player: Player, role: Role) {
         }
     }
 
+    fun activateStamina() {
+        if (staminaTask != null) return
+
+        staminaTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
+            if (!alive) return
+
+            if (player.isSprinting) {
+                player.foodLevel -= 2
+                staminaCooldown = 4
+            } else {
+                if (staminaCooldown == 0) player.foodLevel += 2
+                else staminaCooldown -= 1
+            }
+        }, 0, secondsToTicks(0.5).toLong())
+    }
+
     fun onDeath(reason: DeathReason = DeathReason.SUICIDE) {
         GameManager.ensurePhase(GamePhase.COMBAT)
 
         player.gameMode = GameMode.SPECTATOR
         alive = false
+
         TTTCorpse.spawn(this, reason)
         credits = 0
 
@@ -99,9 +121,9 @@ class TTTPlayer(player: Player, role: Role) {
             player.spigot().respawn()
         }
 
-        itemInHand?.apply {
-            if (this is Selectable) {
-                this.onDeselect(this@TTTPlayer)
+        itemInHand?.let {
+            if (it is Selectable) {
+                it.onDeselect(this)
             }
         }
 
@@ -116,6 +138,12 @@ class TTTPlayer(player: Player, role: Role) {
         player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
         player.health = 20.0
         player.walkSpeed = 0.2F // yes, this is the default value
+        player.level = 0
+        player.exp = 0F
+
+        staminaTask?.cancel()
+        staminaTask = null
+        player.foodLevel = 20
 
         player.inventory.clear()
     }
