@@ -83,7 +83,7 @@ class TTTCorpse(private val player: Player, location: Location, private val role
     fun destroy() {
         if (corpse !== null) CorpseAPI.removeCorpse(corpse)
         updateTimeListener.cancel()
-        inventory.viewers.forEach { it.closeInventory() }
+        inventory.viewers.toSet().forEach { it.closeInventory() }
     }
 
     fun identify(by: Player) {

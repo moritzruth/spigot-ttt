@@ -12,7 +12,7 @@ import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.isRightClick
-import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
+import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -25,8 +25,10 @@ import kotlin.experimental.and
 import kotlin.experimental.or
 
 object Radar: TTTItem, Buyable {
+    private val DISPLAY_NAME = "${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar"
+
     override val itemStack = ItemStack(CustomItems.radar).applyMeta {
-        setDisplayName("${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar")
+        setDisplayName(DISPLAY_NAME)
     }
     override val type = TTTItem.Type.SPECIAL
     override val buyableBy: EnumSet<Role> = EnumSet.of(Role.TRAITOR, Role.DETECTIVE, Role.JACKAL)
@@ -35,31 +37,38 @@ object Radar: TTTItem, Buyable {
     val isc = InversedStateContainer(State::class)
 
     override fun reset(tttPlayer: TTTPlayer) {
-        setEnabled(tttPlayer, false)
-
-        isc.getOrCreate(tttPlayer).progressTask?.cancel()
+        setGlowingEnabled(tttPlayer, false)
+        isc.get(tttPlayer)?.task?.cancel()
     }
 
-    fun use(tttPlayer: TTTPlayer, item: ItemStack) {
+    fun use(tttPlayer: TTTPlayer, itemStack: ItemStack) {
         val state = isc.getOrCreate(tttPlayer)
-        if (state.progressTask != null) return
+        if (state.enabled) return
+        state.enabled = true
 
-        setEnabled(tttPlayer, true)
-
-        state.progressTask = startItemDamageProgress(item, 6.0, fromRight = true) {
-            setEnabled(tttPlayer, false)
-
-            state.progressTask = startItemDamageProgress(item, 30.0) {
-                state.progressTask = null
-            }
+        startLoop(tttPlayer, state)
+        itemStack.applyMeta {
+            setDisplayName(DISPLAY_NAME + "${ChatColor.RESET} - ${ChatColor.GREEN}Aktiv")
         }
     }
 
-    private fun setEnabled(tttPlayer: TTTPlayer, value: Boolean) {
+    private fun startLoop(tttPlayer: TTTPlayer, state: State) {
+        setGlowingEnabled(tttPlayer, true)
+
+        state.task = plugin.server.scheduler.runTaskLater(plugin, fun() {
+            setGlowingEnabled(tttPlayer, false)
+
+            state.task = plugin.server.scheduler.runTaskLater(plugin, fun() {
+                startLoop(tttPlayer, state)
+            }, secondsToTicks(30).toLong())
+        }, secondsToTicks(10).toLong())
+    }
+
+    private fun setGlowingEnabled(tttPlayer: TTTPlayer, value: Boolean) {
         val state = isc.getOrCreate(tttPlayer)
 
-        if (state.enabled != value) {
-            state.enabled = value
+        if (state.glowingEnabled != value) {
+            state.glowingEnabled = value
 
             // Toggle sending the entity metadata
             PlayerManager.tttPlayers.forEach {
@@ -101,7 +110,7 @@ object Radar: TTTItem, Buyable {
                 // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
                 try {
                     val modifiers = packet.metadata[0].value as Byte
-                    packet.metadata[0].value = if (isc.getOrCreate(tttPlayer).enabled) modifiers or 0x40
+                    packet.metadata[0].value = if (isc.get(tttPlayer)?.glowingEnabled == true) modifiers or 0x40
                     else modifiers and 0b10111111.toByte()
                 } catch (ignored: Exception) {
                     // Idk why this throws exceptions, but it works anyways
@@ -111,7 +120,8 @@ object Radar: TTTItem, Buyable {
     }
 
     class State: IState {
-        var enabled: Boolean = false
-        var progressTask: BukkitTask? = null
+        var enabled = false
+        var glowingEnabled = false
+        var task: BukkitTask? = null
     }
 }

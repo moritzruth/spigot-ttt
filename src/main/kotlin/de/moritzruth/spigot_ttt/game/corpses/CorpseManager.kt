@@ -6,7 +6,7 @@ import org.bukkit.inventory.Inventory
 import org.golde.bukkit.corpsereborn.nms.Corpses
 
 object CorpseManager {
-    val corpses= mutableListOf<TTTCorpse>()
+    private val corpses = mutableListOf<TTTCorpse>()
 
     fun getTTTCorpse(corpse: Corpses.CorpseData): TTTCorpse? {
         return corpses.find { it.corpse === corpse }
