@@ -37,8 +37,7 @@ object CloakingDevice: TTTItem,
     val isc = InversedStateContainer(State::class)
 
     override fun onSelect(tttPlayer: TTTPlayer) {}
-    override fun onDeselect(tttPlayer: TTTPlayer) =
-        setEnabled(tttPlayer, false)
+    override fun onDeselect(tttPlayer: TTTPlayer) = setEnabled(tttPlayer, false)
 
     fun setEnabled(tttPlayer: TTTPlayer, value: Boolean?) {
         val state = isc.getOrCreate(tttPlayer)

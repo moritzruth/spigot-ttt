@@ -28,7 +28,9 @@ class TTTPlayer(player: Player, role: Role) {
     var role by Delegates.observable(role) { _, _, _ -> scoreboard.updateRole() }
     val roleHistory = mutableListOf<Role>()
 
-    var itemInHand by Delegates.observable<TTTItem?>(null) { _, oldItem, newItem -> onItemInHandChanged(oldItem, newItem) }
+    var itemInHand by Delegates.observable<TTTItem?>(null) { _, oldItem, newItem ->
+        if (oldItem !== newItem) onItemInHandChanged(oldItem, newItem)
+    }
     var credits by Delegates.observable(10) { _, _, _ -> scoreboard.updateCredits() }
     var invisible by Delegates.observable(false) { _, _, value ->
         if (value) {
@@ -65,6 +67,9 @@ class TTTPlayer(player: Player, role: Role) {
     }
 
     private fun onItemInHandChanged(oldItem: TTTItem?, newItem: TTTItem?) {
+        println(oldItem)
+        println(newItem)
+
         if (oldItem !== null && oldItem is Selectable) {
             oldItem.onDeselect(this)
         }
