@@ -55,6 +55,7 @@ object GameMessenger {
             Role.TRAITOR, Role.INNOCENT, Role.DETECTIVE -> "haben gewonnen"
         }
 
+        plugin.broadcast("", false)
         plugin.broadcast("${ChatColor.GOLD}$winner ${ChatColor.GOLD}${winnerMessage}")
         PlayerManager.tttPlayers.forEach {
             it.player.sendTitle("${ChatColor.GOLD}$winner", "${ChatColor.GOLD}$winnerMessage", secondsToTicks(0.5), secondsToTicks(5), secondsToTicks(1))
@@ -77,6 +78,8 @@ object GameMessenger {
         val playersByRole = PlayerManager.getPlayersByRole()
         val roles = playersByRole.keys.sortedBy(Role::position)
 
+        plugin.broadcast("", false)
+
         for (role in roles) {
             val entries = playersByRole.getValue(role).map { tttPlayer ->
                 tttPlayer.player.displayName.run {
@@ -88,5 +91,7 @@ object GameMessenger {
 
             plugin.broadcast("  ${role.coloredDisplayName}: ${entries.joinToString(", ")}", false)
         }
+
+        plugin.broadcast("", false)
     }
 }

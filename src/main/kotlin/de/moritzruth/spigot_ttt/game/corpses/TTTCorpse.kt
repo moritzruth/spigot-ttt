@@ -1,9 +1,11 @@
 package de.moritzruth.spigot_ttt.game.corpses
 
+import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.CustomItems
 import de.moritzruth.spigot_ttt.game.GameMessenger
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
@@ -17,17 +19,20 @@ import org.golde.bukkit.corpsereborn.CorpseAPI.CorpseAPI
 import org.golde.bukkit.corpsereborn.nms.Corpses
 import java.time.Instant
 
-class TTTCorpse(private val player: Player, location: Location, private val role: Role, private val reason: DeathReason) {
+class TTTCorpse private constructor(
+    private val player: Player,
+    location: Location,
+    private val role: Role,
+    private val reason: DeathReason,
+    private var credits: Int
+) {
+    var status = Status.UNIDENTIFIED; private set
+
     val corpse: Corpses.CorpseData?
     val inventory = player.server.createInventory(null, InventoryType.HOPPER, "${role.chatColor}${player.displayName}")
+
     val timestamp: Instant = Instant.now()
-    private var identified = false
-    private var inspected = false
-        private set(value) {
-            field = value
-            updateTimeItem()
-        }
-    private var wholeMinutesSinceDeath = 0; private set
+    private var fullMinutesSinceDeath = 0
     private var updateTimeListener: BukkitTask
 
     init {
@@ -36,27 +41,22 @@ class TTTCorpse(private val player: Player, location: Location, private val role
             lore = listOf("${ChatColor.GRAY}Rolle")
         })
 
-        inventory.setItem(REASON_SLOT, ItemStack(CustomItems.questionMark).applyMeta {
-            setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}##########")
-            lore = listOf("${ChatColor.GRAY}Grund des Todes")
-        })
-
-        updateTimeItem()
+        setItems()
 
         corpse = CorpseAPI.spawnCorpse(player, location)
 
         updateTimeListener = plugin.server.scheduler.runTaskTimer(plugin, fun() {
-            wholeMinutesSinceDeath += 1
-            updateTimeItem()
+            fullMinutesSinceDeath += 1
+            setTimeItem()
         }, secondsToTicks(60).toLong(), secondsToTicks(60).toLong())
     }
 
-    private fun updateTimeItem() {
-        if (inspected) {
+    private fun setTimeItem() {
+        if (status == Status.INSPECTED) {
             inventory.setItem(TIME_SLOT, ItemStack(CustomItems.time).applyMeta {
                 val timeString =
-                        if (wholeMinutesSinceDeath == 0) "Vor weniger als einer Minute"
-                        else "Vor weniger als ${wholeMinutesSinceDeath + 1} Minuten"
+                    if (fullMinutesSinceDeath == 0) "Vor weniger als einer Minute"
+                    else "Vor weniger als ${fullMinutesSinceDeath + 1} Minuten"
 
                 setDisplayName("${ChatColor.RESET}$timeString")
                 lore = listOf("${ChatColor.GRAY}Zeit des Todes")
@@ -69,15 +69,51 @@ class TTTCorpse(private val player: Player, location: Location, private val role
         }
     }
 
-    fun inspect(player: Player) {
-        identify(player)
-        inspected = true
+    private fun setReasonItem() {
+        if (status == Status.INSPECTED) {
+            val reasonItemStack = if (reason is DeathReason.Item) reason.item.itemStack.clone() else ItemStack(CustomItems.deathReason)
+            inventory.setItem(REASON_SLOT, reasonItemStack.applyMeta {
+                setDisplayName("${ChatColor.RESET}" + reason.displayText)
+                lore = listOf("${ChatColor.GRAY}Grund des Todes")
+            })
+        } else {
+            inventory.setItem(REASON_SLOT, ItemStack(CustomItems.questionMark).applyMeta {
+                setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}##########")
+                lore = listOf("${ChatColor.GRAY}Grund des Todes")
+            })
+        }
+    }
 
-        val reasonItem = if (reason is DeathReason.Item) reason.item.itemStack.clone() else ItemStack(CustomItems.deathReason)
-        inventory.setItem(REASON_SLOT, reasonItem.applyMeta {
-            setDisplayName("${ChatColor.RESET}" + reason.displayText)
-            lore = listOf("${ChatColor.GRAY}Grund des Todes")
-        })
+    private fun setItems() {
+        setTimeItem()
+        setReasonItem()
+    }
+
+    fun identify(tttPlayer: TTTPlayer, inspect: Boolean) {
+        if (status == Status.UNIDENTIFIED) {
+            GameMessenger.corpseIdentified(tttPlayer.player.displayName, player.displayName, role)
+
+            if (!inspect) {
+                status = Status.IDENTIFIED
+            }
+        }
+
+        if (inspect && status != Status.INSPECTED) {
+            status = Status.INSPECTED
+            setItems()
+        }
+
+        if (credits != 0 && tttPlayer.role.canOwnCredits) {
+            val c = credits
+            credits = 0
+            tttPlayer.credits += c
+
+            if (c > 1) {
+                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.GREEN}Du hast $c Credits aufgesammelt")
+            } else  {
+                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.GREEN}Du hast 1 Credit aufgesammelt")
+            }
+        }
     }
 
     fun destroy() {
@@ -86,16 +122,25 @@ class TTTCorpse(private val player: Player, location: Location, private val role
         inventory.viewers.toSet().forEach { it.closeInventory() }
     }
 
-    fun identify(by: Player) {
-        if (identified) return
-
-        GameMessenger.corpseIdentified(by.displayName, player.displayName, role)
-        identified = true
+    enum class Status {
+        UNIDENTIFIED,
+        IDENTIFIED,
+        INSPECTED
     }
 
     companion object {
-        const val ROLE_SLOT = 0
-        const val REASON_SLOT = 1
-        const val TIME_SLOT = 2
+        private const val ROLE_SLOT = 0
+        private const val REASON_SLOT = 1
+        private const val TIME_SLOT = 2
+
+        fun spawn(tttPlayer: TTTPlayer, reason: DeathReason) {
+            CorpseManager.add(TTTCorpse(
+                tttPlayer.player,
+                tttPlayer.player.location,
+                tttPlayer.role,
+                reason,
+                tttPlayer.credits
+            ))
+        }
     }
 }

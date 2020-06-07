@@ -10,7 +10,6 @@ import com.comphenix.protocol.wrappers.PlayerInfoData
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -20,7 +19,6 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
-import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
 
@@ -105,7 +103,7 @@ object GeneralGameEventsListener : Listener {
                 else -> DeathReason.SUICIDE
             }
 
-            tttPlayer.kill(reason)
+            tttPlayer.onDeath(reason)
 
 //                gameManager.playerManager.tttPlayers.forEach {
 //                    it.player.playSound(tttPlayer.player.location, Sound.ENTITY_PLAYER_DEATH, SoundCategory.PLAYERS, 2f, 1f)

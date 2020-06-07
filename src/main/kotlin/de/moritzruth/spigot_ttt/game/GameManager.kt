@@ -46,7 +46,6 @@ object GameManager {
             PlayerManager.resetAfterGame()
         }
 
-        plugin.broadcast("", false)
         GameMessenger.roles()
     }
 

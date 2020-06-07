@@ -86,7 +86,7 @@ object PlayerManager {
                 GameMessenger.abortedPlayerLeft()
             }
             GamePhase.COMBAT -> {
-                tttPlayer.kill(DeathReason.DISCONNECTED)
+                tttPlayer.onDeath(DeathReason.DISCONNECTED)
             }
             GamePhase.OVER -> noop()
         }

@@ -4,7 +4,7 @@ import de.moritzruth.spigot_ttt.discord.DiscordBot
 import de.moritzruth.spigot_ttt.discord.DiscordInterface
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
-import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
+import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
@@ -69,12 +69,13 @@ class TTTPlayer(player: Player, role: Role) {
         }
     }
 
-    fun kill(reason: DeathReason = DeathReason.SUICIDE) {
+    fun onDeath(reason: DeathReason = DeathReason.SUICIDE) {
         GameManager.ensurePhase(GamePhase.COMBAT)
 
         player.gameMode = GameMode.SPECTATOR
         alive = false
-        CorpseManager.spawn(this, reason)
+        TTTCorpse.spawn(this, reason)
+        credits = 0
 
         Shop.hide(this)
         setMuted(true)

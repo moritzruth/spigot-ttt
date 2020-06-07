@@ -34,11 +34,10 @@ object CorpseListener: Listener {
         val tttCorpse = CorpseManager.getTTTCorpse(event.corpse)
 
         if (tttCorpse !== null) {
-            if(Instant.now().toEpochMilli() - tttCorpse.timestamp.toEpochMilli() < 200) return
+            if (Instant.now().toEpochMilli() - tttCorpse.timestamp.toEpochMilli() < 200) return
 
+            tttCorpse.identify(tttPlayer, tttPlayer.role == Role.DETECTIVE)
             event.clicker.openInventory(tttCorpse.inventory)
-            if (tttPlayer.role == Role.DETECTIVE) tttCorpse.inspect(tttPlayer.player)
-            else tttCorpse.identify(tttPlayer.player)
         }
 
         event.isCancelled = true
