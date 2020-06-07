@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.items.weapons.impl
 
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.roles
@@ -22,7 +22,7 @@ import org.bukkit.util.Vector
 
 object BaseballBat: TTTItem, Buyable, Selectable {
     override val type = TTTItem.Type.MELEE
-    override val itemStack = ItemStack(CustomItems.baseballBat).applyMeta {
+    override val itemStack = ItemStack(ResourcePack.Items.baseballBat).applyMeta {
         setDisplayName("${ChatColor.RESET}${ChatColor.BOLD}Baseball-Schläger")
         lore = listOf(
             "",

@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.items.weapons.guns.impl
 
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.items.Spawning
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.weapons.guns.Gun
@@ -14,7 +14,7 @@ object Deagle: Gun(
     cooldown = 1.4,
     magazineSize = 8,
     reloadTime = 3.0,
-    itemMaterial = CustomItems.deagle
+    itemMaterial = ResourcePack.Items.deagle
 ), Spawning {
     override val type = TTTItem.Type.PISTOL_LIKE
 

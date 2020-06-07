@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.game.corpses
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.game.GameMessenger
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.Role
@@ -53,7 +53,7 @@ class TTTCorpse private constructor(
 
     private fun setTimeItem() {
         if (status == Status.INSPECTED) {
-            inventory.setItem(TIME_SLOT, ItemStack(CustomItems.time).applyMeta {
+            inventory.setItem(TIME_SLOT, ItemStack(ResourcePack.Items.time).applyMeta {
                 val timeString =
                     if (fullMinutesSinceDeath == 0) "Vor weniger als einer Minute"
                     else "Vor weniger als ${fullMinutesSinceDeath + 1} Minuten"
@@ -62,7 +62,7 @@ class TTTCorpse private constructor(
                 lore = listOf("${ChatColor.GRAY}Zeit des Todes")
             })
         } else {
-            inventory.setItem(TIME_SLOT, ItemStack(CustomItems.time).applyMeta {
+            inventory.setItem(TIME_SLOT, ItemStack(ResourcePack.Items.time).applyMeta {
                 setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}##########")
                 lore = listOf("${ChatColor.GRAY}Zeit des Todes")
             })
@@ -71,13 +71,13 @@ class TTTCorpse private constructor(
 
     private fun setReasonItem() {
         if (status == Status.INSPECTED) {
-            val reasonItemStack = if (reason is DeathReason.Item) reason.item.itemStack.clone() else ItemStack(CustomItems.deathReason)
+            val reasonItemStack = if (reason is DeathReason.Item) reason.item.itemStack.clone() else ItemStack(ResourcePack.Items.deathReason)
             inventory.setItem(REASON_SLOT, reasonItemStack.applyMeta {
                 setDisplayName("${ChatColor.RESET}" + reason.displayText)
                 lore = listOf("${ChatColor.GRAY}Grund des Todes")
             })
         } else {
-            inventory.setItem(REASON_SLOT, ItemStack(CustomItems.questionMark).applyMeta {
+            inventory.setItem(REASON_SLOT, ItemStack(ResourcePack.Items.questionMark).applyMeta {
                 setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}##########")
                 lore = listOf("${ChatColor.GRAY}Grund des Todes")
             })

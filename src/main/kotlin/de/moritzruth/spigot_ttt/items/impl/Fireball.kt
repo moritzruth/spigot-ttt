@@ -6,6 +6,7 @@ import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.clearHeldItemSlot
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -45,7 +46,7 @@ object Fireball: TTTItem, Buyable {
             val tttPlayer = PlayerManager.getTTTPlayer(player) ?: return
 
             if (event.action.isRightClick) {
-                player.inventory.clear(player.inventory.heldItemSlot)
+                player.inventory.clearHeldItemSlot()
 
                 val vector = player.eyeLocation.toVector()
                 val location = vector.add(player.eyeLocation.direction.multiply(1.2))

@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.items.weapons.guns.impl
 
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.items.Spawning
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.weapons.guns.Gun
@@ -14,7 +14,7 @@ object Rifle: Gun(
     cooldown = 0.1,
     magazineSize = 40,
     reloadTime = 2.0,
-    itemMaterial = CustomItems.rifle
+    itemMaterial = ResourcePack.Items.rifle
 ), Spawning {
     override val type = TTTItem.Type.HEAVY_WEAPON
 

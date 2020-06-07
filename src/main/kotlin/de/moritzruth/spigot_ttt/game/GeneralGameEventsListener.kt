@@ -20,10 +20,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.event.player.AsyncPlayerChatEvent
-import org.bukkit.event.player.PlayerCommandPreprocessEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.*
 
 object GeneralGameEventsListener : Listener {
     private val BLOCKED_COMMANDS = setOf("me", "tell")
@@ -119,6 +116,11 @@ object GeneralGameEventsListener : Listener {
     @EventHandler
     fun onPlayerDeath(event: PlayerDeathEvent) {
         event.deathMessage = null
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun onPlayerSwapHandItemsLowest(event: PlayerSwapHandItemsEvent) {
+        event.isCancelled = true
     }
 
     @EventHandler

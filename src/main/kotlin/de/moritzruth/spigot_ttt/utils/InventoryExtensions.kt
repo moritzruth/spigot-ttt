@@ -8,4 +8,6 @@ fun Inventory.setAllToItem(indexes: Iterable<Int>, itemStack: ItemStack) {
     indexes.forEach { setItem(it, itemStack) }
 }
 
+fun PlayerInventory.clearHeldItemSlot() = clear(heldItemSlot)
+
 val PlayerInventory.hotbarContents get() = this.contents.slice(0..8) as List<ItemStack?>

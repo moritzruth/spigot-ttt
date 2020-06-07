@@ -1,12 +1,13 @@
 package de.moritzruth.spigot_ttt.items.weapons.impl
 
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.items.weapons.LoreHelper
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.clearHeldItemSlot
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.isLeftClick
 import org.bukkit.ChatColor
@@ -20,7 +21,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 
 object Knife: TTTItem, Buyable {
-    override val itemStack = ItemStack(CustomItems.knife).applyMeta {
+    override val itemStack = ItemStack(ResourcePack.Items.knife).applyMeta {
         setDisplayName("${ChatColor.RED}${ChatColor.BOLD}Knife")
         lore = listOf(
             "",
@@ -42,7 +43,7 @@ object Knife: TTTItem, Buyable {
             if (!event.isRelevant(Knife)) return
 
             if (event.action.isLeftClick) {
-                event.player.inventory.clear(event.player.inventory.heldItemSlot)
+                event.player.inventory.clearHeldItemSlot()
                 event.player.playSound(event.player.location, Sound.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1F, 1F)
             }
         }

@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.items.weapons.guns.impl
 
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.items.Spawning
 import de.moritzruth.spigot_ttt.items.TTTItem
@@ -26,7 +26,7 @@ object Shotgun: Gun(
     cooldown = 0.8,
     magazineSize = MAGAZINE_SIZE,
     reloadTime = RELOAD_TIME_PER_BULLET * MAGAZINE_SIZE,
-    itemMaterial = CustomItems.shotgun,
+    itemMaterial = ResourcePack.Items.shotgun,
     additionalLore = listOf("${ChatColor.RED}Weniger Schaden auf Distanz")
 ), Spawning {
     override val type = TTTItem.Type.HEAVY_WEAPON

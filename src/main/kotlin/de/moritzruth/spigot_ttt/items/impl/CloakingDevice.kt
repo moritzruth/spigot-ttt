@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.items.impl
 
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.Selectable
@@ -22,7 +22,7 @@ import org.bukkit.potion.PotionEffectType
 object CloakingDevice: TTTItem,
     Buyable,
     Selectable {
-    override val itemStack = ItemStack(CustomItems.cloakingDevice).applyMeta {
+    override val itemStack = ItemStack(ResourcePack.Items.cloakingDevice).applyMeta {
         setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}###${ChatColor.RESET}${ChatColor.GRAY} Cloaking Device ${ChatColor.MAGIC}###")
         lore = listOf(
             "",

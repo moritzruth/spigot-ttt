@@ -4,7 +4,7 @@ import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata
 import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
@@ -34,7 +34,7 @@ object Radar: TTTItem, Buyable {
     private const val ACTIVE_DURATION = 10
     private const val COOLDOWN_DURATION = 40
 
-    override val itemStack = ItemStack(CustomItems.radar).applyMeta {
+    override val itemStack = ItemStack(ResourcePack.Items.radar).applyMeta {
         setDisplayName(DISPLAY_NAME)
         lore = listOf(
             "",

@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.items.weapons.guns.impl
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
-import de.moritzruth.spigot_ttt.CustomItems
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.roles
@@ -21,14 +21,14 @@ object SidekickDeagle: Gun(
     cooldown = 1.0,
     magazineSize = 1,
     reloadTime = 0.0,
-    itemMaterial = CustomItems.sidekickDeagle
+    itemMaterial = ResourcePack.Items.sidekickDeagle
 ), Buyable {
     override val buyableBy = roles(Role.JACKAL)
     override val price = 1
     override val type = TTTItem.Type.PISTOL_LIKE
     override val buyLimit = 1
 
-    override val itemStack = ItemStack(CustomItems.sidekickDeagle).applyMeta {
+    override val itemStack = ItemStack(ResourcePack.Items.sidekickDeagle).applyMeta {
         hideInfo()
         setDisplayName("${ChatColor.AQUA}${ChatColor.BOLD}Sidekick Deagle")
         lore = listOf(
