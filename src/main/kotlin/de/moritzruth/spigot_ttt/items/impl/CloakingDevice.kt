@@ -33,6 +33,7 @@ object CloakingDevice: TTTItem,
     override val type = TTTItem.Type.SPECIAL
     override val price = 2
     override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
+    override val buyLimit = 1
 
     val isc = InversedStateContainer(State::class)
 

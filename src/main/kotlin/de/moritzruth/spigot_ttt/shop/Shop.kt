@@ -5,7 +5,9 @@ import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.ItemManager
+import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
 import org.bukkit.scheduler.BukkitTask
@@ -21,29 +23,29 @@ object Shop {
 
     private var creditsTimer: BukkitTask? = null
 
-    fun getBuyableItems(tttPlayer: TTTPlayer) = ItemManager.ITEMS.filter { it is Buyable && it.buyableBy.contains(tttPlayer.role) }.toSet()
+    private fun getBuyableItems(tttPlayer: TTTPlayer) = ItemManager.ITEMS.filter { it is Buyable && it.buyableBy.contains(tttPlayer.role) }.toSet()
 
-    fun show(tttPlayer: TTTPlayer) {
+    fun setItems(tttPlayer: TTTPlayer) {
+        clear(tttPlayer)
         val itemsIterator = getBuyableItems(tttPlayer).iterator()
 
         for(index in SHOP_SLOTS) {
             if (!itemsIterator.hasNext()) break
 
             val tttItem = itemsIterator.next()
-            val itemStack = tttItem.itemStack.clone()
-            val meta = itemStack.itemMeta!!
-            meta.setDisplayName(meta.displayName + "${ChatColor.RESET} - ${ChatColor.BOLD}$${(tttItem as Buyable).price}")
-            itemStack.itemMeta = meta
+            if (tttItem !is Buyable) throw Error("Item is not buyable")
 
-            tttPlayer.player.inventory.setItem(index, itemStack)
+            tttPlayer.player.inventory.setItem(index, tttItem.itemStack.clone().applyMeta {
+                val displayNameSuffix =
+                    if (isOutOfStock(tttPlayer, tttItem)) "${ChatColor.RED}Ausverkauft"
+                    else "$${tttItem.price}"
+
+                setDisplayName("$displayName${ChatColor.RESET} - ${ChatColor.BOLD}$displayNameSuffix")
+            })
         }
     }
 
-    fun hide(tttPlayer: TTTPlayer) {
-        val range = 9..19
-
-        range + (1..8)
-
+    fun clear(tttPlayer: TTTPlayer) {
         for(index in 9..35) tttPlayer.player.inventory.clear(index) // All slots except the hotbar and armor
     }
 
@@ -61,5 +63,10 @@ object Shop {
 
     fun stopCreditsTimer() {
         creditsTimer?.cancel()
+    }
+
+    fun isOutOfStock(tttPlayer: TTTPlayer, tttItem: TTTItem): Boolean {
+        if (tttItem !is Buyable) throw Error("Item is not buyable")
+        return tttItem.buyLimit != null && tttPlayer.boughtItems.filter { it == tttItem }.count() >= tttItem.buyLimit!!
     }
 }

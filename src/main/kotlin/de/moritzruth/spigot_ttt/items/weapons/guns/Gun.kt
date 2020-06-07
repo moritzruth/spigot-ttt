@@ -59,7 +59,7 @@ abstract class Gun(
     }
 
     fun shoot(tttPlayer: TTTPlayer, itemStack: ItemStack, state: State = isc.getOrCreate(tttPlayer)) {
-        onBeforeShoot(tttPlayer, itemStack, state)
+        if (!onBeforeShoot(tttPlayer, itemStack, state)) return
 
         if (state.remainingShots == 0) {
             GameManager.world.playSound(tttPlayer.player.location, Sound.BLOCK_ANVIL_PLACE, SoundCategory.PLAYERS, 1f, 1.3f)
@@ -89,14 +89,7 @@ abstract class Gun(
                     val damagedTTTPlayer = PlayerManager.getTTTPlayer(entity)
 
                     if (damagedTTTPlayer != null) {
-                        damagedTTTPlayer.damageInfo = DamageInfo(tttPlayer, DeathReason.Item(this))
-                        val actualDamage = computeActualDamage(tttPlayer, entity)
-
-                        entity.damage(actualDamage)
-                        tttPlayer.player.playSound(tttPlayer.player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 2f, 1.2f)
-                        entity.velocity = tttPlayer.player.location.direction.multiply(
-                            (actualDamage / 20).coerceAtMost(3.0)
-                        )
+                        onHit(tttPlayer, damagedTTTPlayer)
                     }
                 }
             }
@@ -116,8 +109,20 @@ abstract class Gun(
 
     open fun computeActualDamage(tttPlayer: TTTPlayer, receiver: Player) = if (damage < 0 ) 1000.0 else damage
 
-    open fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.getOrCreate(tttPlayer)) {
+    open fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.getOrCreate(tttPlayer)): Boolean {
         if (state.currentAction !== null) throw ActionInProgressError()
+        return true
+    }
+
+    open fun onHit(tttPlayer: TTTPlayer, hitTTTPlayer: TTTPlayer) {
+        hitTTTPlayer.damageInfo = DamageInfo(tttPlayer, DeathReason.Item(this))
+        val actualDamage = computeActualDamage(tttPlayer, hitTTTPlayer.player)
+
+        hitTTTPlayer.player.damage(actualDamage)
+        tttPlayer.player.playSound(tttPlayer.player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 2f, 1.2f)
+        hitTTTPlayer.player.velocity = tttPlayer.player.location.direction.multiply(
+            (actualDamage / 20).coerceAtMost(3.0)
+        )
     }
 
     override fun onSelect(tttPlayer: TTTPlayer) {
@@ -140,8 +145,8 @@ abstract class Gun(
         }
     }
 
-    override fun onDrop(tttPlayer: TTTPlayer, itemEntity: Item) {
-        val state = isc.get(tttPlayer) ?: return
+    override fun onDrop(tttPlayer: TTTPlayer, itemEntity: Item): Boolean {
+        val state = isc.get(tttPlayer) ?: return true
 
         when(val currentAction = state.currentAction) {
             is Action.Reloading -> {
@@ -157,7 +162,7 @@ abstract class Gun(
 
         ItemManager.droppedItemStates[itemEntity.entityId] = state
         isc.remove(tttPlayer)
-        return
+        return true
     }
 
     override fun onPickup(tttPlayer: TTTPlayer, itemEntity: Item) {

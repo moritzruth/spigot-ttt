@@ -34,6 +34,7 @@ object Knife: TTTItem, Buyable {
     override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
     override val price = 1
     override val type = TTTItem.Type.MELEE
+    override val buyLimit = 1
 
     override val listener = object : Listener {
         @EventHandler

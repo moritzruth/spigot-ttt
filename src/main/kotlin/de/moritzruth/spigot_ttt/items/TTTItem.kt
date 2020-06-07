@@ -17,13 +17,14 @@ interface Selectable {
 }
 
 interface DropHandler {
-    fun onDrop(tttPlayer: TTTPlayer, itemEntity: Item)
+    fun onDrop(tttPlayer: TTTPlayer, itemEntity: Item): Boolean
     fun onPickup(tttPlayer: TTTPlayer, itemEntity: Item)
 }
 
 interface Buyable {
     val buyableBy: EnumSet<Role>
     val price: Int
+    val buyLimit: Int?
 }
 
 // Marker

@@ -36,17 +36,23 @@ object ShopListener: Listener {
             val tttItem = ItemManager.getItemByItemStack(itemStack)
             if (tttItem === null || tttItem !is Buyable || !tttItem.buyableBy.contains(tttPlayer.role)) return
 
-            if (tttPlayer.credits < tttItem.price) {
-                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast nicht genug Credits")
-            }
+            when {
+                Shop.isOutOfStock(tttPlayer, tttItem) ->
+                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Dieses Item ist ausverkauft")
 
-            try {
-                tttPlayer.addItem(tttItem)
-                tttPlayer.credits -= tttItem.price
-            } catch (e: TTTPlayer.AlreadyHasItemException) {
-                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast dieses Item bereits")
-            } catch (e: TTTPlayer.TooManyItemsOfTypeException) {
-                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast keinen Platz dafür")
+                tttPlayer.credits < tttItem.price ->
+                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast nicht genug Credits")
+
+                else -> try {
+                    tttPlayer.addItem(tttItem)
+                    tttPlayer.boughtItems.add(tttItem)
+                    tttPlayer.credits -= tttItem.price
+                    Shop.setItems(tttPlayer)
+                } catch (e: TTTPlayer.AlreadyHasItemException) {
+                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast dieses Item bereits")
+                } catch (e: TTTPlayer.TooManyItemsOfTypeException) {
+                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast keinen Platz dafür")
+                }
             }
         }
     }

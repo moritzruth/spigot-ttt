@@ -36,7 +36,7 @@ object GameManager {
 
         PlayerManager.tttPlayers.forEach {
             it.setMuted(false)
-            Shop.hide(it)
+            Shop.clear(it)
         }
 
         Timers.startOverPhaseTimer(plugin.config.getInt("duration.over", 10)) {
@@ -96,7 +96,7 @@ object GameManager {
         ensurePhase(GamePhase.PREPARING)
 
         phase = GamePhase.COMBAT
-        PlayerManager.tttPlayers.forEach { Shop.show(it) }
+        PlayerManager.tttPlayers.forEach { Shop.setItems(it) }
         ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
         Shop.startCreditsTimer()
 

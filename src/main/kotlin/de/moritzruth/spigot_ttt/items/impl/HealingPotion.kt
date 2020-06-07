@@ -37,6 +37,7 @@ object HealingPotion: TTTItem, Buyable {
     override val type = TTTItem.Type.SPECIAL
     override val buyableBy = roles(Role.TRAITOR, Role.JACKAL, Role.DETECTIVE)
     override val price = 1
+    override val buyLimit = 2
 
     override val listener = object : Listener {
         @EventHandler

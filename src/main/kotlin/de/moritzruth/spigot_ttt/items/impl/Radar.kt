@@ -48,6 +48,7 @@ object Radar: TTTItem, Buyable {
     override val type = TTTItem.Type.SPECIAL
     override val buyableBy: EnumSet<Role> = EnumSet.of(Role.TRAITOR, Role.DETECTIVE, Role.JACKAL)
     override val price = 2
+    override val buyLimit: Int? = null
 
     val isc = InversedStateContainer(State::class)
 

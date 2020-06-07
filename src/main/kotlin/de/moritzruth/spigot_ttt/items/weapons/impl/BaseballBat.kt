@@ -36,6 +36,7 @@ object BaseballBat: TTTItem, Buyable, Selectable {
     }
     override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
     override val price = 1
+    override val buyLimit: Int? = null
 
     override fun onSelect(tttPlayer: TTTPlayer) {
         tttPlayer.player.walkSpeed = 0.3F

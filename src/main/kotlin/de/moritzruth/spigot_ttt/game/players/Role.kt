@@ -15,7 +15,7 @@ enum class Role(
     DETECTIVE(ChatColor.YELLOW, "Detective", CustomItems.detective, true),
     TRAITOR(ChatColor.RED, "Traitor", CustomItems.traitor, true),
     JACKAL(ChatColor.AQUA, "Jackal", CustomItems.jackal, true),
-    SIDEKICK(ChatColor.AQUA, "Sidekick", CustomItems.sidekick, true);
+    SIDEKICK(ChatColor.AQUA, "Sidekick", CustomItems.sidekick, false);
 
     val coloredDisplayName = "$chatColor$displayName${ChatColor.RESET}"
 

@@ -21,7 +21,7 @@ object CustomItems {
 
     // Weapons
     val deagle = Material.IRON_HOE
-    val goldenDeagle = Material.GOLDEN_HOE
+    val sidekickDeagle = Material.GOLDEN_HOE
     val glock = Material.STONE_HOE
     val pistol = Material.WOODEN_HOE
     val shotgun = Material.IRON_AXE

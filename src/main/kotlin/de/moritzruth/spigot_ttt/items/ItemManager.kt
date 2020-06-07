@@ -9,12 +9,7 @@ import de.moritzruth.spigot_ttt.items.impl.CloakingDevice
 import de.moritzruth.spigot_ttt.items.impl.EnderPearl
 import de.moritzruth.spigot_ttt.items.impl.HealingPotion
 import de.moritzruth.spigot_ttt.items.impl.Radar
-import de.moritzruth.spigot_ttt.items.weapons.guns.impl.GoldenDeagle
-import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Deagle
-import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Glock
-import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Pistol
-import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Shotgun
-import de.moritzruth.spigot_ttt.items.weapons.guns.impl.Rifle
+import de.moritzruth.spigot_ttt.items.weapons.guns.impl.*
 import de.moritzruth.spigot_ttt.items.weapons.impl.BaseballBat
 import de.moritzruth.spigot_ttt.items.weapons.impl.Knife
 import de.moritzruth.spigot_ttt.plugin
@@ -33,7 +28,7 @@ import org.bukkit.inventory.ItemStack
 object ItemManager {
     val ITEMS: Set<TTTItem> = setOf(
         Pistol,
-        Knife, Glock, Deagle, Shotgun, GoldenDeagle,
+        Knife, Glock, Deagle, Shotgun, SidekickDeagle,
         BaseballBat,
         CloakingDevice, Rifle,
         EnderPearl, Radar, HealingPotion
@@ -78,7 +73,10 @@ object ItemManager {
 
             if (tttItem.type != TTTItem.Type.SPECIAL) {
                 if (tttItem is DropHandler) {
-                    tttItem.onDrop(tttPlayer, event.itemDrop)
+                    if (!tttItem.onDrop(tttPlayer, event.itemDrop)) {
+                        event.isCancelled = true
+                        return
+                    }
                 }
 
                 plugin.server.scheduler.runTask(plugin, fun() {

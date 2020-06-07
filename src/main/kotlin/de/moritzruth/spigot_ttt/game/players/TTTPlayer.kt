@@ -13,6 +13,7 @@ import de.moritzruth.spigot_ttt.shop.Shop
 import de.moritzruth.spigot_ttt.utils.hotbarContents
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
+import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -23,15 +24,25 @@ import kotlin.properties.Delegates
 
 class TTTPlayer(player: Player, role: Role) {
     var alive = true
-    var player by Delegates.observable(player) { _, _, _ -> initializePlayer() }
+    var player by Delegates.observable(player) { _, _, _ -> adjustPlayer() }
 
-    var role by Delegates.observable(role) { _, _, _ -> scoreboard.updateRole() }
+    var role = role
+        private set(value) {
+            if (value !== field) {
+                field = value
+                scoreboard.updateRole()
+                scoreboard.showCorrectSidebarScoreboard()
+                Shop.setItems(this)
+            }
+        }
     val roleHistory = mutableListOf<Role>()
 
     var itemInHand by Delegates.observable<TTTItem?>(null) { _, oldItem, newItem ->
         if (oldItem !== newItem) onItemInHandChanged(oldItem, newItem)
     }
     var credits by Delegates.observable(10) { _, _, _ -> scoreboard.updateCredits() }
+    val boughtItems = mutableListOf<TTTItem>()
+
     var invisible by Delegates.observable(false) { _, _, value ->
         if (value) {
             PlayerManager.tttPlayers.forEach {
@@ -58,18 +69,11 @@ class TTTPlayer(player: Player, role: Role) {
     private val discordUser get() = DiscordInterface.getUserByPlayerUUID(player.uniqueId)
 
     init {
-        initializePlayer()
+        adjustPlayer()
         scoreboard.initialize()
     }
 
-    private fun initializePlayer() {
-        player.scoreboard = scoreboard.scoreboard
-    }
-
     private fun onItemInHandChanged(oldItem: TTTItem?, newItem: TTTItem?) {
-        println(oldItem)
-        println(newItem)
-
         if (oldItem !== null && oldItem is Selectable) {
             oldItem.onDeselect(this)
         }
@@ -78,6 +82,27 @@ class TTTPlayer(player: Player, role: Role) {
             newItem.onSelect(this)
         }
     }
+
+    fun onDeath(reason: DeathReason = DeathReason.SUICIDE) {
+        GameManager.ensurePhase(GamePhase.COMBAT)
+
+        player.gameMode = GameMode.SPECTATOR
+        alive = false
+
+        TTTCorpse.spawn(this, reason)
+        credits = 0
+
+        Shop.clear(this)
+        setMuted(true)
+
+        PlayerManager.letRemainingRoleGroupWin()
+    }
+
+    private fun adjustPlayer() {
+        player.scoreboard = scoreboard.scoreboard
+    }
+
+    private fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
 
     fun activateStamina() {
         if (staminaTask != null) return
@@ -96,20 +121,22 @@ class TTTPlayer(player: Player, role: Role) {
         }, 0, secondsToTicks(0.5).toLong())
     }
 
-    fun onDeath(reason: DeathReason = DeathReason.SUICIDE) {
-        GameManager.ensurePhase(GamePhase.COMBAT)
+    fun changeRole(newRole: Role) {
+        roleHistory.add(role)
+        role = newRole
 
-        player.gameMode = GameMode.SPECTATOR
-        alive = false
+        val message = if (role == Role.SIDEKICK) {
+            val jackal = PlayerManager.tttPlayers.find { it.role == Role.JACKAL }
+                ?: throw NoJackalLivingException()
 
-        TTTCorpse.spawn(this, reason)
-        credits = 0
+            "${ChatColor.WHITE}Du bist jetzt ${role.coloredDisplayName} von ${jackal.role.chatColor}${jackal.player.displayName}"
+        } else "${ChatColor.WHITE}Du bist jetzt ${role.coloredDisplayName}"
 
-        Shop.hide(this)
-        setMuted(true)
-
+        player.sendTitle("", message, secondsToTicks(0.2), secondsToTicks(3), secondsToTicks(0.5))
         PlayerManager.letRemainingRoleGroupWin()
     }
+
+    class NoJackalLivingException: Exception("There is no living jackal for this sidekick")
 
     fun resetAfterGameEnd() {
         if (!alive) {
@@ -138,7 +165,6 @@ class TTTPlayer(player: Player, role: Role) {
         setMuted(false)
         invisible = false
 
-        alive = true
         player.gameMode = GameMode.SURVIVAL
         player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
         player.health = 20.0
@@ -182,17 +208,15 @@ class TTTPlayer(player: Player, role: Role) {
             throw TooManyItemsOfTypeException()
         }
     }
+    class AlreadyHasItemException: Exception("The player already owns this item")
+
+    class TooManyItemsOfTypeException: Exception("The player already owns too much items of this type")
 
     fun addItem(item: TTTItem) {
         checkAddItemPreconditions(item)
         player.inventory.addItem(item.itemStack.clone())
         updateItemInHand()
     }
-
-    class AlreadyHasItemException: Exception("The player already owns this item")
-    class TooManyItemsOfTypeException: Exception("The player already owns too much items of this type")
-
-    private fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
 
     override fun toString() = "TTTPlayer(${player.name} is $role)"
 }

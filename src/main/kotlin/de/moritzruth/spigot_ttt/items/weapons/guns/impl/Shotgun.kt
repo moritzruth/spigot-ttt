@@ -66,9 +66,9 @@ object Shotgun: Gun(
         ownState.currentAction = ReloadingAction(itemStack, ownState, tttPlayer).also { it.start() }
     }
 
-    override fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: Gun.State) {
+    override fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: Gun.State): Boolean {
         val ownState = state as State
-        if (ownState.remainingShots == 0) return
+        if (ownState.remainingShots == 0) return true
 
         when(val currentAction = ownState.currentAction) {
             is Action.Cooldown -> throw ActionInProgressError()
@@ -82,6 +82,8 @@ object Shotgun: Gun(
                 item.itemMeta = damageMeta as ItemMeta
             }
         }
+
+        return true
     }
 
     class State: Gun.State(magazineSize)

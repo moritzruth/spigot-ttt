@@ -20,6 +20,7 @@ object EnderPearl: TTTItem, Buyable {
     }
     override val buyableBy = roles(Role.TRAITOR, Role.JACKAL, Role.DETECTIVE)
     override val price = 1
+    override val buyLimit: Int? = null
 
     override val listener = object : Listener {
         @EventHandler
