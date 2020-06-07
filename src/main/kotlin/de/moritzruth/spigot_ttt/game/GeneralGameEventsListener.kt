@@ -19,7 +19,6 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
-import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
@@ -55,11 +54,6 @@ object GeneralGameEventsListener : Listener {
                 event.isCancelled = true
             }
         }
-    }
-
-    @EventHandler
-    fun onFoodLevelChange(event: FoodLevelChangeEvent) {
-//        event.isCancelled = true
     }
 
     @EventHandler
@@ -148,17 +142,20 @@ object GeneralGameEventsListener : Listener {
                     packet.action == EnumWrappers.PlayerInfoAction.ADD_PLAYER) {
 
                 packet.data = packet.data.map { info ->
-                    val tttPlayer = PlayerManager.tttPlayers.find { it.player.uniqueId == info.profile.uuid }
+                    if (event.player.uniqueId == info.profile.uuid) info
+                    else {
+                        val tttPlayer = PlayerManager.tttPlayers.find { it.player.uniqueId == info.profile.uuid }
 
-                    if (tttPlayer == null) info
-                    else PlayerInfoData(
+                        if (tttPlayer == null) info
+                        else PlayerInfoData(
                             info.profile,
                             info.latency,
                             if (info.gameMode == EnumWrappers.NativeGameMode.SPECTATOR)
                                 EnumWrappers.NativeGameMode.SURVIVAL
                             else info.gameMode,
                             info.displayName
-                    )
+                        )
+                    }
                 }.toMutableList()
             }
         }
