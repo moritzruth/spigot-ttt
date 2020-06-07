@@ -13,20 +13,26 @@ import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.isRightClick
-import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
+import org.bukkit.boss.BarColor
+import org.bukkit.boss.BarStyle
+import org.bukkit.boss.BossBar
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.or
 
 object Radar: TTTItem, Buyable {
     private val DISPLAY_NAME = "${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar"
+    private const val ACTIVE_DURATION = 10
+    private const val COOLDOWN_DURATION = 40
 
     override val itemStack = ItemStack(CustomItems.radar).applyMeta {
         setDisplayName(DISPLAY_NAME)
@@ -45,39 +51,50 @@ object Radar: TTTItem, Buyable {
 
     val isc = InversedStateContainer(State::class)
 
-    override fun reset(tttPlayer: TTTPlayer) {
-        setGlowingEnabled(tttPlayer, false)
-        isc.get(tttPlayer)?.task?.cancel()
-    }
-
     fun use(tttPlayer: TTTPlayer, itemStack: ItemStack) {
         val state = isc.getOrCreate(tttPlayer)
         if (state.enabled) return
         state.enabled = true
 
-        startLoop(tttPlayer, state)
+        state.bossBar = plugin.server.createBossBar(DISPLAY_NAME, BarColor.BLUE, BarStyle.SOLID)
+        state.bossBar.addPlayer(tttPlayer.player)
+
+        setActive(tttPlayer, true)
+        state.task = plugin.server.scheduler.runTaskTimer(plugin, fun() {
+            val duration = Duration.between(state.timestamp, Instant.now()).toMillis().toDouble() / 1000
+
+            if (state.active) {
+                if (duration > ACTIVE_DURATION) {
+                    setActive(tttPlayer, false)
+                } else {
+                    state.bossBar.progress = 1.0 - duration / ACTIVE_DURATION
+                }
+            } else {
+                if (duration > COOLDOWN_DURATION) {
+                    setActive(tttPlayer, true)
+                } else {
+                    state.bossBar.progress = duration / COOLDOWN_DURATION
+                }
+            }
+        }, 0, 2)
+
         itemStack.applyMeta {
-            setDisplayName(DISPLAY_NAME + "${ChatColor.RESET} - ${ChatColor.GREEN}Aktiv")
+            setDisplayName(DISPLAY_NAME + "${ChatColor.RESET} - ${ChatColor.GREEN}Aktiviert")
         }
     }
 
-    private fun startLoop(tttPlayer: TTTPlayer, state: State) {
-        setGlowingEnabled(tttPlayer, true)
-
-        state.task = plugin.server.scheduler.runTaskLater(plugin, fun() {
-            setGlowingEnabled(tttPlayer, false)
-
-            state.task = plugin.server.scheduler.runTaskLater(plugin, fun() {
-                startLoop(tttPlayer, state)
-            }, secondsToTicks(30).toLong())
-        }, secondsToTicks(10).toLong())
-    }
-
-    private fun setGlowingEnabled(tttPlayer: TTTPlayer, value: Boolean) {
+    private fun setActive(tttPlayer: TTTPlayer, value: Boolean) {
         val state = isc.getOrCreate(tttPlayer)
 
-        if (state.glowingEnabled != value) {
-            state.glowingEnabled = value
+        if (state.active != value) {
+            state.active = value
+            state.timestamp = Instant.now()
+
+            if (value) {
+                state.bossBar.setTitle(DISPLAY_NAME + "${ChatColor.WHITE} - ${ChatColor.GREEN}Aktiv")
+            } else {
+                state.bossBar.setTitle(DISPLAY_NAME + "${ChatColor.WHITE} - ${ChatColor.GRAY}Cooldown")
+            }
 
             // Toggle sending the entity metadata
             PlayerManager.tttPlayers.forEach {
@@ -119,7 +136,7 @@ object Radar: TTTItem, Buyable {
                 // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
                 try {
                     val modifiers = packet.metadata[0].value as Byte
-                    packet.metadata[0].value = if (isc.get(tttPlayer)?.glowingEnabled == true) modifiers or 0x40
+                    packet.metadata[0].value = if (isc.get(tttPlayer)?.active == true) modifiers or 0x40
                     else modifiers and 0b10111111.toByte()
                 } catch (ignored: Exception) {
                     // Idk why this throws exceptions, but it works anyways
@@ -130,7 +147,16 @@ object Radar: TTTItem, Buyable {
 
     class State: IState {
         var enabled = false
-        var glowingEnabled = false
         var task: BukkitTask? = null
+        var active: Boolean = false
+        lateinit var timestamp: Instant
+        lateinit var bossBar: BossBar
+
+        override fun reset(tttPlayer: TTTPlayer) {
+            setActive(tttPlayer, false)
+
+            task?.cancel()
+            bossBar.removePlayer(tttPlayer.player)
+        }
     }
 }

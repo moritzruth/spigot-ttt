@@ -35,8 +35,6 @@ interface TTTItem {
     val itemStack: ItemStack
     val type: Type
 
-    fun reset(tttPlayer: TTTPlayer) {}
-
     enum class Type(val maxItemsOfTypeInInventory: Int?) {
         MELEE(1),
         PISTOL_LIKE(1),

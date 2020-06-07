@@ -5,9 +5,10 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 
 interface IState {
+    fun reset(tttPlayer: TTTPlayer) {}
 }
 
-class StateContainer {
+class StateContainer(private val tttPlayer: TTTPlayer) {
     private val instances = MutableClassToInstanceMap.create<IState>()
 
     fun <T: IState> getOrCreate(stateClass: KClass<T>): T =
@@ -30,7 +31,8 @@ class StateContainer {
 
     fun <T: IState> remove(stateClass: KClass<T>) = instances.remove(stateClass.java)
 
-    fun clear() {
+    fun resetAndClear() {
+        instances.values.forEach { it.reset(tttPlayer) }
         instances.clear()
     }
 }

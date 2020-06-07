@@ -120,11 +120,6 @@ abstract class Gun(
         if (state.currentAction !== null) throw ActionInProgressError()
     }
 
-    override fun reset(tttPlayer: TTTPlayer) {
-        val currentAction = isc.get(tttPlayer)?.currentAction ?: return
-        currentAction.task.cancel()
-    }
-
     override fun onSelect(tttPlayer: TTTPlayer) {
         updateLevel(tttPlayer)
     }
@@ -208,6 +203,10 @@ abstract class Gun(
     abstract class State(magazineSize: Int): IState {
         var currentAction: Action? = null
         var remainingShots = magazineSize
+
+        override fun reset(tttPlayer: TTTPlayer) {
+            currentAction?.task?.cancel()
+        }
     }
 
     sealed class Action(var itemStack: ItemStack) {

@@ -51,7 +51,7 @@ class TTTPlayer(player: Player, role: Role) {
     private var staminaTask: BukkitTask? = null
 
     val scoreboard = TTTScoreboard(this)
-    val stateContainer = StateContainer()
+    val stateContainer = StateContainer(this)
 
     private val discordUser get() = DiscordInterface.getUserByPlayerUUID(player.uniqueId)
 
@@ -127,8 +127,7 @@ class TTTPlayer(player: Player, role: Role) {
             }
         }
 
-        ItemManager.ITEMS.forEach { it.reset(this) }
-        stateContainer.clear()
+        stateContainer.resetAndClear()
 
         setMuted(false)
         invisible = false
