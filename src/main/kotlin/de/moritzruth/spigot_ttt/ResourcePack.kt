@@ -21,6 +21,7 @@ object ResourcePack {
         val radar = Material.IRON_HELMET
         val teleporter = Material.SPRUCE_WOOD
         val martyrdomGrenade = Material.BIRCH_LOG
+        val fakeCorpse = Material.SPRUCE_LOG
 
         // Weapons
         val deagle = Material.IRON_HOE
