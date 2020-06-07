@@ -20,6 +20,7 @@ object ResourcePack {
         val cloakingDevice = Material.COBWEB
         val radar = Material.IRON_HELMET
         val teleporter = Material.SPRUCE_WOOD
+        val martyrdomGrenade = Material.BIRCH_LOG
 
         // Weapons
         val deagle = Material.IRON_HOE
@@ -33,6 +34,7 @@ object ResourcePack {
     }
 
     object Sounds {
-        val error = "minecraft:block.anvil.break"
+        const val error = "minecraft:block.anvil.break"
+        const val grenadeExplode = "minecraft:entity.generic.explode"
     }
 }

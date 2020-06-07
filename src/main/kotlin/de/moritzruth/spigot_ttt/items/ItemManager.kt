@@ -29,7 +29,7 @@ object ItemManager {
         BaseballBat,
         CloakingDevice, Rifle,
         EnderPearl, Radar, HealingPotion, Fireball,
-        Teleporter
+        Teleporter, MartyrdomGrenade
     )
 
     val droppedItemStates = mutableMapOf<Int, IState>()

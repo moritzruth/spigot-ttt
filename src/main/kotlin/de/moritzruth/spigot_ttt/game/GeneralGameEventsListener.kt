@@ -143,7 +143,7 @@ object GeneralGameEventsListener : Listener {
             if (packet.action == EnumWrappers.PlayerInfoAction.UPDATE_GAME_MODE ||
                     packet.action == EnumWrappers.PlayerInfoAction.ADD_PLAYER) {
 
-                packet.data = packet.data.map { info ->
+                packet.data = packet.data.mapNotNull { info ->
                     if (event.player.uniqueId == info.profile.uuid) info
                     else {
                         val tttPlayer = PlayerManager.tttPlayers.find { it.player.uniqueId == info.profile.uuid }

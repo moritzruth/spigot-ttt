@@ -1,18 +1,22 @@
 package de.moritzruth.spigot_ttt.items.impl
 
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.players.*
+import de.moritzruth.spigot_ttt.game.players.PlayerManager
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.clearHeldItemSlot
+import de.moritzruth.spigot_ttt.utils.createKillExplosion
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.ChatColor
 import org.bukkit.Material
-import org.bukkit.Particle
+import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.EntityType
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -73,26 +77,14 @@ object Fireball: TTTItem, Buyable {
                 sendersByEntity.remove(event.entity)
                 event.isCancelled = true
 
-                GameManager.world.spawnParticle(
-                    Particle.EXPLOSION_LARGE,
+                GameManager.world.playSound(
                     event.entity.location,
-                    10,
-                    1.0,
-                    1.0,
-                    1.0
+                    Sound.ENTITY_GENERIC_EXPLODE,
+                    SoundCategory.PLAYERS,
+                    1F,
+                    1F
                 )
-
-                val nearbyTTTPlayers = GameManager.world.getNearbyEntities(
-                    event.entity.location,
-                    2.5,
-                    2.5,
-                    2.5
-                ) { it is Player }.mapNotNull { PlayerManager.getTTTPlayer(it as Player) }
-
-                for (tttPlayer in nearbyTTTPlayers) {
-                    tttPlayer.damageInfo = DamageInfo(sender, DeathReason.Item(Fireball))
-                    tttPlayer.player.damage(20.0)
-                }
+                createKillExplosion(sender, event.entity.location, 2.5)
             }
         }
     }

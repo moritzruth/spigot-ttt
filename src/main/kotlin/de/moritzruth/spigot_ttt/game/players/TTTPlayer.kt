@@ -90,6 +90,8 @@ class TTTPlayer(player: Player, role: Role) {
         Shop.clear(this)
 
         PlayerManager.letRemainingRoleGroupWin()
+
+        plugin.server.pluginManager.callEvent(TTTPlayerDeathEvent(this, player.location))
     }
 
     private fun adjustPlayer() {
