@@ -10,6 +10,7 @@ import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.shop.Shop
 import de.moritzruth.spigot_ttt.shop.ShopListener
 import org.bukkit.GameRule
+import kotlin.random.Random
 
 object GameManager {
     var phase: GamePhase? = null
@@ -76,6 +77,13 @@ object GameManager {
     fun resetWorld() {
         CorpseManager.destroyAll()
         ItemManager.reset()
+
+        world.run {
+            setStorm(false)
+            time = 0
+            setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
+            setGameRule(GameRule.DO_WEATHER_CYCLE, false)
+        }
     }
 
     fun abortGame(broadcast: Boolean = false) {
@@ -94,6 +102,13 @@ object GameManager {
     }
 
     fun startPreparingPhase() {
+        world.run {
+            setStorm(Random.nextInt(4) == 1)
+            time = Random.nextLong(0, 23999)
+            setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true)
+            setGameRule(GameRule.DO_WEATHER_CYCLE, true)
+        }
+
         ensurePhase(null)
 
         if (PlayerManager.availablePlayers.count() < plugin.config.getInt("min-players", 4)) {
