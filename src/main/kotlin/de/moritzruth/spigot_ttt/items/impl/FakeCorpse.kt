@@ -2,22 +2,18 @@ package de.moritzruth.spigot_ttt.items.impl
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
-import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
-import de.moritzruth.spigot_ttt.utils.isRightClick
 import de.moritzruth.spigot_ttt.utils.removeTTTItem
 import org.bukkit.ChatColor
 import org.bukkit.Material
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryType
@@ -77,34 +73,17 @@ object FakeCorpse: TTTItem, Buyable {
             .toTypedArray())
     }
 
-    override val listener = object : Listener {
-        @EventHandler
-        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-            if (event.isRelevant(FakeCorpse)) event.isCancelled = true
+    override val listener = object : TTTItemListener(this, true) {
+        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+            isc.getOrCreate(data.tttPlayer).chosenRole = null
+            data.tttPlayer.player.openInventory(chooseRoleInventory)
         }
 
         @EventHandler
-        fun onPlayerInteract(event: PlayerInteractEvent) {
-            if (!event.isRelevant(FakeCorpse)) return
-            event.isCancelled = true
-
-            if (event.action.isRightClick) {
-                val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
-                isc.getOrCreate(tttPlayer).chosenRole = null
-                tttPlayer.player.openInventory(chooseRoleInventory)
-            }
-        }
-
-        @EventHandler
-        fun onInventoryClick(event: InventoryClickEvent) {
-            if (event.whoClicked !is Player) return
-            val tttPlayer = PlayerManager.getTTTPlayer(event.whoClicked as Player) ?: return
+        fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
             val state = isc.getOrCreate(tttPlayer)
 
-            if (!(
-                event.clickedInventory == chooseRoleInventory ||
-                event.clickedInventory == state.choosePlayerInventory
-            )) return
+            if (!setOf(state.choosePlayerInventory, chooseRoleInventory).contains(event.clickedInventory)) return@handle
             event.isCancelled = true
 
             val item = event.currentItem

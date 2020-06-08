@@ -1,17 +1,14 @@
 package de.moritzruth.spigot_ttt.items.impl
 
 import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
-import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.utils.applyMeta
-import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerToggleSprintEvent
 import org.bukkit.inventory.ItemFlag
@@ -68,31 +65,14 @@ object CloakingDevice: TTTItem,
         // TODO: Play sound
     }
 
-    override val listener = object : Listener {
+    override val listener = object : TTTItemListener(this, true) {
         @EventHandler
-        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-            if (event.isRelevant(CloakingDevice)) event.isCancelled = true
+        fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) = handle(event) { tttPlayer ->
+            if (event.isSprinting && isc.getOrCreate(tttPlayer).enabled) event.isCancelled = true
         }
 
-        @EventHandler
-        fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) {
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
-
-            if (event.isSprinting && isc.getOrCreate(tttPlayer).enabled) {
-                event.isCancelled = true
-            }
-        }
-
-        @EventHandler
-        fun onPlayerInteract(event: PlayerInteractEvent) {
-            if (!event.isRelevant(CloakingDevice)) return
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
-
-            if (event.action.isRightClick) setEnabled(
-                tttPlayer,
-                null
-            )
-            event.isCancelled = true
+        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+            setEnabled(data.tttPlayer, null)
         }
     }
 

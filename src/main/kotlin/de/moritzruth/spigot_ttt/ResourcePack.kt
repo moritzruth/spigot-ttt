@@ -23,6 +23,7 @@ object ResourcePack {
         val martyrdomGrenade = Material.BIRCH_LOG
         val fakeCorpse = Material.SPRUCE_LOG
         val defibrillator = Material.IRON_INGOT
+        val secondChance = Material.GOLD_INGOT
 
         // Weapons
         val deagle = Material.IRON_HOE

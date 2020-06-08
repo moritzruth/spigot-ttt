@@ -1,11 +1,11 @@
 package de.moritzruth.spigot_ttt.items.impl
 
 import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
-import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.createKillExplosion
@@ -14,8 +14,6 @@ import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
 import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
@@ -39,22 +37,12 @@ object MartyrdomGrenade: TTTItem, Buyable {
     override val price = 1
     val isc = InversedStateContainer(State::class)
 
-    override val listener = object : Listener {
-        @EventHandler
-        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-            if (event.isRelevant(MartyrdomGrenade)) event.isCancelled = true
-        }
-
-        @EventHandler
-        fun onPlayerInteract(event: PlayerInteractEvent) {
-            if (!event.isRelevant(MartyrdomGrenade)) return
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
-            event.isCancelled = true
-
-            val state = isc.getOrCreate(tttPlayer)
+    override val listener = object : TTTItemListener(this, true) {
+        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+            val state = isc.getOrCreate(data.tttPlayer)
             state.enabled = !state.enabled
 
-            event.item!!.applyMeta {
+            data.event.item!!.applyMeta {
                 if (state.enabled) {
                     setDisplayName(DISPLAY_NAME + "${ChatColor.RESET} - ${ChatColor.GREEN}Aktiviert")
                 } else {

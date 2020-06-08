@@ -4,11 +4,7 @@ import com.comphenix.protocol.events.PacketListener
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import org.bukkit.entity.Item
-import org.bukkit.entity.Player
 import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.ItemStack
 import java.util.*
 
@@ -44,11 +40,3 @@ interface TTTItem {
         SPECIAL(null);
     }
 }
-
-fun PlayerInteractEvent.isRelevant(tttItem: TTTItem): Boolean = item?.type == tttItem.itemStack.type
-
-fun PlayerSwapHandItemsEvent.isRelevant(tttItem: TTTItem): Boolean =
-    offHandItem?.let { ItemManager.getItemByItemStack(it) } == tttItem
-
-fun EntityDamageByEntityEvent.isRelevant(tttItem: TTTItem): Boolean = damager is Player && entity is Player &&
-            (damager as Player).inventory.itemInMainHand.type == tttItem.itemStack.type

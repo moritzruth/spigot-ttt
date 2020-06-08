@@ -5,21 +5,17 @@ import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
-import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
-import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.ChatColor
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
@@ -107,22 +103,9 @@ object Radar: TTTItem, Buyable {
         }
     }
 
-    override val listener = object : Listener {
-        @EventHandler
-        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-            if (event.isRelevant(Radar)) event.isCancelled = true
-        }
-
-        @EventHandler
-        fun onPlayerInteract(event: PlayerInteractEvent) {
-            if (!event.isRelevant(Radar)) return
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
-
-            if (event.action.isRightClick) {
-                use(tttPlayer, event.item!!)
-            }
-
-            event.isCancelled = true
+    override val listener = object : TTTItemListener(this, true) {
+        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+            use(data.tttPlayer, data.event.item!!)
         }
     }
 

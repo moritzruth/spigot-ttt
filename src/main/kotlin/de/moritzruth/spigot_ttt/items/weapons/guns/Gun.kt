@@ -1,20 +1,20 @@
 package de.moritzruth.spigot_ttt.items.weapons.guns
 
+import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.players.*
-import de.moritzruth.spigot_ttt.items.*
+import de.moritzruth.spigot_ttt.items.DropHandler
+import de.moritzruth.spigot_ttt.items.ItemManager
+import de.moritzruth.spigot_ttt.items.Selectable
+import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.weapons.LoreHelper
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
-import de.moritzruth.spigot_ttt.utils.noop
 import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
 import org.bukkit.*
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
@@ -182,23 +182,16 @@ abstract class Gun(
         }
     }
 
-    override val listener = object : Listener {
-        @EventHandler(ignoreCancelled = true)
-        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-            if (event.isRelevant(this@Gun)) event.isCancelled = true
+    override val listener = object : TTTItemListener(this, true) {
+        override fun onLeftClick(data: Data<PlayerInteractEvent>) {
+            try {
+                reload(data.tttPlayer, data.event.item!!)
+            } catch (e: ActionInProgressError) {}
         }
 
-        @EventHandler
-        fun onPlayerInteract(event: PlayerInteractEvent) {
-            if (!event.isRelevant(this@Gun)) return
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
-
+        override fun onRightClick(data: Data<PlayerInteractEvent>) {
             try {
-                when(event.action) {
-                    ClickAction.LEFT_CLICK_AIR, ClickAction.LEFT_CLICK_BLOCK -> reload(tttPlayer, event.item!!)
-                    ClickAction.RIGHT_CLICK_AIR, ClickAction.RIGHT_CLICK_BLOCK -> shoot(tttPlayer, event.item!!)
-                    else -> noop()
-                }
+                shoot(data.tttPlayer, data.event.item!!)
             } catch (e: ActionInProgressError) {}
         }
     }

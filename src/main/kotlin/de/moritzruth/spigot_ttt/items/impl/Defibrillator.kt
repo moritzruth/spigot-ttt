@@ -2,19 +2,17 @@ package de.moritzruth.spigot_ttt.items.impl
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
-import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.*
 import org.bukkit.ChatColor
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import org.golde.bukkit.corpsereborn.CorpseAPI.events.CorpseClickEvent
@@ -39,12 +37,7 @@ object Defibrillator: TTTItem, Buyable {
 
     private val isc = InversedStateContainer(State::class)
 
-    override val listener = object : Listener {
-        @EventHandler
-        fun onPlayerInteract(event: PlayerInteractEvent) {
-            if (event.isRelevant(Defibrillator)) event.isCancelled = true
-        }
-
+    override val listener = object : TTTItemListener(this, true) {
         @EventHandler
         fun onCorpseClick(event: CorpseClickEvent) {
             val tttPlayer = PlayerManager.getTTTPlayer(event.clicker) ?: return

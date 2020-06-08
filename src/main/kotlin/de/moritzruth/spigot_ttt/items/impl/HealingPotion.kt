@@ -1,18 +1,16 @@
 package de.moritzruth.spigot_ttt.items.impl
 
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
+import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
-import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
 import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemConsumeEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
@@ -39,21 +37,16 @@ object HealingPotion: TTTItem, Buyable {
     override val price = 1
     override val buyLimit = 2
 
-    override val listener = object : Listener {
+    override val listener = object : TTTItemListener(this, true) {
         @EventHandler
-        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-            if (event.isRelevant(HealingPotion)) event.isCancelled = true
+        fun onPlayerItemConsume(event: PlayerItemConsumeEvent) = handle(event) {
+            event.isCancelled = true
+            event.player.inventory.clear(event.player.inventory.indexOf(event.item))
+            event.player.health = event.player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: 100.0
         }
 
-        @EventHandler
-        fun onPlayerItemConsume(event: PlayerItemConsumeEvent) {
-            PlayerManager.getTTTPlayer(event.player) ?: return
-
-            if (event.item.isSimilar(itemStack)) {
-                event.isCancelled = true
-                event.player.inventory.clear(event.player.inventory.indexOf(event.item))
-                event.player.health = event.player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: 100.0
-            }
+        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+            data.event.isCancelled = false
         }
     }
 }
