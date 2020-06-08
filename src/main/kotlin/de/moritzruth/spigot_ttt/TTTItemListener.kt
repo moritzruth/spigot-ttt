@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemConsumeEvent
@@ -70,6 +71,13 @@ open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamag
         val whoClicked = event.whoClicked
         if (whoClicked is Player) {
             handler(PlayerManager.getTTTPlayer(whoClicked) ?: return)
+        }
+    }
+
+    protected fun handle(event: InventoryCloseEvent, handler: (tttPlayer: TTTPlayer) -> Unit) {
+        val player = event.player
+        if (player is Player) {
+            handler(PlayerManager.getTTTPlayer(player) ?: return)
         }
     }
 

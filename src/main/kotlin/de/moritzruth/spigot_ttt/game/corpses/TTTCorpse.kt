@@ -124,6 +124,7 @@ class TTTCorpse private constructor(
     }
 
     fun destroy() {
+        ensureNotDestroyed()
         status = Status.DESTROYED
         CorpseAPI.removeCorpse(corpse)
         updateTimeListener.cancel()
@@ -146,15 +147,13 @@ class TTTCorpse private constructor(
         private const val REASON_SLOT = 1
         private const val TIME_SLOT = 2
 
-        fun spawn(tttPlayer: TTTPlayer, reason: DeathReason) {
-            CorpseManager.add(TTTCorpse(
-                tttPlayer,
-                tttPlayer.player.location,
-                tttPlayer.role,
-                reason,
-                tttPlayer.credits
-            ))
-        }
+        fun spawn(tttPlayer: TTTPlayer, reason: DeathReason): TTTCorpse = TTTCorpse(
+            tttPlayer,
+            tttPlayer.player.location,
+            tttPlayer.role,
+            reason,
+            tttPlayer.credits
+        ).also { CorpseManager.add(it) }
 
         fun spawnFake(role: Role, tttPlayer: TTTPlayer, location: Location) {
             CorpseManager.add(TTTCorpse(

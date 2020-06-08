@@ -107,7 +107,7 @@ object Radar: TTTItem, Buyable {
         }
 
         @EventHandler
-        fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, tttPlayer -> state.reset(tttPlayer) }
+        fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, tttPlayer -> state.reset(tttPlayer) }
     }
 
     override val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {

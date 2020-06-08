@@ -39,7 +39,7 @@ class InversedStateContainer<T: IState>(private val stateClass: KClass<T>) {
 
     val tttPlayers get() = PlayerManager.tttPlayers.filter { it.stateContainer.has(stateClass) }
 
-    fun forEachState(fn: (T, TTTPlayer) -> Unit) {
+    fun forEveryState(fn: (T, TTTPlayer) -> Unit) {
         tttPlayers.forEach { it.stateContainer.get(stateClass)?.run { fn(this, it) } }
     }
 }

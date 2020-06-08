@@ -10,7 +10,7 @@ fun Inventory.setAllToItem(indexes: Iterable<Int>, itemStack: ItemStack) {
     indexes.forEach { setItem(it, itemStack) }
 }
 
-fun Inventory.removeTTTItem(tttItem: TTTItem) = clear(indexOfFirst { it.type == tttItem.itemStack.type })
+fun Inventory.removeTTTItem(tttItem: TTTItem) = clear(indexOfFirst { it?.type == tttItem.itemStack.type })
 fun Inventory.removeTTTItemNextTick(tttItem: TTTItem) = plugin.server.scheduler.runTask(plugin, fun() {
     removeTTTItem(tttItem)
 })

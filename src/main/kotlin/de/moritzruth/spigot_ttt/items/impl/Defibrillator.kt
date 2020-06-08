@@ -82,7 +82,7 @@ object Defibrillator: TTTItem, Buyable {
         }
 
         @EventHandler
-        fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, tttPlayer -> state.reset(tttPlayer) }
+        fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, tttPlayer -> state.reset(tttPlayer) }
     }
 
     sealed class Action(val tttPlayer: TTTPlayer) {

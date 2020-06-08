@@ -59,7 +59,7 @@ object MartyrdomGrenade: TTTItem, Buyable {
         }
 
         @EventHandler
-        fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, _ ->
+        fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, _ ->
             state.explodeTask?.cancel()
             state.explodeTask = null
         }

@@ -84,15 +84,21 @@ class TTTPlayer(player: Player, role: Role) {
     fun onDeath(reason: DeathReason = DeathReason.SUICIDE) {
         GameManager.ensurePhase(GamePhase.COMBAT)
 
+        player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}${ChatColor.BOLD}Du bist gestorben")
+
         player.gameMode = GameMode.SPECTATOR
         alive = false
-        TTTCorpse.spawn(this, reason)
+        val tttCorpse = TTTCorpse.spawn(this, reason)
 
         player.inventory.clear()
         credits = 0
 
-//        PlayerManager.letRemainingRoleGroupWin()
-        plugin.server.pluginManager.callEvent(TTTPlayerDeathEvent(this, player.location))
+        val event = TTTPlayerDeathEvent(this, player.location, tttCorpse)
+        plugin.server.pluginManager.callEvent(event)
+
+        if (event.letRoundEnd) {
+//            PlayerManager.letRemainingRoleGroupWin()
+        }
     }
 
     fun revive(location: Location, credits: Int = 0) {
@@ -106,6 +112,7 @@ class TTTPlayer(player: Player, role: Role) {
 
         Shop.setItems(this)
 
+        plugin.server.pluginManager.callEvent(TTTPlayerReviveEvent(this))
         player.sendMessage(TTTPlugin.prefix + "${ChatColor.GREEN}${ChatColor.BOLD}Du wurdest wiederbelebt")
 
         plugin.server.scheduler.runTask(plugin, fun() {

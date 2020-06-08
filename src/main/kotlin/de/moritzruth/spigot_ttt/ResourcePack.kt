@@ -8,13 +8,15 @@ object ResourcePack {
         val deathReason = Material.GRAY_STAINED_GLASS_PANE
         val questionMark = Material.GRASS_BLOCK
         val time = Material.CLOCK
+        val dot = Material.GRAY_STAINED_GLASS
+        val arrowDown = Material.WHITE_STAINED_GLASS
 
         // Roles
         val innocent = Material.GREEN_STAINED_GLASS_PANE
         val detective = Material.YELLOW_STAINED_GLASS_PANE
         val traitor = Material.RED_STAINED_GLASS_PANE
         val jackal = Material.LIGHT_BLUE_STAINED_GLASS_PANE
-        val sidekick = Material.LIGHT_BLUE_STAINED_GLASS_PANE
+        val sidekick = Material.BLUE_STAINED_GLASS_PANE
 
         // Special Items
         val cloakingDevice = Material.COBWEB

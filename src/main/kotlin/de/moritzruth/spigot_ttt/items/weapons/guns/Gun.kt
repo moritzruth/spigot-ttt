@@ -201,7 +201,7 @@ abstract class Gun(
         fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) = isc.get(event.tttPlayer)?.reset()
 
         @EventHandler
-        fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, _ -> state.reset() }
+        fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, _ -> state.reset() }
     }
 
     class ActionInProgressError: RuntimeException("The gun has an ongoing action which may not be canceled")
