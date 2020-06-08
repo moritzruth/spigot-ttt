@@ -9,6 +9,7 @@ import de.moritzruth.spigot_ttt.items.ItemSpawner
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.shop.Shop
 import de.moritzruth.spigot_ttt.shop.ShopListener
+import org.bukkit.GameRule
 
 object GameManager {
     var phase: GamePhase? = null
@@ -20,6 +21,8 @@ object GameManager {
     val world = plugin.server.getWorld("world")!!
 
     fun initialize() {
+        adjustWorld()
+
         ItemManager.registerListeners()
         GeneralGameEventsListener.register()
         ShopListener.register()
@@ -46,6 +49,27 @@ object GameManager {
         }
 
         GameMessenger.roles()
+    }
+
+    private fun adjustWorld() {
+        world.apply {
+            setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
+            setGameRule(GameRule.COMMAND_BLOCK_OUTPUT, false)
+            setGameRule(GameRule.DISABLE_RAIDS, true)
+            setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
+            setGameRule(GameRule.DO_ENTITY_DROPS, false)
+            setGameRule(GameRule.DO_FIRE_TICK, false)
+            setGameRule(GameRule.LOG_ADMIN_COMMANDS, false)
+            setGameRule(GameRule.DO_MOB_LOOT, false)
+            setGameRule(GameRule.KEEP_INVENTORY, true) // will be cleared
+            setGameRule(GameRule.DO_WEATHER_CYCLE, false)
+            setGameRule(GameRule.DO_MOB_SPAWNING, false)
+            setGameRule(GameRule.NATURAL_REGENERATION, false)
+            setGameRule(GameRule.MOB_GRIEFING, false)
+            setGameRule(GameRule.REDUCED_DEBUG_INFO, true)
+            setGameRule(GameRule.SHOW_DEATH_MESSAGES, false)
+            setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false)
+        }
     }
 
     fun resetWorld() {
