@@ -85,7 +85,12 @@ class TTTPlayer(player: Player, role: Role) {
         if (killer == this) throw IllegalArgumentException("You cannot be your own killer")
         GameManager.ensurePhase(GamePhase.COMBAT)
 
-        player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}${ChatColor.BOLD}Du bist gestorben")
+        player.sendMessage(TTTPlugin.prefix +
+            if (killer == null) "${ChatColor.RED}${ChatColor.BOLD}Du bist gestorben"
+            else "${ChatColor.RED}${ChatColor.BOLD}Du wurdest von " +
+                    "${ChatColor.RESET}${killer.player.displayName}" +
+                    "${ChatColor.RED}${ChatColor.BOLD} getötet"
+        )
 
         player.gameMode = GameMode.SPECTATOR
         alive = false
