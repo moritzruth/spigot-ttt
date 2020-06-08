@@ -25,8 +25,14 @@ object ItemSpawner {
     }
 
     fun spawnWeapons() {
+        var itemIterator = spawningItems.shuffled().iterator()
+
         for (location in getSpawnLocations()) {
-            GameManager.world.dropItem(location, spawningItems.random().itemStack.clone())
+            if (!itemIterator.hasNext()) {
+                itemIterator = spawningItems.shuffled().iterator()
+            }
+
+            GameManager.world.dropItem(location, itemIterator.next().itemStack.clone())
         }
     }
 
