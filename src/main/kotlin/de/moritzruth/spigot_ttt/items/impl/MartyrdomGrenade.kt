@@ -2,9 +2,11 @@ package de.moritzruth.spigot_ttt.items.impl
 
 import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.TTTItemListener
+import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
+import de.moritzruth.spigot_ttt.items.PASSIVE
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
@@ -14,17 +16,14 @@ import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
 import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 
 object MartyrdomGrenade: TTTItem, Buyable {
-    val DISPLAY_NAME = "${ChatColor.DARK_PURPLE}${ChatColor.BOLD}Märtyriumsgranate"
-
     override val type = TTTItem.Type.SPECIAL
     override val itemStack = ItemStack(ResourcePack.Items.martyrdomGrenade).applyMeta {
         hideInfo()
-        setDisplayName(DISPLAY_NAME)
+        setDisplayName("${ChatColor.DARK_PURPLE}${ChatColor.BOLD}Märtyriumsgranate $PASSIVE")
 
         lore = listOf(
             "",
@@ -37,20 +36,11 @@ object MartyrdomGrenade: TTTItem, Buyable {
     override val price = 1
     val isc = InversedStateContainer(State::class)
 
+    override fun onBuy(tttPlayer: TTTPlayer) {
+        isc.getOrCreate(tttPlayer)
+    }
+
     override val listener = object : TTTItemListener(this, true) {
-        override fun onRightClick(data: Data<PlayerInteractEvent>) {
-            val state = isc.getOrCreate(data.tttPlayer)
-            state.enabled = !state.enabled
-
-            data.event.item!!.applyMeta {
-                if (state.enabled) {
-                    setDisplayName(DISPLAY_NAME + "${ChatColor.RESET} - ${ChatColor.GREEN}Aktiviert")
-                } else {
-                    setDisplayName(DISPLAY_NAME)
-                }
-            }
-        }
-
         @EventHandler
         fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
             val state = isc.get(event.tttPlayer) ?: return
@@ -67,15 +57,15 @@ object MartyrdomGrenade: TTTItem, Buyable {
                 createKillExplosion(event.tttPlayer, event.location, 2.5)
             }, secondsToTicks(3).toLong())
         }
+
+        @EventHandler
+        fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, _ ->
+            state.explodeTask?.cancel()
+            state.explodeTask = null
+        }
     }
 
     class State: IState {
-        var enabled = false
         var explodeTask: BukkitTask? = null
-
-        override fun reset(tttPlayer: TTTPlayer) {
-            explodeTask?.cancel()
-            explodeTask = null
-        }
     }
 }

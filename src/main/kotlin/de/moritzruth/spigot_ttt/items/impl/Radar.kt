@@ -6,6 +6,7 @@ import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.TTTItemListener
+import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
@@ -16,6 +17,7 @@ import org.bukkit.ChatColor
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
+import org.bukkit.event.EventHandler
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
@@ -107,6 +109,12 @@ object Radar: TTTItem, Buyable {
         override fun onRightClick(data: Data<PlayerInteractEvent>) {
             use(data.tttPlayer, data.event.item!!)
         }
+
+        @EventHandler
+        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) = isc.get(event.tttPlayer)?.reset(event.tttPlayer)
+
+        @EventHandler
+        fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, tttPlayer -> state.reset(tttPlayer) }
     }
 
     override val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {
@@ -136,7 +144,7 @@ object Radar: TTTItem, Buyable {
         lateinit var timestamp: Instant
         lateinit var bossBar: BossBar
 
-        override fun reset(tttPlayer: TTTPlayer) {
+        fun reset(tttPlayer: TTTPlayer) {
             setActive(tttPlayer, false)
 
             task?.cancel()

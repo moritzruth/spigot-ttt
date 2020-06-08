@@ -3,6 +3,7 @@ package de.moritzruth.spigot_ttt.items
 import com.comphenix.protocol.events.PacketListener
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import org.bukkit.ChatColor
 import org.bukkit.entity.Item
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
@@ -22,7 +23,11 @@ interface Buyable {
     val buyableBy: EnumSet<Role>
     val price: Int
     val buyLimit: Int?
+
+    fun onBuy(tttPlayer: TTTPlayer) {}
 }
+
+val PASSIVE = "${ChatColor.RESET}${ChatColor.RED}(Passiv)"
 
 // Marker
 interface Spawning

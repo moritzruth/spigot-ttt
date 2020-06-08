@@ -4,9 +4,7 @@ import com.google.common.collect.MutableClassToInstanceMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 
-interface IState {
-    fun reset(tttPlayer: TTTPlayer) {}
-}
+interface IState
 
 class StateContainer(private val tttPlayer: TTTPlayer) {
     private val instances = MutableClassToInstanceMap.create<IState>()
@@ -22,6 +20,8 @@ class StateContainer(private val tttPlayer: TTTPlayer) {
 
     fun <T: IState> get(stateClass: KClass<T>): T? = instances.getInstance(stateClass.java)
 
+    fun <T: IState> has(stateClass: KClass<T>): Boolean = instances.containsKey(stateClass.java)
+
     fun <T: IState> put(stateClass: KClass<out T>, value: T) {
         if (instances.containsKey(stateClass.java))
             throw IllegalStateException("There is already a state instance in this container")
@@ -30,15 +30,16 @@ class StateContainer(private val tttPlayer: TTTPlayer) {
     }
 
     fun <T: IState> remove(stateClass: KClass<T>) = instances.remove(stateClass.java)
-
-    fun resetAndClear() {
-        instances.values.forEach { it.reset(tttPlayer) }
-        instances.clear()
-    }
 }
 
 class InversedStateContainer<T: IState>(private val stateClass: KClass<T>) {
     fun getOrCreate(tttPlayer: TTTPlayer) = tttPlayer.stateContainer.getOrCreate(stateClass)
     fun get(tttPlayer: TTTPlayer) = tttPlayer.stateContainer.get(stateClass)
     fun remove(tttPlayer: TTTPlayer) = tttPlayer.stateContainer.remove(stateClass)
+
+    val tttPlayers get() = PlayerManager.tttPlayers.filter { it.stateContainer.has(stateClass) }
+
+    fun forEachState(fn: (T, TTTPlayer) -> Unit) {
+        tttPlayers.forEach { it.stateContainer.get(stateClass)?.run { fn(this, it) } }
+    }
 }

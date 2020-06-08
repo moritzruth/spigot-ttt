@@ -88,8 +88,8 @@ class TTTPlayer(player: Player, role: Role) {
         alive = false
         TTTCorpse.spawn(this, reason)
 
+        player.inventory.clear()
         credits = 0
-        Shop.clear(this)
 
 //        PlayerManager.letRemainingRoleGroupWin()
         plugin.server.pluginManager.callEvent(TTTPlayerDeathEvent(this, player.location))
@@ -176,8 +176,6 @@ class TTTPlayer(player: Player, role: Role) {
                 it.onDeselect(this)
             }
         }
-
-        stateContainer.resetAndClear()
 
         invisible = false
 

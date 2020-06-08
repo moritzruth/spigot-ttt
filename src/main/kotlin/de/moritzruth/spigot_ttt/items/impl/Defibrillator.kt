@@ -3,6 +3,7 @@ package de.moritzruth.spigot_ttt.items.impl
 import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.TTTItemListener
+import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
@@ -79,6 +80,9 @@ object Defibrillator: TTTItem, Buyable {
                 is Action.Canceled -> noop()
             }
         }
+
+        @EventHandler
+        fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, tttPlayer -> state.reset(tttPlayer) }
     }
 
     sealed class Action(val tttPlayer: TTTPlayer) {
@@ -137,7 +141,7 @@ object Defibrillator: TTTItem, Buyable {
             BarStyle.SOLID
         )
 
-        override fun reset(tttPlayer: TTTPlayer) {
+        fun reset(tttPlayer: TTTPlayer) {
             bossBar.removePlayer(tttPlayer.player)
             action?.reset()
         }

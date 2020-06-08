@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.items.weapons.guns
 
 import de.moritzruth.spigot_ttt.TTTItemListener
+import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.players.*
@@ -15,6 +16,7 @@ import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
 import org.bukkit.*
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
@@ -194,6 +196,12 @@ abstract class Gun(
                 shoot(data.tttPlayer, data.event.item!!)
             } catch (e: ActionInProgressError) {}
         }
+
+        @EventHandler
+        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) = isc.get(event.tttPlayer)?.reset()
+
+        @EventHandler
+        fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, _ -> state.reset() }
     }
 
     class ActionInProgressError: RuntimeException("The gun has an ongoing action which may not be canceled")
@@ -202,9 +210,7 @@ abstract class Gun(
         var currentAction: Action? = null
         var remainingShots = magazineSize
 
-        override fun reset(tttPlayer: TTTPlayer) {
-            currentAction?.task?.cancel()
-        }
+        fun reset() { currentAction?.task?.cancel() }
     }
 
     sealed class Action(var itemStack: ItemStack) {

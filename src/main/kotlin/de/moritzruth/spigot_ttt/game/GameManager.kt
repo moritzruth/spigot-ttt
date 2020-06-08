@@ -42,9 +42,10 @@ object GameManager {
         }
 
         Timers.startOverPhaseTimer(plugin.config.getInt("duration.over", 10)) {
+            plugin.server.pluginManager.callEvent(GameEndEvent(false))
+
             phase = null
             resetWorld()
-
             PlayerManager.resetAfterGame()
         }
 
@@ -80,6 +81,7 @@ object GameManager {
     fun abortGame(broadcast: Boolean = false) {
         if (phase === null) throw IllegalStateException("The game is not running")
 
+        plugin.server.pluginManager.callEvent(GameEndEvent(true))
         phase = null
         Timers.cancelCurrentTask()
         resetWorld()

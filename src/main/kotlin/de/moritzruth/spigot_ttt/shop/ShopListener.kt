@@ -47,6 +47,9 @@ object ShopListener: Listener {
                     tttPlayer.addItem(tttItem)
                     tttPlayer.boughtItems.add(tttItem)
                     tttPlayer.credits -= tttItem.price
+
+                    tttItem.onBuy(tttPlayer)
+
                     Shop.setItems(tttPlayer)
                 } catch (e: TTTPlayer.AlreadyHasItemException) {
                     ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast dieses Item bereits")
