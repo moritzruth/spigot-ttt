@@ -9,6 +9,7 @@ import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
+import de.moritzruth.spigot_ttt.items.PASSIVE
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
@@ -18,7 +19,6 @@ import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
 import org.bukkit.event.EventHandler
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import java.time.Duration
@@ -33,7 +33,7 @@ object Radar: TTTItem, Buyable {
     private const val COOLDOWN_DURATION = 40
 
     override val itemStack = ItemStack(ResourcePack.Items.radar).applyMeta {
-        setDisplayName(DISPLAY_NAME)
+        setDisplayName("$DISPLAY_NAME $PASSIVE")
         lore = listOf(
             "",
             "${ChatColor.GOLD}Zeigt dir alle 30 Sekunden",
@@ -50,10 +50,8 @@ object Radar: TTTItem, Buyable {
 
     val isc = InversedStateContainer(State::class)
 
-    fun use(tttPlayer: TTTPlayer, itemStack: ItemStack) {
+    override fun onBuy(tttPlayer: TTTPlayer) {
         val state = isc.getOrCreate(tttPlayer)
-        if (state.enabled) return
-        state.enabled = true
 
         state.bossBar = plugin.server.createBossBar(DISPLAY_NAME, BarColor.BLUE, BarStyle.SOLID)
         state.bossBar.addPlayer(tttPlayer.player)
@@ -76,10 +74,6 @@ object Radar: TTTItem, Buyable {
                 }
             }
         }, 0, 2)
-
-        itemStack.applyMeta {
-            setDisplayName(DISPLAY_NAME + "${ChatColor.RESET} - ${ChatColor.GREEN}Aktiviert")
-        }
     }
 
     private fun setActive(tttPlayer: TTTPlayer, value: Boolean) {
@@ -106,12 +100,11 @@ object Radar: TTTItem, Buyable {
     }
 
     override val listener = object : TTTItemListener(this, true) {
-        override fun onRightClick(data: Data<PlayerInteractEvent>) {
-            use(data.tttPlayer, data.event.item!!)
-        }
-
         @EventHandler
-        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) = isc.get(event.tttPlayer)?.reset(event.tttPlayer)
+        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+            isc.get(event.tttPlayer)?.reset(event.tttPlayer)
+            isc.remove(event.tttPlayer)
+        }
 
         @EventHandler
         fun onGameEnd(event: GameEndEvent) = isc.forEachState { state, tttPlayer -> state.reset(tttPlayer) }
@@ -138,7 +131,6 @@ object Radar: TTTItem, Buyable {
     }
 
     class State: IState {
-        var enabled = false
         var task: BukkitTask? = null
         var active: Boolean = false
         lateinit var timestamp: Instant
