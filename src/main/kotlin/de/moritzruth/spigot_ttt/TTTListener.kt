@@ -28,7 +28,14 @@ object TTTListener: Listener {
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        event.joinMessage = "${TTTPlugin.prefix}${event.player.displayName} ${ChatColor.GOLD}hat das Spiel betreten."
+        val player = event.player
+        player.setPlayerListHeaderFooter(
+            "\n${ChatColor.GREEN}${ChatColor.BOLD}Willkommen ${ChatColor.WHITE}${player.name}!\n ",
+            "\n    ${ChatColor.RED}Sobald du stirbst, darfst du ${ChatColor.BOLD}nicht mehr reden.    \n\n" +
+                    "${ChatColor.GRAY}${ChatColor.BOLD}TTT v1.0.0 by zziius\n "
+        )
+
+        event.joinMessage = "${TTTPlugin.prefix}${player.displayName} ${ChatColor.GOLD}hat das Spiel betreten."
     }
 
     @EventHandler
