@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack
 object EnderPearl: TTTItem, Buyable {
     override val type = TTTItem.Type.SPECIAL
     override val itemStack = ItemStack(Material.ENDER_PEARL).applyMeta {
-        setDisplayName("${ChatColor.DARK_GREEN}Ender Perle")
+        setDisplayName("${ChatColor.DARK_GREEN}Enderperle")
     }
     override val buyableBy = roles(Role.TRAITOR, Role.JACKAL, Role.DETECTIVE)
     override val price = 1

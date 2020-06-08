@@ -73,7 +73,7 @@ object Defibrillator: TTTItem, Buyable {
                             state.reset(tttPlayer)
                             isc.remove(tttPlayer)
                         } catch(e: TTTPlayer.AlreadyLivingException) {
-                            // do not cancel the cancelTask
+                            action.cancel()
                         }
                     } else state.bossBar.progress = progress
                 }
@@ -94,8 +94,13 @@ object Defibrillator: TTTItem, Buyable {
             val duration get() = Duration.between(startedAt, Instant.now()).toMillis().toDouble() / 1000
 
             fun createCancelTask() = plugin.server.scheduler.runTaskLater(plugin, fun() {
-                state.action = Canceled(tttPlayer)
+                cancel()
             }, 10)
+
+            fun cancel() {
+                cancelTask.cancel()
+                state.action = Canceled(tttPlayer)
+            }
 
             init {
                 state.bossBar.color = BarColor.GREEN
