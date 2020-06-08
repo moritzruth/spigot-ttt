@@ -5,10 +5,11 @@ import org.bukkit.Location
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
-class TTTPlayerDeathEvent(
+data class TTTPlayerDeathEvent(
     val tttPlayer: TTTPlayer,
     val location: Location,
-    val tttCorpse: TTTCorpse
+    val tttCorpse: TTTCorpse,
+    val killer: TTTPlayer?
 ): Event() {
     override fun getHandlers(): HandlerList {
         @Suppress("RedundantCompanionReference") // false positive

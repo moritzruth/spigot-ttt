@@ -85,25 +85,25 @@ object GeneralGameEventsListener : Listener {
         if (tttPlayer.player.health - event.finalDamage <= 0) {
             val damageInfo = tttPlayer.damageInfo
 
-            val reason = if (damageInfo != null) {
+            if (damageInfo != null && damageInfo.expectedDamageCause == event.cause) {
                 tttPlayer.damageInfo = null
-                damageInfo.damager.credits += 1
+                tttPlayer.onDeath(damageInfo.deathReason, damageInfo.damager)
+            } else {
+                val reason = when (event.cause) {
+                    EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
+                    EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
+                    EntityDamageEvent.DamageCause.ENTITY_EXPLOSION -> DeathReason.EXPLOSION
+                    EntityDamageEvent.DamageCause.DROWNING -> DeathReason.DROWNED
+                    EntityDamageEvent.DamageCause.FIRE,
+                    EntityDamageEvent.DamageCause.FIRE_TICK,
+                    EntityDamageEvent.DamageCause.LAVA,
+                    EntityDamageEvent.DamageCause.HOT_FLOOR -> DeathReason.FIRE
+                    EntityDamageEvent.DamageCause.POISON, EntityDamageEvent.DamageCause.WITHER -> DeathReason.POISON
+                    else -> DeathReason.SUICIDE
+                }
 
-                damageInfo.deathReason
-            } else when (event.cause) {
-                EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
-                EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
-                EntityDamageEvent.DamageCause.ENTITY_EXPLOSION -> DeathReason.EXPLOSION
-                EntityDamageEvent.DamageCause.DROWNING -> DeathReason.DROWNED
-                EntityDamageEvent.DamageCause.FIRE,
-                EntityDamageEvent.DamageCause.FIRE_TICK,
-                EntityDamageEvent.DamageCause.LAVA,
-                EntityDamageEvent.DamageCause.HOT_FLOOR -> DeathReason.FIRE
-                EntityDamageEvent.DamageCause.POISON, EntityDamageEvent.DamageCause.WITHER -> DeathReason.POISON
-                else -> DeathReason.SUICIDE
+                tttPlayer.onDeath(reason, null)
             }
-
-            tttPlayer.onDeath(reason)
 
 //                gameManager.playerManager.tttPlayers.forEach {
 //                    it.player.playSound(tttPlayer.player.location, Sound.ENTITY_PLAYER_DEATH, SoundCategory.PLAYERS, 2f, 1f)

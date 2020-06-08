@@ -1,3 +1,9 @@
 package de.moritzruth.spigot_ttt.game.players
 
-data class DamageInfo(val damager: TTTPlayer, val deathReason: DeathReason)
+import org.bukkit.event.entity.EntityDamageEvent
+
+data class DamageInfo(
+    val damager: TTTPlayer,
+    val deathReason: DeathReason,
+    val expectedDamageCause: EntityDamageEvent.DamageCause = EntityDamageEvent.DamageCause.CUSTOM
+)

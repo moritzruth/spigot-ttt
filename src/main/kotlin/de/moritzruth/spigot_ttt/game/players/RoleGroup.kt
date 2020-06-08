@@ -11,6 +11,6 @@ enum class RoleGroup(val primaryRole: Role, val additionalRoles: EnumSet<Role> =
         firstTTTPlayer.role.group == this && secondTTTPlayer.role.group == this
 
     companion object {
-        fun getGroupOf(role: Role) = values().find { it.primaryRole == role || it.additionalRoles.contains(role) }
+        fun getGroupOf(role: Role) = values().find { it.primaryRole == role || it.additionalRoles.contains(role) }!!
     }
 }

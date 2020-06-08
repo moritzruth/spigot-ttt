@@ -43,7 +43,7 @@ object PlayerManager {
 
         val stillLivingRoleGroups = stillLivingRoleGroups
         if (stillLivingRoleGroups.count() == 1) {
-            GameManager.letRoleWin(stillLivingRoleGroups.first()!!.primaryRole)
+            GameManager.letRoleWin(stillLivingRoleGroups.first().primaryRole)
         }
     }
 
@@ -85,9 +85,7 @@ object PlayerManager {
                 GameManager.abortGame()
                 GameMessenger.abortedPlayerLeft()
             }
-            GamePhase.COMBAT -> {
-                tttPlayer.onDeath(DeathReason.DISCONNECTED)
-            }
+            GamePhase.COMBAT -> tttPlayer.onDeath(DeathReason.DISCONNECTED, null)
             GamePhase.OVER -> noop()
         }
     }

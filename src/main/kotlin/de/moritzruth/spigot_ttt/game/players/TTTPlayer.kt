@@ -81,7 +81,8 @@ class TTTPlayer(player: Player, role: Role) {
         }
     }
 
-    fun onDeath(reason: DeathReason = DeathReason.SUICIDE) {
+    fun onDeath(reason: DeathReason, killer: TTTPlayer?) {
+        if (killer == this) throw IllegalArgumentException("You cannot be your own killer")
         GameManager.ensurePhase(GamePhase.COMBAT)
 
         player.sendMessage(TTTPlugin.prefix + "${ChatColor.RED}${ChatColor.BOLD}Du bist gestorben")
@@ -93,11 +94,11 @@ class TTTPlayer(player: Player, role: Role) {
         player.inventory.clear()
         credits = 0
 
-        val event = TTTPlayerDeathEvent(this, player.location, tttCorpse)
+        val event = TTTPlayerDeathEvent(this, player.location, tttCorpse, killer)
         plugin.server.pluginManager.callEvent(event)
 
         if (event.letRoundEnd) {
-//            PlayerManager.letRemainingRoleGroupWin()
+            PlayerManager.letRemainingRoleGroupWin()
         }
     }
 

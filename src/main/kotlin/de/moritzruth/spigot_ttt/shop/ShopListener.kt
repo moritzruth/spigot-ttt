@@ -3,6 +3,7 @@ package de.moritzruth.spigot_ttt.shop
 import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathEvent
 import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.ItemManager
 import de.moritzruth.spigot_ttt.plugin
@@ -57,6 +58,23 @@ object ShopListener: Listener {
                     ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast keinen Platz dafür")
                 }
             }
+        }
+    }
+
+    @EventHandler
+    fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+        val killer = event.killer ?: return
+
+        if (event.tttPlayer.role.group != killer.role.group) {
+            println("klljlk")
+            PlayerManager.tttPlayers
+                .filter { it.role.canOwnCredits && it.role.group == killer.role.group }
+                .forEach {
+
+                    println("öllll")
+                    it.credits += 1
+                    ActionBarAPI.sendActionBar(it.player, "${ChatColor.GREEN}Du hast einen Credit erhalten")
+                }
         }
     }
 }

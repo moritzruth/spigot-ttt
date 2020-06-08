@@ -18,6 +18,7 @@ import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
 import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 
@@ -49,7 +50,7 @@ object Knife: TTTItem, Buyable {
             val distance = damagerTTTPlayer.player.location.distance(damagedTTTPlayer.player.location)
 
             if (distance > 1.5) event.isCancelled = true else {
-                damagedTTTPlayer.damageInfo = DamageInfo(damagerTTTPlayer, DeathReason.Item(Knife))
+                damagedTTTPlayer.damageInfo = DamageInfo(damagerTTTPlayer, DeathReason.Item(Knife), EntityDamageEvent.DamageCause.ENTITY_ATTACK)
                 event.damage = 1000.0
 
                 damagerTTTPlayer.player.playSound(damagerTTTPlayer.player.location, Sound.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1F, 1F)
