@@ -6,7 +6,7 @@ object ResourcePack {
     object Items {
         val textureless = Material.WHITE_STAINED_GLASS_PANE
         val deathReason = Material.GRAY_STAINED_GLASS_PANE
-        val questionMark = Material.IRON_BLOCK
+        val questionMark = Material.GRASS_BLOCK
         val time = Material.CLOCK
 
         // Roles
@@ -22,6 +22,7 @@ object ResourcePack {
         val teleporter = Material.SPRUCE_WOOD
         val martyrdomGrenade = Material.BIRCH_LOG
         val fakeCorpse = Material.SPRUCE_LOG
+        val defibrillator = Material.IRON_INGOT
 
         // Weapons
         val deagle = Material.IRON_HOE

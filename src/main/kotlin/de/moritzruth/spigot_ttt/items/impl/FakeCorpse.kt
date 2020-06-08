@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.items.impl
 
+import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.players.*
@@ -10,6 +11,7 @@ import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.isRightClick
+import de.moritzruth.spigot_ttt.utils.removeTTTItem
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -117,11 +119,16 @@ object FakeCorpse: TTTItem, Buyable {
                     state.choosePlayerInventory -> {
                         tttPlayer.player.closeInventory()
 
-                        val player = plugin.server.getPlayer((item.itemMeta as SkullMeta).owningPlayer!!.uniqueId)!!
-                        TTTCorpse.spawnFake(state.chosenRole!!, player, tttPlayer.player.location)
+                        val corpsePlayer = plugin.server.getPlayer((item.itemMeta as SkullMeta).owningPlayer!!.uniqueId)!!
+                        val corpseTTTPlayer = PlayerManager.getTTTPlayer(corpsePlayer)
 
-                        val itemIndex = tttPlayer.player.inventory.indexOfFirst { it.type == itemStack.type }
-                        tttPlayer.player.inventory.clear(itemIndex)
+                        if (corpseTTTPlayer == null) {
+                            ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Das hat nicht funktioniert")
+                        } else {
+                            TTTCorpse.spawnFake(state.chosenRole!!, corpseTTTPlayer, tttPlayer.player.location)
+
+                            tttPlayer.player.inventory.removeTTTItem(FakeCorpse)
+                        }
                     }
                 }
             }

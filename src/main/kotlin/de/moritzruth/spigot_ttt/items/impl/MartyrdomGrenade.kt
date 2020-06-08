@@ -12,7 +12,6 @@ import de.moritzruth.spigot_ttt.utils.createKillExplosion
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
-import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -71,7 +70,7 @@ object MartyrdomGrenade: TTTItem, Buyable {
             state.explodeTask = plugin.server.scheduler.runTaskLater(plugin, fun() {
                 GameManager.world.playSound(
                     event.location,
-                    Sound.ENTITY_GENERIC_EXPLODE,
+                    ResourcePack.Sounds.grenadeExplode,
                     SoundCategory.PLAYERS,
                     1F,
                     1F

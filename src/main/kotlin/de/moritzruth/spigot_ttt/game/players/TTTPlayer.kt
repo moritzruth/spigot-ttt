@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.game.players
 
+import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
@@ -13,6 +14,7 @@ import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
@@ -89,10 +91,29 @@ class TTTPlayer(player: Player, role: Role) {
         credits = 0
         Shop.clear(this)
 
-        PlayerManager.letRemainingRoleGroupWin()
-
+//        PlayerManager.letRemainingRoleGroupWin()
         plugin.server.pluginManager.callEvent(TTTPlayerDeathEvent(this, player.location))
     }
+
+    fun revive(location: Location, credits: Int = 0) {
+        if (alive) throw AlreadyLivingException()
+
+        alive = true
+        this.credits = credits
+
+        player.health = 20.0
+        player.teleport(location)
+
+        Shop.setItems(this)
+
+        player.sendMessage(TTTPlugin.prefix + "${ChatColor.GREEN}${ChatColor.BOLD}Du wurdest wiederbelebt")
+
+        plugin.server.scheduler.runTask(plugin, fun() {
+            player.gameMode = GameMode.SURVIVAL
+        })
+    }
+
+    class AlreadyLivingException: Exception("The player already lives")
 
     private fun adjustPlayer() {
         player.scoreboard = scoreboard.scoreboard

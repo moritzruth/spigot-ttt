@@ -6,10 +6,7 @@ import de.moritzruth.spigot_ttt.items.Buyable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.isRelevant
 import de.moritzruth.spigot_ttt.items.weapons.LoreHelper
-import de.moritzruth.spigot_ttt.utils.applyMeta
-import de.moritzruth.spigot_ttt.utils.clearHeldItemSlot
-import de.moritzruth.spigot_ttt.utils.hideInfo
-import de.moritzruth.spigot_ttt.utils.isLeftClick
+import de.moritzruth.spigot_ttt.utils.*
 import org.bukkit.ChatColor
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
@@ -60,6 +57,9 @@ object Knife: TTTItem, Buyable {
             if (distance > 1.5) event.isCancelled = true else {
                 damagedTTTPlayer.damageInfo = DamageInfo(damagerTTTPlayer, DeathReason.Item(Knife))
                 event.damage = 1000.0
+
+                damagerTTTPlayer.player.playSound(damagerTTTPlayer.player.location, Sound.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1F, 1F)
+                damagerTTTPlayer.player.inventory.removeTTTItemNextTick(Knife)
             }
         }
     }

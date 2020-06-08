@@ -12,7 +12,6 @@ import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import org.bukkit.ChatColor
 import org.bukkit.Location
-import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
@@ -21,7 +20,7 @@ import org.golde.bukkit.corpsereborn.nms.Corpses
 import java.time.Instant
 
 class TTTCorpse private constructor(
-    private val player: Player,
+    val tttPlayer: TTTPlayer,
     location: Location,
     private val role: Role,
     private val reason: DeathReason,
@@ -29,8 +28,8 @@ class TTTCorpse private constructor(
 ) {
     var status = Status.UNIDENTIFIED; private set
 
-    val corpse: Corpses.CorpseData?
-    val inventory = player.server.createInventory(null, InventoryType.HOPPER, "${role.chatColor}${player.displayName}")
+    val corpse: Corpses.CorpseData
+    val inventory = tttPlayer.player.server.createInventory(null, InventoryType.HOPPER, "${role.chatColor}${tttPlayer.player.displayName}")
 
     val timestamp: Instant = Instant.now()
     private var fullMinutesSinceDeath = 0
@@ -44,7 +43,7 @@ class TTTCorpse private constructor(
 
         setItems()
 
-        corpse = CorpseAPI.spawnCorpse(player, location)
+        corpse = CorpseAPI.spawnCorpse(tttPlayer.player, location)
 
         updateTimeListener = plugin.server.scheduler.runTaskTimer(plugin, fun() {
             fullMinutesSinceDeath += 1
@@ -91,8 +90,9 @@ class TTTCorpse private constructor(
     }
 
     fun identify(tttPlayer: TTTPlayer, inspect: Boolean) {
+        ensureNotDestroyed()
         if (status == Status.UNIDENTIFIED) {
-            GameMessenger.corpseIdentified(tttPlayer.player.displayName, player.displayName, role)
+            GameMessenger.corpseIdentified(tttPlayer.player.displayName, tttPlayer.player.displayName, role)
 
             if (!inspect) {
                 status = Status.IDENTIFIED
@@ -117,13 +117,25 @@ class TTTCorpse private constructor(
         }
     }
 
+    fun revive() {
+        ensureNotDestroyed()
+        tttPlayer.revive(corpse.trueLocation, credits)
+        destroy()
+    }
+
     fun destroy() {
-        if (corpse !== null) CorpseAPI.removeCorpse(corpse)
+        status = Status.DESTROYED
+        CorpseAPI.removeCorpse(corpse)
         updateTimeListener.cancel()
         inventory.viewers.toSet().forEach { it.closeInventory() }
     }
 
+    private fun ensureNotDestroyed() {
+        if (status == Status.DESTROYED) throw IllegalStateException("This corpse was destroyed")
+    }
+
     enum class Status {
+        DESTROYED,
         UNIDENTIFIED,
         IDENTIFIED,
         INSPECTED
@@ -136,7 +148,7 @@ class TTTCorpse private constructor(
 
         fun spawn(tttPlayer: TTTPlayer, reason: DeathReason) {
             CorpseManager.add(TTTCorpse(
-                tttPlayer.player,
+                tttPlayer,
                 tttPlayer.player.location,
                 tttPlayer.role,
                 reason,
@@ -144,9 +156,9 @@ class TTTCorpse private constructor(
             ))
         }
 
-        fun spawnFake(role: Role, player: Player, location: Location) {
+        fun spawnFake(role: Role, tttPlayer: TTTPlayer, location: Location) {
             CorpseManager.add(TTTCorpse(
-                player,
+                tttPlayer,
                 location,
                 role,
                 DeathReason.Item(Pistol),
