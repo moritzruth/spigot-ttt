@@ -3,12 +3,12 @@ package de.moritzruth.spigot_ttt.game.items
 import com.comphenix.protocol.ProtocolLibrary
 import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.players.IState
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.items.impl.*
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.BaseballBat
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.Knife
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.guns.*
+import de.moritzruth.spigot_ttt.game.players.IState
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.nextTick
 import org.bukkit.ChatColor
@@ -57,7 +57,7 @@ object ItemManager {
     val listener = object : Listener {
         @EventHandler
         fun onPlayerItemHeld(event: PlayerItemHeldEvent) {
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+            val tttPlayer = TTTPlayer.of(event.player) ?: return
             val itemStack = event.player.inventory.getItem(event.newSlot)
 
             tttPlayer.itemInHand =
@@ -67,7 +67,7 @@ object ItemManager {
 
         @EventHandler
         fun onPlayerDropItem(event: PlayerDropItemEvent) {
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+            val tttPlayer = TTTPlayer.of(event.player) ?: return
             val tttItem = getItemByItemStack(event.itemDrop.itemStack) ?: return
 
             if (tttItem.type != TTTItem.Type.SPECIAL) {
@@ -102,7 +102,7 @@ object ItemManager {
             }
 
             val player = event.entity as Player
-            val tttPlayer = PlayerManager.getTTTPlayer(player) ?: return
+            val tttPlayer = TTTPlayer.of(player) ?: return
 
             val tttItem = getItemByItemStack(event.item.itemStack)
 

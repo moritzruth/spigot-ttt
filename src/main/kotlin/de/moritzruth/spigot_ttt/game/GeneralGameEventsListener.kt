@@ -10,6 +10,7 @@ import com.comphenix.protocol.wrappers.PlayerInfoData
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.nextTick
 import org.bukkit.ChatColor
@@ -79,7 +80,7 @@ object GeneralGameEventsListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onEntityDamageHighest(event: EntityDamageEvent) {
         if (event.entity !is Player) return
-        val tttPlayer = PlayerManager.getTTTPlayer(event.entity as Player) ?: return
+        val tttPlayer = TTTPlayer.of(event.entity as Player) ?: return
 
         if (tttPlayer.player.health - event.finalDamage <= 0) {
             val damageInfo = tttPlayer.damageInfo
@@ -124,7 +125,7 @@ object GeneralGameEventsListener : Listener {
 
     @EventHandler
     fun onAsyncPlayerChat(event: AsyncPlayerChatEvent) {
-        val senderTTTPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+        val senderTTTPlayer = TTTPlayer.of(event.player) ?: return
 
         if (!senderTTTPlayer.alive) {
             PlayerManager.tttPlayers.filter { !it.alive }.forEach {

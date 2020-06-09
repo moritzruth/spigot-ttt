@@ -36,14 +36,14 @@ open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamag
 
     protected fun handle(event: PlayerInteractEvent, handler: (tttPlayer: TTTPlayer) -> Unit) {
         if (event.item?.type == tttItem.itemStack.type) {
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+            val tttPlayer = TTTPlayer.of(event.player) ?: return
             handler(tttPlayer)
         }
     }
 
     protected fun handle(event: PlayerSwapHandItemsEvent, handler: (tttPlayer: TTTPlayer) -> Unit) {
         if (event.offHandItem?.type == tttItem.itemStack.type) {
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+            val tttPlayer = TTTPlayer.of(event.player) ?: return
             handler(tttPlayer)
         }
     }
@@ -60,8 +60,8 @@ open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamag
             damaged is Player &&
             damager.inventory.itemInMainHand.type == tttItem.itemStack.type
         ) {
-            val damagerTTTPlayer = PlayerManager.getTTTPlayer(damager) ?: return
-            val damagedTTTPlayer = PlayerManager.getTTTPlayer(damaged) ?: return
+            val damagerTTTPlayer = TTTPlayer.of(damager) ?: return
+            val damagedTTTPlayer = TTTPlayer.of(damaged) ?: return
             handler(damagerTTTPlayer, damagedTTTPlayer)
         }
     }
@@ -69,24 +69,24 @@ open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamag
     protected fun handle(event: InventoryClickEvent, handler: (tttPlayer: TTTPlayer) -> Unit) {
         val whoClicked = event.whoClicked
         if (whoClicked is Player) {
-            handler(PlayerManager.getTTTPlayer(whoClicked) ?: return)
+            handler(TTTPlayer.of(whoClicked) ?: return)
         }
     }
 
     protected fun handle(event: InventoryCloseEvent, handler: (tttPlayer: TTTPlayer) -> Unit) {
         val player = event.player
         if (player is Player) {
-            handler(PlayerManager.getTTTPlayer(player) ?: return)
+            handler(TTTPlayer.of(player) ?: return)
         }
     }
 
     protected fun <T: PlayerEvent> handle(event: T, handler: (tttPlayer: TTTPlayer) -> Unit) {
-        handler(PlayerManager.getTTTPlayer(event.player) ?: return)
+        handler(TTTPlayer.of(event.player) ?: return)
     }
 
     protected fun handle(event: PlayerItemConsumeEvent, handler: (tttPlayer: TTTPlayer) -> Unit) {
         if (event.item.type == tttItem.itemStack.type) {
-            handler(PlayerManager.getTTTPlayer(event.player) ?: return)
+            handler(TTTPlayer.of(event.player) ?: return)
         }
     }
 

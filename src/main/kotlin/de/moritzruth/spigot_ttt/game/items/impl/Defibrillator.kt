@@ -47,7 +47,7 @@ object Defibrillator: TTTItem, Buyable {
     override val listener = object : TTTItemListener(this, true) {
         @EventHandler
         fun onCorpseClick(event: CorpseClickEvent) {
-            val tttPlayer = PlayerManager.getTTTPlayer(event.clicker) ?: return
+            val tttPlayer = TTTPlayer.of(event.clicker) ?: return
             if (tttPlayer.player.inventory.itemInMainHand.type != itemStack.type) return
 
             val tttCorpse = CorpseManager.getTTTCorpse(event.corpse) ?: return

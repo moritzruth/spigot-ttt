@@ -20,8 +20,6 @@ object PlayerManager {
     private val stillLivingRoleGroups get() = stillLivingRoles.map { it.group }.toSet()
     private val playersJoinedDuringRound = mutableSetOf<Player>()
 
-    fun getTTTPlayer(player: Player) = tttPlayers.find { it.player === player }
-
     fun getPlayersByRole() = mutableMapOf<Role, MutableSet<TTTPlayer>>()
             .apply { tttPlayers.forEach { getOrPut(it.role) { mutableSetOf() }.add(it) } }
             .toMap()
@@ -77,7 +75,7 @@ object PlayerManager {
 
     fun onPlayerQuit(player: Player) {
         playersJoinedDuringRound.remove(player)
-        val tttPlayer = getTTTPlayer(player) ?: return
+        val tttPlayer = TTTPlayer.of(player) ?: return
 
         when(GameManager.phase) {
             GamePhase.PREPARING -> {

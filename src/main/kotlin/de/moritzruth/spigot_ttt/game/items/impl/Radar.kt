@@ -112,11 +112,11 @@ object Radar: TTTItem, Buyable {
 
     override val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {
         override fun onPacketSending(event: PacketEvent) {
-            val tttPlayer = PlayerManager.getTTTPlayer(event.player) ?: return
+            val tttPlayer = TTTPlayer.of(event.player) ?: return
             val packet = WrapperPlayServerEntityMetadata(event.packet)
 
             val playerOfPacket = plugin.server.onlinePlayers.find { it.entityId == packet.entityID } ?: return
-            val tttPlayerOfPacket = PlayerManager.getTTTPlayer(playerOfPacket) ?: return
+            val tttPlayerOfPacket = TTTPlayer.of(playerOfPacket) ?: return
             if (tttPlayerOfPacket.alive) {
                 // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
                 try {

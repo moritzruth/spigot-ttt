@@ -91,7 +91,7 @@ abstract class Gun(
                 val entity = rayTraceResult.hitEntity
 
                 if (entity is Player) {
-                    val damagedTTTPlayer = PlayerManager.getTTTPlayer(entity)
+                    val damagedTTTPlayer = TTTPlayer.of(entity)
 
                     if (damagedTTTPlayer != null) {
                         onHit(tttPlayer, damagedTTTPlayer)

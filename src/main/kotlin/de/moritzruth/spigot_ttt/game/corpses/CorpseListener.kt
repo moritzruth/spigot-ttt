@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.game.corpses
 
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -19,7 +19,7 @@ object CorpseListener: Listener {
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
         if (event.whoClicked !is Player) return
-        PlayerManager.getTTTPlayer(event.whoClicked as Player) ?: return
+        TTTPlayer.of(event.whoClicked as Player) ?: return
 
         if (CorpseManager.isCorpseInventory(event.inventory)) {
             event.isCancelled = true
@@ -31,7 +31,7 @@ object CorpseListener: Listener {
         // bug: always ClickType.UNKNOWN
         // if (event.clickType !== ClickType.RIGHT) return
 
-        val tttPlayer = PlayerManager.getTTTPlayer(event.clicker) ?: return
+        val tttPlayer = TTTPlayer.of(event.clicker) ?: return
         val tttCorpse = CorpseManager.getTTTCorpse(event.corpse)
 
         if (tttCorpse !== null) {

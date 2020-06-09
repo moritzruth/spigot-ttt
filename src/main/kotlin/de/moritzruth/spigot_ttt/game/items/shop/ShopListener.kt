@@ -22,7 +22,7 @@ object ShopListener: Listener {
     @EventHandler(ignoreCancelled = true)
     fun onInventoryClick(event: InventoryClickEvent) {
         if (event.whoClicked !is Player) return
-        val tttPlayer = PlayerManager.getTTTPlayer(event.whoClicked as Player) ?: return
+        val tttPlayer = TTTPlayer.of(event.whoClicked as Player) ?: return
 
         if (event.click === ClickType.CREATIVE || event.clickedInventory?.holder != event.whoClicked) return
         event.isCancelled = true

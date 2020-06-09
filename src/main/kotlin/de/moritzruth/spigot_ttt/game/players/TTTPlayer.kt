@@ -8,8 +8,8 @@ import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.items.ItemManager
 import de.moritzruth.spigot_ttt.game.items.Selectable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
-import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.game.items.shop.Shop
+import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.hotbarContents
 import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
@@ -249,4 +249,8 @@ class TTTPlayer(player: Player, role: Role) {
     }
 
     override fun toString() = "TTTPlayer(${player.name} is $role)"
+
+    companion object {
+        fun of(player: Player) = PlayerManager.tttPlayers.find { it.player === player }
+    }
 }

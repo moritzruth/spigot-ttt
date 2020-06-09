@@ -20,7 +20,7 @@ fun createKillExplosion(tttPlayer: TTTPlayer, location: Location, radius: Double
 
     val nearbyTTTPlayers = GameManager.world.getNearbyEntities(
         location, radius, radius, radius
-    ) { it is Player }.mapNotNull { PlayerManager.getTTTPlayer(it as Player) }
+    ) { it is Player }.mapNotNull { TTTPlayer.of(it as Player) }
 
     for (nearbyTTTPlayer in nearbyTTTPlayers) {
         nearbyTTTPlayer.damageInfo = DamageInfo(tttPlayer, DeathReason.Item(Fireball))

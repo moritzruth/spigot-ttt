@@ -98,7 +98,7 @@ object FakeCorpse: TTTItem, Buyable {
                         tttPlayer.player.closeInventory()
 
                         val corpsePlayer = plugin.server.getPlayer((item.itemMeta as SkullMeta).owningPlayer!!.uniqueId)!!
-                        val corpseTTTPlayer = PlayerManager.getTTTPlayer(corpsePlayer)
+                        val corpseTTTPlayer = TTTPlayer.of(corpsePlayer)
 
                         if (corpseTTTPlayer == null) {
                             ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Das hat nicht funktioniert")
