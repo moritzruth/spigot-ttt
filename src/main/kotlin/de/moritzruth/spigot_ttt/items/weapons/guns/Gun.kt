@@ -13,6 +13,7 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.items.weapons.LoreHelper
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
 import org.bukkit.*
 import org.bukkit.entity.Item
@@ -181,13 +182,11 @@ abstract class Gun(
             tttPlayer.stateContainer.put(stateClass, state)
             val currentAction = state.currentAction ?: return
 
-            plugin.server.scheduler.runTask(plugin, fun() {
-                currentAction.itemStack = tttPlayer.player.inventory.find { it.type == itemEntity.itemStack.type }!!
+            nextTick { currentAction.itemStack = tttPlayer.player.inventory.find { it.type == itemEntity.itemStack.type }!!
 
                 if (currentAction is Action.Cooldown) {
                     currentAction.resume()
-                }
-            })
+                } }
         }
     }
 

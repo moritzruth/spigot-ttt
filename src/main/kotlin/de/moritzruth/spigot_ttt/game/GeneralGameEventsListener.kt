@@ -11,6 +11,7 @@ import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.nextTick
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -71,9 +72,7 @@ object GeneralGameEventsListener : Listener {
 
         val player = event.entity
         if (player is Player) {
-            plugin.server.scheduler.runTask(plugin, fun() {
-                player.noDamageTicks = 0
-            })
+            nextTick { player.noDamageTicks = 0 }
         }
     }
 

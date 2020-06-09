@@ -5,6 +5,7 @@ import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GameMessenger
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.noop
 import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
 import org.bukkit.ChatColor
@@ -29,9 +30,7 @@ object PlayerManager {
         playersJoinedDuringRound.forEach {
             teleportPlayerToWorldSpawn(it)
 
-            plugin.server.scheduler.runTask(plugin, fun() {
-                it.gameMode = GameMode.SURVIVAL
-            })
+            nextTick { it.gameMode = GameMode.SURVIVAL }
         }
 
         tttPlayers.forEach(TTTPlayer::resetAfterGameEnd)

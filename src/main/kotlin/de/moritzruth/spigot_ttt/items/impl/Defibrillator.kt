@@ -4,6 +4,7 @@ import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
+import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.items.Buyable
@@ -11,6 +12,7 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.*
 import org.bukkit.ChatColor
+import org.bukkit.SoundCategory
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.event.EventHandler
@@ -37,6 +39,10 @@ object Defibrillator: TTTItem, Buyable {
     override val buyLimit = 1
 
     private val isc = InversedStateContainer(State::class)
+
+    fun stopSound() = plugin.server.onlinePlayers.forEach {
+        it.stopSound(ResourcePack.Sounds.Item.Defibrillator.use, SoundCategory.PLAYERS)
+    }
 
     override val listener = object : TTTItemListener(this, true) {
         @EventHandler
@@ -103,6 +109,14 @@ object Defibrillator: TTTItem, Buyable {
             }
 
             init {
+                GameManager.world.playSound(
+                    tttPlayer.player.location,
+                    ResourcePack.Sounds.Item.Defibrillator.use,
+                    SoundCategory.PLAYERS,
+                    1F,
+                    1F
+                )
+
                 state.bossBar.color = BarColor.GREEN
                 state.bossBar.addPlayer(tttPlayer.player)
             }
@@ -115,6 +129,15 @@ object Defibrillator: TTTItem, Buyable {
             private lateinit var task: BukkitTask
 
             init {
+                stopSound()
+                GameManager.world.playSound(
+                    tttPlayer.player.location,
+                    ResourcePack.Sounds.Item.Defibrillator.failed,
+                    SoundCategory.PLAYERS,
+                    1F,
+                    1F
+                )
+
                 task = plugin.server.scheduler.runTaskTimer(plugin, fun() {
                     val state = isc.get(tttPlayer) ?: return@runTaskTimer
 
@@ -149,6 +172,7 @@ object Defibrillator: TTTItem, Buyable {
         fun reset(tttPlayer: TTTPlayer) {
             bossBar.removePlayer(tttPlayer.player)
             action?.reset()
+            stopSound()
         }
     }
 }

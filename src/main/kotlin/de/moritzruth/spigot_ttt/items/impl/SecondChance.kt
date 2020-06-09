@@ -11,6 +11,7 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
+import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.setAllToItem
 import org.bukkit.ChatColor
 import org.bukkit.Location
@@ -89,9 +90,7 @@ object SecondChance: TTTItem, Buyable {
         fun onInventoryClose(event: InventoryCloseEvent) = handle(event) { tttPlayer ->
             if (event.inventory == chooseSpawnInventory) {
                 if (isc.get(tttPlayer)?.timeoutAction != null) {
-                    plugin.server.scheduler.runTask(plugin, fun() {
-                        if (isc.get(tttPlayer) != null) tttPlayer.player.openInventory(chooseSpawnInventory)
-                    })
+                    nextTick { if (isc.get(tttPlayer) != null) tttPlayer.player.openInventory(chooseSpawnInventory) }
                 }
             }
         }

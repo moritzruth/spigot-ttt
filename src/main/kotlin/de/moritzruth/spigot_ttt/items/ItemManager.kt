@@ -10,6 +10,7 @@ import de.moritzruth.spigot_ttt.items.weapons.guns.impl.*
 import de.moritzruth.spigot_ttt.items.weapons.impl.BaseballBat
 import de.moritzruth.spigot_ttt.items.weapons.impl.Knife
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.nextTick
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Item
@@ -107,9 +108,7 @@ object ItemManager {
 
             if (tttItem != null) {
                 if (runCatching { tttPlayer.checkAddItemPreconditions(tttItem) }.isSuccess) {
-                    plugin.server.scheduler.runTask(plugin, fun() {
-                        tttPlayer.updateItemInHand()
-                    })
+                    nextTick { tttPlayer.updateItemInHand() }
 
                     if (tttItem is DropHandler) {
                         tttItem.onPickup(tttPlayer, event.item)

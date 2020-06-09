@@ -11,6 +11,7 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.shop.Shop
 import de.moritzruth.spigot_ttt.utils.hotbarContents
+import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
 import org.bukkit.*
@@ -135,9 +136,7 @@ class TTTPlayer(player: Player, role: Role) {
         plugin.server.pluginManager.callEvent(TTTPlayerReviveEvent(this))
         player.sendMessage(TTTPlugin.prefix + "${ChatColor.GREEN}${ChatColor.BOLD}Du wurdest wiederbelebt")
 
-        plugin.server.scheduler.runTask(plugin, fun() {
-            player.gameMode = GameMode.SURVIVAL
-        })
+        nextTick { player.gameMode = GameMode.SURVIVAL }
     }
 
     class AlreadyLivingException: Exception("The player already lives")
@@ -188,9 +187,7 @@ class TTTPlayer(player: Player, role: Role) {
         }
 
         // Required to be delayed because of a Minecraft bug which sometimes turns players invisible
-        plugin.server.scheduler.runTask(plugin, fun() {
-            reset()
-        })
+        nextTick { reset() }
     }
 
     fun reset() {

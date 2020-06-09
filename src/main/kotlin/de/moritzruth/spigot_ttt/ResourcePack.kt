@@ -48,6 +48,20 @@ object ResourcePack {
         object Item {
             private const val PREFIX = NAMESPACE + "item."
 
+            object CloakingDevice {
+                private const val PREFIX = Item.PREFIX + "cloaking_device."
+
+                const val on = "${PREFIX}on"
+                const val off = "${PREFIX}off"
+            }
+
+            object Defibrillator {
+                private const val PREFIX = Item.PREFIX + "defibrillator."
+
+                const val use = "${PREFIX}use"
+                const val failed = "${PREFIX}failed"
+            }
+
             object Weapon {
                 private const val PREFIX = Item.PREFIX + "weapon."
 
@@ -103,13 +117,6 @@ object ResourcePack {
 
                     const val hit = "${PREFIX}hit"
                 }
-            }
-
-            object CloakingDevice {
-                private const val PREFIX = Item.PREFIX + "cloaking_device."
-
-                const val on = "${PREFIX}on"
-                const val off = "${PREFIX}off"
             }
         }
     }
