@@ -9,6 +9,7 @@ import de.moritzruth.spigot_ttt.game.items.shop.ShopListener
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.call
 import org.bukkit.GameRule
 import kotlin.random.Random
 
@@ -25,7 +26,7 @@ object GameManager {
         adjustWorld()
 
         ItemManager.registerListeners()
-        GeneralGameEventsListener.register()
+        GameListener.register()
         ShopListener.register()
         CorpseListener.register()
     }
@@ -43,7 +44,7 @@ object GameManager {
         }
 
         Timers.startOverPhaseTimer(plugin.config.getInt("duration.over", 10)) {
-            plugin.server.pluginManager.callEvent(GameEndEvent(false))
+            GameEndEvent(false).call()
 
             phase = null
             resetWorld()
@@ -89,7 +90,7 @@ object GameManager {
     fun abortGame(broadcast: Boolean = false) {
         if (phase === null) throw IllegalStateException("The game is not running")
 
-        plugin.server.pluginManager.callEvent(GameEndEvent(true))
+        GameEndEvent(true).call()
         phase = null
         Timers.cancelCurrentTask()
         resetWorld()

@@ -79,7 +79,7 @@ object SecondChance: TTTItem, Buyable {
             val state = isc.get(event.tttPlayer)
             if (state != null) {
                 if (Random.nextBoolean()) {
-                    event.letRoundEnd = false
+                    event.winnerRoleGroup = null
                     event.tttPlayer.player.openInventory(chooseSpawnInventory)
                     state.timeoutAction = TimeoutAction(event.tttPlayer, event.tttCorpse.corpse.trueLocation)
                 }

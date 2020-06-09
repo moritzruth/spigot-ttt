@@ -10,14 +10,13 @@ data class TTTPlayerDeathEvent(
     val location: Location,
     val tttCorpse: TTTCorpse,
     val killer: TTTPlayer?,
-    var scream: Boolean = true
+    var scream: Boolean = true,
+    var winnerRoleGroup: RoleGroup? = null
 ): Event() {
     override fun getHandlers(): HandlerList {
         @Suppress("RedundantCompanionReference") // false positive
         return Companion.handlers
     }
-
-    var letRoundEnd = true
 
     companion object {
         private val handlers = HandlerList()

@@ -36,12 +36,14 @@ object PlayerManager {
     }
 
     fun letRemainingRoleGroupWin() {
-        GameManager.ensurePhase(GamePhase.COMBAT)
+        val onlyRemainingRoleGroup = getOnlyRemainingRoleGroup() ?: return
+        GameManager.letRoleWin(onlyRemainingRoleGroup.primaryRole)
+    }
 
-        val stillLivingRoleGroups = stillLivingRoleGroups
-        if (stillLivingRoleGroups.count() == 1) {
-            GameManager.letRoleWin(stillLivingRoleGroups.first().primaryRole)
-        }
+    fun getOnlyRemainingRoleGroup(): RoleGroup? {
+        GameManager.ensurePhase(GamePhase.COMBAT)
+        return if (stillLivingRoleGroups.count() == 1) stillLivingRoleGroups.first()
+        else null
     }
 
     fun onPlayerJoin(player: Player) {

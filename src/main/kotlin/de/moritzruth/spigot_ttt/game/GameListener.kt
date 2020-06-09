@@ -8,9 +8,7 @@ import com.comphenix.protocol.events.PacketEvent
 import com.comphenix.protocol.wrappers.EnumWrappers
 import com.comphenix.protocol.wrappers.PlayerInfoData
 import de.moritzruth.spigot_ttt.TTTPlugin
-import de.moritzruth.spigot_ttt.game.players.DeathReason
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.nextTick
 import org.bukkit.ChatColor
@@ -24,7 +22,7 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
 
-object GeneralGameEventsListener : Listener {
+object GameListener : Listener {
     private val BLOCKED_COMMANDS = setOf("me", "tell")
 
     fun register() {
@@ -105,10 +103,6 @@ object GeneralGameEventsListener : Listener {
                 tttPlayer.onDeath(reason, null)
             }
 
-//                gameManager.playerManager.tttPlayers.forEach {
-//                    it.player.playSound(tttPlayer.player.location, Sound.ENTITY_PLAYER_DEATH, SoundCategory.PLAYERS, 2f, 1f)
-//                }
-
             event.damage = 0.0
         }
     }
@@ -133,6 +127,24 @@ object GeneralGameEventsListener : Listener {
             }
 
             event.isCancelled = true
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+        if (!setOf(RoleGroup.JACKAL, null).contains(event.winnerRoleGroup) && event.tttPlayer.role == Role.JACKAL) {
+            val sidekicks = PlayerManager.tttPlayers.filter { it.role == Role.SIDEKICK }
+
+            if (sidekicks.isNotEmpty()) {
+                val newJackal = sidekicks.random()
+                newJackal.changeRole(Role.JACKAL)
+
+                sidekicks.forEach { sidekick ->
+                    if (sidekick != newJackal) {
+                        sidekick.player.sendMessage(TTTPlugin.prefix + "${newJackal.player.displayName} ${ChatColor.GREEN}ist der neue Jackal")
+                    }
+                }
+            }
         }
     }
 

@@ -10,10 +10,7 @@ import de.moritzruth.spigot_ttt.game.items.Selectable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.shop.Shop
 import de.moritzruth.spigot_ttt.plugin
-import de.moritzruth.spigot_ttt.utils.hotbarContents
-import de.moritzruth.spigot_ttt.utils.nextTick
-import de.moritzruth.spigot_ttt.utils.secondsToTicks
-import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
+import de.moritzruth.spigot_ttt.utils.*
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
@@ -88,7 +85,7 @@ class TTTPlayer(player: Player, role: Role) {
             if (killer == null) "${ChatColor.RED}${ChatColor.BOLD}Du bist gestorben"
             else "${ChatColor.RED}${ChatColor.BOLD}Du wurdest von " +
                     "${ChatColor.RESET}${killer.player.displayName}" +
-                    "${ChatColor.RED}${ChatColor.BOLD} getötet"
+                    " ${ChatColor.RED}${ChatColor.BOLD}getötet"
         )
 
         player.gameMode = GameMode.SPECTATOR
@@ -98,18 +95,18 @@ class TTTPlayer(player: Player, role: Role) {
         player.inventory.clear()
         credits = 0
 
+        val onlyRemainingRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
+
         val event = TTTPlayerDeathEvent(
             this,
             player.location,
             tttCorpse,
             killer,
-            scream
-        )
-        plugin.server.pluginManager.callEvent(event)
+            scream,
+            onlyRemainingRoleGroup
+        ).call()
 
-        if (event.letRoundEnd) {
-            PlayerManager.letRemainingRoleGroupWin()
-        }
+        event.winnerRoleGroup?.run { GameManager.letRoleWin(primaryRole) }
 
         if (event.scream) {
             GameManager.world.playSound(
@@ -133,7 +130,7 @@ class TTTPlayer(player: Player, role: Role) {
 
         Shop.setItems(this)
 
-        plugin.server.pluginManager.callEvent(TTTPlayerReviveEvent(this))
+        TTTPlayerReviveEvent(this).call()
         player.sendMessage(TTTPlugin.prefix + "${ChatColor.GREEN}${ChatColor.BOLD}Du wurdest wiederbelebt")
 
         nextTick { player.gameMode = GameMode.SURVIVAL }
