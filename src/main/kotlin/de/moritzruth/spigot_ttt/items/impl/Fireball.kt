@@ -17,7 +17,6 @@ import org.bukkit.SoundCategory
 import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.entity.ExplosionPrimeEvent
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 
 typealias FireballEntity = org.bukkit.entity.Fireball
@@ -39,7 +38,7 @@ object Fireball: TTTItem, Buyable {
     val sendersByEntity = mutableMapOf<FireballEntity, TTTPlayer>()
 
     override val listener = object : TTTItemListener(this, true) {
-        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+        override fun onRightClick(data: ClickEventData) {
             data.tttPlayer.player.inventory.clearHeldItemSlot()
 
             val vector = data.tttPlayer.player.eyeLocation.toVector()

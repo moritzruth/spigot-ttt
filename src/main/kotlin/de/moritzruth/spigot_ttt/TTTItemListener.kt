@@ -6,7 +6,6 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.utils.isLeftClick
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.entity.Player
-import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -16,6 +15,7 @@ import org.bukkit.event.player.PlayerEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemConsumeEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
+import org.bukkit.inventory.ItemStack
 
 open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamage: Boolean): Listener {
     @EventHandler
@@ -26,14 +26,13 @@ open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamag
     @EventHandler
     fun onPlayerInteract(event: PlayerInteractEvent) = handle(event) { tttPlayer ->
         event.isCancelled = true
-        val data = Data(tttPlayer, event)
+        val data = ClickEventData(tttPlayer, event.item!!, event)
         if (event.action.isRightClick) onRightClick(data)
         else if (event.action.isLeftClick) onLeftClick(data)
     }
 
-    open fun onRightClick(data: Data<PlayerInteractEvent>) {}
-
-    open fun onLeftClick(data: Data<PlayerInteractEvent>) {}
+    open fun onRightClick(data: ClickEventData) {}
+    open fun onLeftClick(data: ClickEventData) {}
 
     protected fun handle(event: PlayerInteractEvent, handler: (tttPlayer: TTTPlayer) -> Unit) {
         if (event.item?.type == tttItem.itemStack.type) {
@@ -91,5 +90,9 @@ open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamag
         }
     }
 
-    data class Data<T: Event>(val tttPlayer: TTTPlayer, val event: T)
+    data class ClickEventData(
+        val tttPlayer: TTTPlayer,
+        val itemStack: ItemStack,
+        val event: PlayerInteractEvent
+    )
 }

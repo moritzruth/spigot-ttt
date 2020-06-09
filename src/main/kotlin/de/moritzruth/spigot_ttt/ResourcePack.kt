@@ -21,7 +21,7 @@ object ResourcePack {
         val sidekick = Material.BLUE_STAINED_GLASS_PANE
 
         // Special Item
-        val cloakingDevice = Material.COBWEB
+        val cloakingDevice = Material.STONE_AXE
         val radar = Material.IRON_HELMET
         val teleporter = Material.SPRUCE_WOOD
         val martyrdomGrenade = Material.BIRCH_LOG

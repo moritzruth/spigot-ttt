@@ -17,7 +17,6 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryType
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
@@ -74,7 +73,7 @@ object FakeCorpse: TTTItem, Buyable {
     }
 
     override val listener = object : TTTItemListener(this, true) {
-        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+        override fun onRightClick(data: ClickEventData) {
             isc.getOrCreate(data.tttPlayer).chosenRole = null
             data.tttPlayer.player.openInventory(chooseRoleInventory)
         }

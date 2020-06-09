@@ -8,7 +8,6 @@ import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import org.bukkit.ChatColor
 import org.bukkit.Material
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 
 object EnderPearl: TTTItem, Buyable {
@@ -21,7 +20,7 @@ object EnderPearl: TTTItem, Buyable {
     override val buyLimit: Int? = null
 
     override val listener = object : TTTItemListener(this, true) {
-        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+        override fun onRightClick(data: ClickEventData) {
             data.event.isCancelled = false
         }
     }

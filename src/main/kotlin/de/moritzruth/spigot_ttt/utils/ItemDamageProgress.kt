@@ -17,8 +17,7 @@ fun startItemDamageProgress(itemStack: ItemStack, duration: Double, startProgres
         val secondsElapsed = (Instant.now().toEpochMilli() - startedAt) / 1000.0
         val progress = secondsElapsed / duration + startProgress
 
-        val maxDurability = getMaxDurability(itemStack.type)
-
+        val maxDurability = itemStack.type.maxDurability
         val damageMeta = itemStack.itemMeta!! as Damageable
 
         if (fromRight) {

@@ -10,7 +10,6 @@ import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
 import org.bukkit.event.EventHandler
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemConsumeEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
@@ -45,7 +44,7 @@ object HealingPotion: TTTItem, Buyable {
             event.player.health = event.player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: 100.0
         }
 
-        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+        override fun onRightClick(data: ClickEventData) {
             data.event.isCancelled = false
         }
     }

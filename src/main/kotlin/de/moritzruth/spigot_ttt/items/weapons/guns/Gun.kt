@@ -18,7 +18,6 @@ import org.bukkit.*
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
@@ -193,13 +192,13 @@ abstract class Gun(
     }
 
     override val listener = object : TTTItemListener(this, true) {
-        override fun onLeftClick(data: Data<PlayerInteractEvent>) {
+        override fun onLeftClick(data: ClickEventData) {
             try {
                 reload(data.tttPlayer, data.event.item!!)
             } catch (e: ActionInProgressError) {}
         }
 
-        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+        override fun onRightClick(data: ClickEventData) {
             try {
                 shoot(data.tttPlayer, data.event.item!!)
             } catch (e: ActionInProgressError) {}

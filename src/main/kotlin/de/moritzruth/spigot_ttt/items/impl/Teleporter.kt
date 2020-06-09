@@ -12,7 +12,6 @@ import de.moritzruth.spigot_ttt.utils.clearHeldItemSlot
 import org.bukkit.ChatColor
 import org.bukkit.Sound
 import org.bukkit.event.EventHandler
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.ItemStack
 
@@ -56,7 +55,7 @@ object Teleporter: TTTItem, Buyable {
             }
         }
 
-        override fun onRightClick(data: Data<PlayerInteractEvent>) {
+        override fun onRightClick(data: ClickEventData) {
             val tttPlayer = data.tttPlayer
             val state = isc.getOrCreate(tttPlayer)
 
