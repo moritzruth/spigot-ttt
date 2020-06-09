@@ -39,3 +39,5 @@ private var pluginInstance: TTTPlugin? = null
 
 val plugin: TTTPlugin
     get() = pluginInstance ?: throw Error("The plugin is not initialized yet (How are you even calling this???)")
+
+const val COMMAND_RESPONSE_PREFIX = "➤ "

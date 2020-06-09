@@ -21,3 +21,10 @@ commands:
     usage: /additemspawn
     permission: ttt.additemspawn
     description: Add an item spawn
+
+  revive:
+    usage: /revive [Player] [here]
+    permission: ttt.revive
+    description: Revive yourself or another player at the world spawn or at your location
+
+

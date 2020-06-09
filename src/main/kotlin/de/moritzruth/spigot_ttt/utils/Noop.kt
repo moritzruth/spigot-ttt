@@ -6,7 +6,7 @@ import org.bukkit.command.TabCompleter
 
 fun noop() {}
 
-class NoOpTabCompleter: TabCompleter {
+object EmptyTabCompleter: TabCompleter {
     override fun onTabComplete(
         sender: CommandSender,
         command: Command,

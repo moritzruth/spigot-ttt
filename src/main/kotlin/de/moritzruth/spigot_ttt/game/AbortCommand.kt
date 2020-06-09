@@ -1,8 +1,8 @@
 package de.moritzruth.spigot_ttt.game
 
-import de.moritzruth.spigot_ttt.TTTPlugin
-import de.moritzruth.spigot_ttt.utils.NoOpTabCompleter
+import de.moritzruth.spigot_ttt.COMMAND_RESPONSE_PREFIX
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.EmptyTabCompleter
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -12,13 +12,13 @@ class AbortCommand: CommandExecutor {
     init {
         plugin.getCommand("abort")?.let {
             it.setExecutor(this)
-            it.tabCompleter = NoOpTabCompleter()
+            it.tabCompleter = EmptyTabCompleter
         }
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (GameManager.phase === null) {
-            sender.sendMessage("${TTTPlugin.prefix}${ChatColor.RED}Zurzeit läuft kein Spiel.")
+            sender.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.RED}Zurzeit läuft kein Spiel.")
         } else {
             GameManager.abortGame(true)
         }
