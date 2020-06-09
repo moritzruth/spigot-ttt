@@ -5,11 +5,11 @@ import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
-import de.moritzruth.spigot_ttt.items.ItemManager
-import de.moritzruth.spigot_ttt.items.Selectable
-import de.moritzruth.spigot_ttt.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.ItemManager
+import de.moritzruth.spigot_ttt.game.items.Selectable
+import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
-import de.moritzruth.spigot_ttt.shop.Shop
+import de.moritzruth.spigot_ttt.game.items.shop.Shop
 import de.moritzruth.spigot_ttt.utils.hotbarContents
 import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.secondsToTicks

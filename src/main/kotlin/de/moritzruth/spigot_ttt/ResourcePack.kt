@@ -8,7 +8,7 @@ object ResourcePack {
     object Items {
         val textureless = Material.WHITE_STAINED_GLASS_PANE
         val deathReason = Material.GRAY_STAINED_GLASS_PANE
-        val questionMark = Material.GRASS_BLOCK
+        val questionMark = Material.STONE
         val time = Material.CLOCK
         val dot = Material.GRAY_STAINED_GLASS
         val arrowDown = Material.WHITE_STAINED_GLASS

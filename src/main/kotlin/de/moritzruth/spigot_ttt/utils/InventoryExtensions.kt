@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.utils
 
-import de.moritzruth.spigot_ttt.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItem
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.PlayerInventory

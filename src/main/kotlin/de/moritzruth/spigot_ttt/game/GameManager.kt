@@ -2,13 +2,13 @@ package de.moritzruth.spigot_ttt.game
 
 import de.moritzruth.spigot_ttt.game.corpses.CorpseListener
 import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
+import de.moritzruth.spigot_ttt.game.items.ItemManager
+import de.moritzruth.spigot_ttt.game.items.ItemSpawner
+import de.moritzruth.spigot_ttt.game.items.shop.Shop
+import de.moritzruth.spigot_ttt.game.items.shop.ShopListener
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.Role
-import de.moritzruth.spigot_ttt.items.ItemManager
-import de.moritzruth.spigot_ttt.items.ItemSpawner
 import de.moritzruth.spigot_ttt.plugin
-import de.moritzruth.spigot_ttt.shop.Shop
-import de.moritzruth.spigot_ttt.shop.ShopListener
 import org.bukkit.GameRule
 import kotlin.random.Random
 

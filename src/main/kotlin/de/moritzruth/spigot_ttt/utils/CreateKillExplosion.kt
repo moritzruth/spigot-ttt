@@ -5,7 +5,7 @@ import de.moritzruth.spigot_ttt.game.players.DamageInfo
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.items.impl.Fireball
+import de.moritzruth.spigot_ttt.game.items.impl.Fireball
 import org.bukkit.Location
 import org.bukkit.Particle
 import org.bukkit.entity.Player

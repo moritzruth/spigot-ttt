@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.players
 
-import de.moritzruth.spigot_ttt.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItem
 
 sealed class DeathReason(val displayText: String) {
     object DISCONNECTED: DeathReason("Verbindung unterbrochen")
