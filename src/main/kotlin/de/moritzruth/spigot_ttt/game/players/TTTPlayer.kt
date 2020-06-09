@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.game.players
 
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
@@ -12,10 +13,7 @@ import de.moritzruth.spigot_ttt.shop.Shop
 import de.moritzruth.spigot_ttt.utils.hotbarContents
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
-import org.bukkit.ChatColor
-import org.bukkit.GameMode
-import org.bukkit.Location
-import org.bukkit.Material
+import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -81,7 +79,7 @@ class TTTPlayer(player: Player, role: Role) {
         }
     }
 
-    fun onDeath(reason: DeathReason, killer: TTTPlayer?) {
+    fun onDeath(reason: DeathReason, killer: TTTPlayer?, scream: Boolean = true) {
         if (killer == this) throw IllegalArgumentException("You cannot be your own killer")
         GameManager.ensurePhase(GamePhase.COMBAT)
 
@@ -99,11 +97,27 @@ class TTTPlayer(player: Player, role: Role) {
         player.inventory.clear()
         credits = 0
 
-        val event = TTTPlayerDeathEvent(this, player.location, tttCorpse, killer)
+        val event = TTTPlayerDeathEvent(
+            this,
+            player.location,
+            tttCorpse,
+            killer,
+            scream
+        )
         plugin.server.pluginManager.callEvent(event)
 
         if (event.letRoundEnd) {
             PlayerManager.letRemainingRoleGroupWin()
+        }
+
+        if (event.scream) {
+            GameManager.world.playSound(
+                player.location,
+                ResourcePack.Sounds.playerDeath,
+                SoundCategory.PLAYERS,
+                1F,
+                1F
+            )
         }
     }
 

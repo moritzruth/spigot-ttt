@@ -87,7 +87,7 @@ object GeneralGameEventsListener : Listener {
 
             if (damageInfo != null && damageInfo.expectedDamageCause == event.cause) {
                 tttPlayer.damageInfo = null
-                tttPlayer.onDeath(damageInfo.deathReason, damageInfo.damager)
+                tttPlayer.onDeath(damageInfo.deathReason, damageInfo.damager, damageInfo.scream)
             } else {
                 val reason = when (event.cause) {
                     EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL

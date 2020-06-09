@@ -9,7 +9,8 @@ data class TTTPlayerDeathEvent(
     val tttPlayer: TTTPlayer,
     val location: Location,
     val tttCorpse: TTTCorpse,
-    val killer: TTTPlayer?
+    val killer: TTTPlayer?,
+    var scream: Boolean = true
 ): Event() {
     override fun getHandlers(): HandlerList {
         @Suppress("RedundantCompanionReference") // false positive

@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.items.weapons.guns
 
+import de.moritzruth.spigot_ttt.ResourcePack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
@@ -66,7 +67,13 @@ abstract class Gun(
         if (!onBeforeShoot(tttPlayer, itemStack, state)) return
 
         if (state.remainingShots == 0) {
-            GameManager.world.playSound(tttPlayer.player.location, Sound.BLOCK_ANVIL_PLACE, SoundCategory.PLAYERS, 1f, 1.3f)
+            GameManager.world.playSound(
+                tttPlayer.player.location,
+                ResourcePack.Sounds.Item.Weapon.Generic.emptyMagazine,
+                SoundCategory.PLAYERS,
+                1F,
+                1F
+            )
             return
         }
 

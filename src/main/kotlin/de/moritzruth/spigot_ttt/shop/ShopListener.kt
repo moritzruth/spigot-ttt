@@ -66,12 +66,9 @@ object ShopListener: Listener {
         val killer = event.killer ?: return
 
         if (event.tttPlayer.role.group != killer.role.group) {
-            println("klljlk")
             PlayerManager.tttPlayers
                 .filter { it.role.canOwnCredits && it.role.group == killer.role.group }
                 .forEach {
-
-                    println("öllll")
                     it.credits += 1
                     ActionBarAPI.sendActionBar(it.player, "${ChatColor.GREEN}Du hast einen Credit erhalten")
                 }

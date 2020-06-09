@@ -43,13 +43,19 @@ object ResourcePack {
     object Sounds {
         const val error = "minecraft:block.anvil.break"
         const val grenadeExplode = "minecraft:entity.generic.explode"
-        const val playerDeath = "${NAMESPACE}player_death"
+        const val playerDeath = "${NAMESPACE}player.death"
 
         object Item {
             private const val PREFIX = NAMESPACE + "item."
 
             object Weapon {
                 private const val PREFIX = Item.PREFIX + "weapon."
+
+                object Generic {
+                    private const val PREFIX = Weapon.PREFIX + "generic."
+
+                    const val emptyMagazine = "${PREFIX}empty_magazine"
+                }
 
                 object Pistol {
                     private const val PREFIX = Weapon.PREFIX + "pistol."
@@ -86,10 +92,16 @@ object ResourcePack {
                     const val reload = "${PREFIX}reload"
                 }
 
-                object Generic {
-                    private const val PREFIX = Weapon.PREFIX + "generic."
+                object BaseballBat {
+                    private const val PREFIX = Weapon.PREFIX + "baseball_bat."
 
-                    const val emptyMagazine = "${PREFIX}empty_magazine"
+                    const val hit = "${PREFIX}hit"
+                }
+
+                object Knife {
+                    private const val PREFIX = Weapon.PREFIX + "knife."
+
+                    const val hit = "${PREFIX}hit"
                 }
             }
 
@@ -98,18 +110,6 @@ object ResourcePack {
 
                 const val on = "${PREFIX}on"
                 const val off = "${PREFIX}off"
-            }
-
-            object BaseballBat {
-                private const val PREFIX = Item.PREFIX + "baseball_bat."
-
-                const val hit = "${PREFIX}hit"
-            }
-
-            object Knife {
-                private const val PREFIX = Item.PREFIX + "knife."
-
-                const val hit = "${PREFIX}hit"
             }
         }
     }
