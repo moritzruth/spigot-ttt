@@ -37,7 +37,9 @@ abstract class Gun(
     val cooldown: Double,
     val magazineSize: Int,
     val reloadTime: Double,
-    val itemMaterial: Material
+    val itemMaterial: Material,
+    val shootSound: String,
+    val reloadSound: String
 ): TTTItem, Selectable, DropHandler {
     override val itemStack = ItemStack(itemMaterial).applyMeta {
         setDisplayName(displayName)
@@ -68,8 +70,7 @@ abstract class Gun(
             return
         }
 
-        // TODO: Add sound
-        GameManager.world.playSound(tttPlayer.player.location, Sound.BLOCK_IRON_DOOR_OPEN, SoundCategory.PLAYERS, 2f, 1.3f)
+        GameManager.world.playSound(tttPlayer.player.location, shootSound, SoundCategory.PLAYERS, 1F, 1F)
 
         state.remainingShots--
         updateLevel(tttPlayer)
@@ -106,7 +107,7 @@ abstract class Gun(
 
         state.currentAction = Action.Reloading(this, itemStack, state, tttPlayer).also { it.start() }
 
-        // TODO: Add sound
+        GameManager.world.playSound(tttPlayer.player.location, reloadSound, SoundCategory.PLAYERS, 1F, 1F)
     }
 
     open fun computeActualDamage(tttPlayer: TTTPlayer, receiver: Player) = if (damage < 0 ) 1000.0 else damage
@@ -210,12 +211,16 @@ abstract class Gun(
         var currentAction: Action? = null
         var remainingShots = magazineSize
 
-        fun reset() { currentAction?.task?.cancel() }
+        fun reset() { currentAction?.reset() }
     }
 
     sealed class Action(var itemStack: ItemStack) {
         val startedAt = Instant.now()!!
         abstract var task: BukkitTask; protected set
+
+        open fun reset() {
+            task.cancel()
+        }
 
         open class Reloading(
             private val gun: Gun,

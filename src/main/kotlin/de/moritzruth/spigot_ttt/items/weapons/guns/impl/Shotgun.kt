@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.items.weapons.guns.impl
 
 import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.items.Spawning
 import de.moritzruth.spigot_ttt.items.TTTItem
@@ -10,6 +11,7 @@ import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
 import org.bukkit.ChatColor
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
@@ -23,11 +25,13 @@ object Shotgun: Gun(
     stateClass = State::class,
     displayName = "${ChatColor.YELLOW}${ChatColor.BOLD}Shotgun",
     damage = heartsToHealth(3.0),
-    cooldown = 0.8,
+    cooldown = 0.9,
     magazineSize = MAGAZINE_SIZE,
     reloadTime = RELOAD_TIME_PER_BULLET * MAGAZINE_SIZE,
     itemMaterial = ResourcePack.Items.shotgun,
-    additionalLore = listOf("${ChatColor.RED}Weniger Schaden auf Distanz")
+    additionalLore = listOf("${ChatColor.RED}Weniger Schaden auf Distanz"),
+    shootSound = ResourcePack.Sounds.Item.Weapon.Shotgun.fire,
+    reloadSound = ResourcePack.Sounds.Item.Weapon.Shotgun.reload
 ), Spawning {
     override val type = TTTItem.Type.HEAVY_WEAPON
 
@@ -35,7 +39,7 @@ object Shotgun: Gun(
         val distance = tttPlayer.player.location.distance(receiver.location)
 
         return when {
-            distance <= 2 -> heartsToHealth(10.0)
+            distance <= 1 -> heartsToHealth(8.0)
             distance >= 14 -> 0.0
             distance > 8 -> heartsToHealth(1.5)
             else -> heartsToHealth(damage)
@@ -61,6 +65,7 @@ object Shotgun: Gun(
 
     override fun reload(tttPlayer: TTTPlayer, itemStack: ItemStack, state: Gun.State) {
         val ownState = state as State
+        if (ownState.currentAction != null) throw ActionInProgressError()
         if (ownState.remainingShots == magazineSize) return
 
         ownState.currentAction = ReloadingAction(itemStack, ownState, tttPlayer).also { it.start() }
@@ -73,9 +78,8 @@ object Shotgun: Gun(
         when(val currentAction = ownState.currentAction) {
             is Action.Cooldown -> throw ActionInProgressError()
             is ReloadingAction -> {
+                currentAction.reset()
                 ownState.currentAction = null
-                currentAction.updateTask.cancel()
-                currentAction.task.cancel()
 
                 val damageMeta = item.itemMeta!! as Damageable
                 damageMeta.damage = 0
@@ -91,6 +95,11 @@ object Shotgun: Gun(
     private class ReloadingAction(itemStack: ItemStack, state: State, tttPlayer: TTTPlayer): Action.Reloading(Shotgun, itemStack, state, tttPlayer) {
         lateinit var updateTask: BukkitTask
 
+        override fun reset() {
+            task.cancel()
+            updateTask.cancel()
+        }
+
         override fun start() {
             task = startItemDamageProgress(
                 itemStack,
@@ -102,7 +111,7 @@ object Shotgun: Gun(
                 state.remainingShots++
                 updateLevel(tttPlayer)
 
-                // TODO: Add sound
+                GameManager.world.playSound(tttPlayer.player.location, reloadSound, SoundCategory.PLAYERS, 1F, 1F)
 
                 if (state.remainingShots == magazineSize) {
                     this.updateTask.cancel()

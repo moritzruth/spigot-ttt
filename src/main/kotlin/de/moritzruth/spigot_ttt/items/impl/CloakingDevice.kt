@@ -8,6 +8,7 @@ import de.moritzruth.spigot_ttt.items.Selectable
 import de.moritzruth.spigot_ttt.items.TTTItem
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import org.bukkit.ChatColor
+import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerToggleSprintEvent
@@ -48,6 +49,8 @@ object CloakingDevice: TTTItem,
 
                 // To prevent jumping (amplifier 200)
                 addPotionEffect(PotionEffect(PotionEffectType.JUMP, 1000000, 200, false, false))
+
+                playSound(location, ResourcePack.Sounds.Item.CloakingDevice.on, SoundCategory.PLAYERS, 1F, 1F)
             }
 
             tttPlayer.invisible = true
@@ -56,13 +59,12 @@ object CloakingDevice: TTTItem,
             tttPlayer.player.apply {
                 walkSpeed = 0.2F
                 removePotionEffect(PotionEffectType.JUMP)
+                playSound(location, ResourcePack.Sounds.Item.CloakingDevice.off, SoundCategory.PLAYERS, 1F, 1F)
             }
 
             tttPlayer.invisible = false
             state.enabled = false
         }
-
-        // TODO: Play sound
     }
 
     override val listener = object : TTTItemListener(this, true) {

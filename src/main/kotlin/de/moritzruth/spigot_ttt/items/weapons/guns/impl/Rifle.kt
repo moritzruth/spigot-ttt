@@ -14,7 +14,9 @@ object Rifle: Gun(
     cooldown = 0.1,
     magazineSize = 40,
     reloadTime = 2.0,
-    itemMaterial = ResourcePack.Items.rifle
+    itemMaterial = ResourcePack.Items.rifle,
+    shootSound = ResourcePack.Sounds.Item.Weapon.Rifle.fire,
+    reloadSound = ResourcePack.Sounds.Item.Weapon.Rifle.reload
 ), Spawning {
     override val type = TTTItem.Type.HEAVY_WEAPON
 

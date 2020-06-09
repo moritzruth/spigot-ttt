@@ -21,7 +21,9 @@ object SidekickDeagle: Gun(
     cooldown = 1.0,
     magazineSize = 1,
     reloadTime = 0.0,
-    itemMaterial = ResourcePack.Items.sidekickDeagle
+    itemMaterial = ResourcePack.Items.sidekickDeagle,
+    shootSound = ResourcePack.Sounds.Item.Weapon.Deagle.fire,
+    reloadSound = ResourcePack.Sounds.Item.Weapon.Deagle.reload
 ), Buyable {
     override val buyableBy = roles(Role.JACKAL)
     override val price = 1

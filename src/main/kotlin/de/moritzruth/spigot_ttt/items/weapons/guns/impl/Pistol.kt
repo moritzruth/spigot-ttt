@@ -14,7 +14,9 @@ object Pistol: Gun(
     cooldown = 0.8,
     magazineSize = 10,
     reloadTime = 2.0,
-    itemMaterial = ResourcePack.Items.pistol
+    itemMaterial = ResourcePack.Items.pistol,
+    shootSound = ResourcePack.Sounds.Item.Weapon.Pistol.fire,
+    reloadSound = ResourcePack.Sounds.Item.Weapon.Pistol.reload
 ), Spawning {
     override val type = TTTItem.Type.PISTOL_LIKE
 
