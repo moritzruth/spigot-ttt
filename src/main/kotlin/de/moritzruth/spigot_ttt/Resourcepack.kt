@@ -1,9 +1,11 @@
 package de.moritzruth.spigot_ttt
 
+import org.apache.commons.codec.binary.Hex
 import org.bukkit.Material
 
 object Resourcepack {
     const val url = "https://github.com/moritzruth/spigot-ttt/raw/master/resourcepack.zip"
+    val checksum = Hex.decodeHex("9333ca9c1e5f6ade64575b6007ded85a94450753")
     private const val NAMESPACE = "ttt:"
 
     object Items {

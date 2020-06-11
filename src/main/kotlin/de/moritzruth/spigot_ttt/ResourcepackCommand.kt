@@ -19,7 +19,7 @@ class ResourcepackCommand: CommandExecutor {
         if (sender !is Player) {
             sender.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.RED}Dieser Befehl kan nur als Spieler verwendet werden.")
         } else {
-            sender.setResourcePack(Resourcepack.url)
+            sender.setResourcePack(Resourcepack.url, Resourcepack.checksum)
         }
 
         return true

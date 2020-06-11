@@ -37,8 +37,7 @@ object TTTListener: Listener {
         )
 
         event.joinMessage = "${TTTPlugin.prefix}${player.displayName} ${ChatColor.GOLD}hat das Spiel betreten."
-        player.setResourcePack(Resourcepack.url)
-        player.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}Das Resourcepack wird heruntergeladen.")
+        player.setResourcePack(Resourcepack.url, Resourcepack.checksum)
     }
 
     @EventHandler
@@ -46,7 +45,8 @@ object TTTListener: Listener {
         when (event.status) {
             PlayerResourcePackStatusEvent.Status.DECLINED -> {
                 event.player.sendMessage("${TTTPlugin.prefix}${ChatColor.RED}Du hast das Resourcepack abgelehnt.")
-                event.player.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}${ChatColor.BOLD}Wenn du es dir anders überlegt hast, tritt dem Server neu bei.")
+                event.player.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}${ChatColor.BOLD}Wenn du es dir anders " +
+                        "überlegst, entferne den Server aus deiner Serverlist und tritt ihm erneut bei.")
             }
             PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD -> {
                 event.player.sendMessage("${TTTPlugin.prefix}${ChatColor.RED}Das Laden des Resourcepacks " +
