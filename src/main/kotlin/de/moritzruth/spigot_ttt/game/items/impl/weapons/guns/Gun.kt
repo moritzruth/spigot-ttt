@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
@@ -64,7 +64,7 @@ abstract class Gun(
         if (state.remainingShots == 0) {
             GameManager.world.playSound(
                 tttPlayer.player.location,
-                ResourcePack.Sounds.Item.Weapon.Generic.emptyMagazine,
+                Resourcepack.Sounds.Item.Weapon.Generic.emptyMagazine,
                 SoundCategory.PLAYERS,
                 1F,
                 1F

@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.Role
@@ -24,7 +24,7 @@ import org.bukkit.util.Vector
 
 object BaseballBat: TTTItem, Buyable, Selectable {
     override val type = TTTItem.Type.MELEE
-    override val itemStack = ItemStack(ResourcePack.Items.baseballBat).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.baseballBat).applyMeta {
         setDisplayName("${ChatColor.RESET}${ChatColor.BOLD}Baseball-Schläger")
         lore = listOf(
             "",
@@ -68,7 +68,7 @@ object BaseballBat: TTTItem, Buyable, Selectable {
 
                 GameManager.world.playSound(
                     damagedPlayer.location,
-                    ResourcePack.Sounds.Item.Weapon.BaseballBat.hit,
+                    Resourcepack.Sounds.Item.Weapon.BaseballBat.hit,
                     SoundCategory.PLAYERS,
                     1F,
                     1F

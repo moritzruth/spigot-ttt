@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.*
@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack
 
 object Teleporter: TTTItem, Buyable {
     override val type = TTTItem.Type.SPECIAL
-    override val itemStack = ItemStack(ResourcePack.Items.teleporter).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.teleporter).applyMeta {
         setDisplayName("${ChatColor.LIGHT_PURPLE}${ChatColor.BOLD}Teleporter")
 
         lore = listOf(
@@ -86,7 +86,7 @@ object Teleporter: TTTItem, Buyable {
             }
 
             // Teleport failed
-            tttPlayer.player.playSound(tttPlayer.player.location, ResourcePack.Sounds.error, 1F, 1F)
+            tttPlayer.player.playSound(tttPlayer.player.location, Resourcepack.Sounds.error, 1F, 1F)
         }
     }
 

@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.roles
@@ -20,16 +20,16 @@ object SidekickDeagle: Gun(
     cooldown = 1.0,
     magazineSize = 1,
     reloadTime = 0.0,
-    itemMaterial = ResourcePack.Items.sidekickDeagle,
-    shootSound = ResourcePack.Sounds.Item.Weapon.Deagle.fire,
-    reloadSound = ResourcePack.Sounds.Item.Weapon.Deagle.reload
+    itemMaterial = Resourcepack.Items.sidekickDeagle,
+    shootSound = Resourcepack.Sounds.Item.Weapon.Deagle.fire,
+    reloadSound = Resourcepack.Sounds.Item.Weapon.Deagle.reload
 ), Buyable {
     override val buyableBy = roles(Role.JACKAL)
     override val price = 1
     override val type = TTTItem.Type.PISTOL_LIKE
     override val buyLimit = 1
 
-    override val itemStack = ItemStack(ResourcePack.Items.sidekickDeagle).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.sidekickDeagle).applyMeta {
         hideInfo()
         setDisplayName("${ChatColor.AQUA}${ChatColor.BOLD}Sidekick Deagle")
         lore = listOf(

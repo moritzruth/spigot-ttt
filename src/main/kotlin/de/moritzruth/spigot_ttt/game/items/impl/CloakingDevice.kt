@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.items.Buyable
@@ -22,7 +22,7 @@ import org.bukkit.scheduler.BukkitTask
 object CloakingDevice: TTTItem,
     Buyable,
     Selectable {
-    override val itemStack = ItemStack(ResourcePack.Items.cloakingDevice).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.cloakingDevice).applyMeta {
         setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}###${ChatColor.RESET}${ChatColor.GRAY} Cloaking Device ${ChatColor.MAGIC}###")
         lore = listOf(
             "",
@@ -52,7 +52,7 @@ object CloakingDevice: TTTItem,
             // To prevent jumping (amplifier 200)
             addPotionEffect(PotionEffect(PotionEffectType.JUMP, 1000000, 200, false, false))
 
-            playSound(location, ResourcePack.Sounds.Item.CloakingDevice.on, SoundCategory.PLAYERS, 1F, 1F)
+            playSound(location, Resourcepack.Sounds.Item.CloakingDevice.on, SoundCategory.PLAYERS, 1F, 1F)
         }
 
         tttPlayer.invisible = true
@@ -65,7 +65,7 @@ object CloakingDevice: TTTItem,
         tttPlayer.player.apply {
             walkSpeed = 0.2F
             removePotionEffect(PotionEffectType.JUMP)
-            playSound(location, ResourcePack.Sounds.Item.CloakingDevice.off, SoundCategory.PLAYERS, 1F, 1F)
+            playSound(location, Resourcepack.Sounds.Item.CloakingDevice.off, SoundCategory.PLAYERS, 1F, 1F)
         }
 
         tttPlayer.invisible = false

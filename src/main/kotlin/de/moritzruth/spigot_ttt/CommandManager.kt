@@ -11,5 +11,6 @@ object CommandManager {
         AbortCommand()
         AddItemSpawnCommand()
         ReviveCommand()
+        ResourcepackCommand()
     }
 }

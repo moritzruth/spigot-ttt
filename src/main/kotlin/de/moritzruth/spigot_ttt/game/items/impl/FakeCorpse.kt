@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.players.*
@@ -24,7 +24,7 @@ import org.bukkit.inventory.meta.SkullMeta
 object FakeCorpse: TTTItem, Buyable {
     private val DISPLAY_NAME = "${ChatColor.YELLOW}${ChatColor.BOLD}Fake-Leiche"
 
-    override val itemStack = ItemStack(ResourcePack.Items.fakeCorpse).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.fakeCorpse).applyMeta {
         setDisplayName(DISPLAY_NAME)
         lore = listOf(
                 "",

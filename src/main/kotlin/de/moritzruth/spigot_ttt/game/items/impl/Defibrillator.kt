@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
@@ -26,7 +26,7 @@ object Defibrillator: TTTItem, Buyable {
     private const val REVIVE_DURATION = 10.0
 
     override val type = TTTItem.Type.SPECIAL
-    override val itemStack = ItemStack(ResourcePack.Items.defibrillator).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.defibrillator).applyMeta {
         setDisplayName("${ChatColor.RESET}${ChatColor.BOLD}Defibrillator")
         hideInfo()
         lore = listOf(
@@ -41,7 +41,7 @@ object Defibrillator: TTTItem, Buyable {
     private val isc = InversedStateContainer(State::class)
 
     fun stopSound() = plugin.server.onlinePlayers.forEach {
-        it.stopSound(ResourcePack.Sounds.Item.Defibrillator.use, SoundCategory.PLAYERS)
+        it.stopSound(Resourcepack.Sounds.Item.Defibrillator.use, SoundCategory.PLAYERS)
     }
 
     override val listener = object : TTTItemListener(this, true) {
@@ -111,7 +111,7 @@ object Defibrillator: TTTItem, Buyable {
             init {
                 GameManager.world.playSound(
                     tttPlayer.player.location,
-                    ResourcePack.Sounds.Item.Defibrillator.use,
+                    Resourcepack.Sounds.Item.Defibrillator.use,
                     SoundCategory.PLAYERS,
                     1F,
                     1F
@@ -132,7 +132,7 @@ object Defibrillator: TTTItem, Buyable {
                 stopSound()
                 GameManager.world.playSound(
                     tttPlayer.player.location,
-                    ResourcePack.Sounds.Item.Defibrillator.failed,
+                    Resourcepack.Sounds.Item.Defibrillator.failed,
                     SoundCategory.PLAYERS,
                     1F,
                     1F

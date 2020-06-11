@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.DamageInfo
@@ -24,7 +24,7 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.inventory.ItemStack
 
 object Knife: TTTItem, Buyable {
-    override val itemStack = ItemStack(ResourcePack.Items.knife).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.knife).applyMeta {
         setDisplayName("${ChatColor.RED}${ChatColor.BOLD}Knife")
         lore = listOf(
             "",
@@ -65,7 +65,7 @@ object Knife: TTTItem, Buyable {
 
                     GameManager.world.playSound(
                         damagedTTTPlayer.player.location,
-                        ResourcePack.Sounds.Item.Weapon.Knife.hit,
+                        Resourcepack.Sounds.Item.Weapon.Knife.hit,
                         SoundCategory.PLAYERS,
                         1F,
                         1F

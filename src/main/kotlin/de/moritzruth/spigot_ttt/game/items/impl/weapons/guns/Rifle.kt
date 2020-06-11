@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.items.Spawning
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.utils.heartsToHealth
@@ -13,9 +13,9 @@ object Rifle: Gun(
     cooldown = 0.1,
     magazineSize = 40,
     reloadTime = 2.0,
-    itemMaterial = ResourcePack.Items.rifle,
-    shootSound = ResourcePack.Sounds.Item.Weapon.Rifle.fire,
-    reloadSound = ResourcePack.Sounds.Item.Weapon.Rifle.reload
+    itemMaterial = Resourcepack.Items.rifle,
+    shootSound = Resourcepack.Sounds.Item.Weapon.Rifle.fire,
+    reloadSound = Resourcepack.Sounds.Item.Weapon.Rifle.reload
 ), Spawning {
     override val type = TTTItem.Type.HEAVY_WEAPON
 

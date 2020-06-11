@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
@@ -21,7 +21,7 @@ import org.bukkit.scheduler.BukkitTask
 
 object MartyrdomGrenade: TTTItem, Buyable {
     override val type = TTTItem.Type.SPECIAL
-    override val itemStack = ItemStack(ResourcePack.Items.martyrdomGrenade).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.martyrdomGrenade).applyMeta {
         hideInfo()
         setDisplayName("${ChatColor.DARK_PURPLE}${ChatColor.BOLD}Märtyriumsgranate $PASSIVE")
 
@@ -48,7 +48,7 @@ object MartyrdomGrenade: TTTItem, Buyable {
             state.explodeTask = plugin.server.scheduler.runTaskLater(plugin, fun() {
                 GameManager.world.playSound(
                     event.location,
-                    ResourcePack.Sounds.grenadeExplode,
+                    Resourcepack.Sounds.grenadeExplode,
                     SoundCategory.PLAYERS,
                     1F,
                     1F

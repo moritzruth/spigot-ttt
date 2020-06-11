@@ -27,4 +27,10 @@ commands:
     permission: ttt.revive
     description: Revive yourself or another player at the world spawn or at your location
 
+  resourcepack:
+    usage: /rp
+    description: Start the download of the TTT resourcepack, required for sounds
+    aliases:
+      - rp
+      - resources
 

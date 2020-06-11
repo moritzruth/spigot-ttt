@@ -10,6 +10,7 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.PlayerResourcePackStatusEvent
 
 object TTTListener: Listener {
     fun register() {
@@ -36,6 +37,31 @@ object TTTListener: Listener {
         )
 
         event.joinMessage = "${TTTPlugin.prefix}${player.displayName} ${ChatColor.GOLD}hat das Spiel betreten."
+        player.setResourcePack(Resourcepack.url)
+        player.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}Das Resourcepack wird heruntergeladen.")
+    }
+
+    @EventHandler
+    fun onPlayerResourcePackStatus(event: PlayerResourcePackStatusEvent) {
+        when (event.status) {
+            PlayerResourcePackStatusEvent.Status.DECLINED -> {
+                event.player.sendMessage("${TTTPlugin.prefix}${ChatColor.RED}Du hast das Resourcepack abgelehnt.")
+                event.player.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}${ChatColor.BOLD}Wenn du es dir anders überlegt hast, tritt dem Server neu bei.")
+            }
+            PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD -> {
+                event.player.sendMessage("${TTTPlugin.prefix}${ChatColor.RED}Das Laden des Resourcepacks " +
+                        "ist gescheitert.")
+                event.player.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}Mit " +
+                        "${ChatColor.WHITE}/rp " +
+                        "${ChatColor.GREEN}kannst du es erneut versuchen.")
+            }
+            PlayerResourcePackStatusEvent.Status.ACCEPTED -> {
+                event.player.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.AQUA}Das Resourcepack wird geladen...")
+            }
+            PlayerResourcePackStatusEvent.Status.SUCCESSFULLY_LOADED -> {
+                event.player.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.GREEN}Das Resourcepack wurde erfolgreich geladen.")
+            }
+        }
     }
 
     @EventHandler

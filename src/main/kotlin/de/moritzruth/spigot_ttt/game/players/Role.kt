@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.players
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import java.util.*
@@ -11,11 +11,11 @@ enum class Role(
     val iconItemMaterial: Material,
     val canOwnCredits: Boolean = false
 ) {
-    INNOCENT(ChatColor.GREEN, "Innocent", ResourcePack.Items.innocent),
-    DETECTIVE(ChatColor.YELLOW, "Detective", ResourcePack.Items.detective, true),
-    TRAITOR(ChatColor.RED, "Traitor", ResourcePack.Items.traitor, true),
-    JACKAL(ChatColor.AQUA, "Jackal", ResourcePack.Items.jackal, true),
-    SIDEKICK(ChatColor.AQUA, "Sidekick", ResourcePack.Items.sidekick, false);
+    INNOCENT(ChatColor.GREEN, "Innocent", Resourcepack.Items.innocent),
+    DETECTIVE(ChatColor.YELLOW, "Detective", Resourcepack.Items.detective, true),
+    TRAITOR(ChatColor.RED, "Traitor", Resourcepack.Items.traitor, true),
+    JACKAL(ChatColor.AQUA, "Jackal", Resourcepack.Items.jackal, true),
+    SIDEKICK(ChatColor.AQUA, "Sidekick", Resourcepack.Items.sidekick, false);
 
     val coloredDisplayName = "$chatColor$displayName${ChatColor.RESET}"
 

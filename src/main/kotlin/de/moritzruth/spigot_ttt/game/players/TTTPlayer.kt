@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.players
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
@@ -111,7 +111,7 @@ class TTTPlayer(player: Player, role: Role) {
         if (event.scream) {
             GameManager.world.playSound(
                 player.location,
-                ResourcePack.Sounds.playerDeath,
+                Resourcepack.Sounds.playerDeath,
                 SoundCategory.PLAYERS,
                 1F,
                 1F

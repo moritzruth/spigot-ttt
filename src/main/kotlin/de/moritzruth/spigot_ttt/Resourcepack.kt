@@ -2,7 +2,8 @@ package de.moritzruth.spigot_ttt
 
 import org.bukkit.Material
 
-object ResourcePack {
+object Resourcepack {
+    const val url = "https://github.com/moritzruth/spigot-ttt/raw/master/resourcepack.zip"
     private const val NAMESPACE = "ttt:"
 
     object Items {

@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
-import de.moritzruth.spigot_ttt.ResourcePack
+import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
@@ -29,12 +29,12 @@ import kotlin.random.Random
 
 object SecondChance: TTTItem, Buyable {
     private val DISPLAY_NAME = "${ChatColor.GREEN}${ChatColor.BOLD}Second Chance"
-    val ON_CORPSE = ResourcePack.Items.arrowDown
-    val ON_SPAWN = ResourcePack.Items.dot
+    val ON_CORPSE = Resourcepack.Items.arrowDown
+    val ON_SPAWN = Resourcepack.Items.dot
     private const val TIMEOUT = 10.0
 
     override val type = TTTItem.Type.SPECIAL
-    override val itemStack = ItemStack(ResourcePack.Items.secondChance).applyMeta {
+    override val itemStack = ItemStack(Resourcepack.Items.secondChance).applyMeta {
         setDisplayName("$DISPLAY_NAME $PASSIVE")
         hideInfo()
         lore = listOf(
@@ -58,7 +58,7 @@ object SecondChance: TTTItem, Buyable {
             setDisplayName("${ChatColor.GREEN}${ChatColor.BOLD}Bei der Leiche")
         })
 
-        setAllToItem(setOf(3, 4, 5, 12, 13, 14, 21, 22, 23), ItemStack(ResourcePack.Items.textureless).applyMeta {
+        setAllToItem(setOf(3, 4, 5, 12, 13, 14, 21, 22, 23), ItemStack(Resourcepack.Items.textureless).applyMeta {
             hideInfo()
             setDisplayName("${ChatColor.RESET}${ChatColor.BOLD}Wo möchtest du spawnen?")
         })
