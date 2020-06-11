@@ -103,6 +103,12 @@ object GameManager {
     }
 
     fun startPreparingPhase() {
+        ensurePhase(null)
+
+        if (PlayerManager.availablePlayers.count() < plugin.config.getInt("min-players", 4)) {
+            throw NotEnoughPlayersException()
+        }
+
         world.run {
             setStorm(Random.nextInt(4) == 1)
             time = Random.nextLong(0, 23999)
@@ -110,20 +116,15 @@ object GameManager {
             setGameRule(GameRule.DO_WEATHER_CYCLE, true)
         }
 
-        ensurePhase(null)
-
-        if (PlayerManager.availablePlayers.count() < plugin.config.getInt("min-players", 4)) {
-            throw NotEnoughPlayersException()
-        }
-
-        PlayerManager.createTTTPlayers()
         phase = GamePhase.PREPARING
+        PlayerManager.createTTTPlayers()
 
         PlayerManager.tttPlayers.forEach {
             it.reset()
             it.teleportToSpawn()
             it.activateStamina()
         }
+
         GameMessenger.preparingPhaseStarted()
         Timers.playTimerSound()
         ItemSpawner.spawnWeapons()
