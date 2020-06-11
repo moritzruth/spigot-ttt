@@ -106,7 +106,7 @@ class TTTPlayer(player: Player, role: Role) {
             onlyRemainingRoleGroup
         ).call()
 
-//        event.winnerRoleGroup?.run { GameManager.letRoleWin(primaryRole) }
+        event.winnerRoleGroup?.run { GameManager.letRoleWin(primaryRole) }
 
         if (event.scream) {
             GameManager.world.playSound(

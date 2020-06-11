@@ -42,7 +42,7 @@ object CloakingDevice: TTTItem,
     override fun onSelect(tttPlayer: TTTPlayer) {}
     override fun onDeselect(tttPlayer: TTTPlayer) = disable(tttPlayer)
 
-    private fun enable(tttPlayer: TTTPlayer) {
+    private fun enable(tttPlayer: TTTPlayer, itemStack: ItemStack) {
         val state = isc.getOrCreate(tttPlayer)
 
         tttPlayer.player.apply {
@@ -57,10 +57,12 @@ object CloakingDevice: TTTItem,
 
         tttPlayer.invisible = true
         state.enabled = true
+        state.itemStack = itemStack
     }
 
     private fun disable(tttPlayer: TTTPlayer) {
-        val state = isc.getOrCreate(tttPlayer)
+        val state = isc.get(tttPlayer) ?: return
+        if (!state.enabled) return
 
         tttPlayer.player.apply {
             walkSpeed = 0.2F
@@ -70,6 +72,11 @@ object CloakingDevice: TTTItem,
 
         tttPlayer.invisible = false
         state.enabled = false
+
+        val itemStack = state.itemStack
+        if (itemStack != null) {
+            state.cooldownTask = startItemDamageProgress(itemStack, COOLDOWN) { state.cooldownTask = null }
+        }
     }
 
     override val listener = object : TTTItemListener(this, true) {
@@ -90,9 +97,8 @@ object CloakingDevice: TTTItem,
 
             if (state.enabled) {
                 disable(data.tttPlayer)
-                state.cooldownTask = startItemDamageProgress(data.itemStack, COOLDOWN) { state.cooldownTask = null }
             } else {
-                enable(data.tttPlayer)
+                enable(data.tttPlayer, data.itemStack)
             }
         }
     }
@@ -100,5 +106,6 @@ object CloakingDevice: TTTItem,
     class State: IState {
         var enabled: Boolean = false
         var cooldownTask: BukkitTask? = null
+        var itemStack: ItemStack? = null
     }
 }
