@@ -21,8 +21,6 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    implementation("net.dv8tion:JDA:4.1.1_155")
-    implementation("com.google.guava:guava:29.0-jre")
     implementation("commons-codec:commons-codec:1.14")
     compileOnly(files("./libs/CorpseReborn.jar"))
     compileOnly(files("./libs/ActionBarAPI.jar"))
@@ -31,7 +29,7 @@ dependencies {
 }
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType<ShadowJar> {
@@ -48,6 +46,6 @@ tasks.withType<ShadowJar> {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "1.8"
     }
 }
