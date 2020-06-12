@@ -1,7 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items
 
 import de.moritzruth.spigot_ttt.COMMAND_RESPONSE_PREFIX
-import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.EmptyTabCompleter
 import org.bukkit.ChatColor
@@ -25,7 +24,7 @@ class AddItemSpawnCommand: CommandExecutor {
         }
 
         ItemSpawner.addItemSpawnLocation(sender.location)
-        sender.sendMessage("$COMMAND_RESPONSE_PREFIX${TTTPlugin.prefix}${ChatColor.GREEN}Ein Waffenspawn wurde an deiner Position hinzugefügt.")
+        sender.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.GREEN}Ein Waffenspawn wurde an deiner Position hinzugefügt.")
 
         return true
     }

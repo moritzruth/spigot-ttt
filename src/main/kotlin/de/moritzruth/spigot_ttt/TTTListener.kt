@@ -3,11 +3,14 @@ package de.moritzruth.spigot_ttt
 import de.moritzruth.spigot_ttt.game.GameManager
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
+import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.event.player.PlayerResourcePackStatusEvent
@@ -25,6 +28,15 @@ object TTTListener: Listener {
     @EventHandler
     fun onBlockBreak(event: BlockBreakEvent) {
         if (event.player.gameMode !== GameMode.CREATIVE) event.isCancelled = true
+    }
+
+    @EventHandler
+    fun onBlockBreak(event: PlayerInteractEvent) {
+        if (
+            event.player.gameMode != GameMode.CREATIVE &&
+            event.action == Action.PHYSICAL &&
+            event.clickedBlock?.type == Material.FARMLAND
+        ) event.isCancelled = true
     }
 
     @EventHandler

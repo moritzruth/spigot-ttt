@@ -1,5 +1,7 @@
 package de.moritzruth.spigot_ttt.game.players
 
+import de.moritzruth.spigot_ttt.JackalMode
+import de.moritzruth.spigot_ttt.Settings
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GameMessenger
@@ -11,6 +13,7 @@ import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
+import kotlin.random.Random
 
 object PlayerManager {
     val tttPlayers= mutableListOf<TTTPlayer>()
@@ -91,26 +94,33 @@ object PlayerManager {
 
     fun createTTTPlayers() {
         val playersWithoutRole = availablePlayers.toMutableSet()
-
-        val playerCount = playersWithoutRole.count()
-        val traitorCount: Int = if (playerCount <= 4) 1 else playerCount / 4
-
-        if (playerCount >= plugin.config.getInt("min-players-for.detective", 5)) {
-            val player = playersWithoutRole.random()
-            tttPlayers.add(TTTPlayer(player, Role.DETECTIVE))
-            playersWithoutRole.remove(player)
-        }
-
-        if (playerCount >= plugin.config.getInt("min-players-for.jackal", 6)) {
-            val player = playersWithoutRole.random()
-            tttPlayers.add(TTTPlayer(player, Role.JACKAL))
-            playersWithoutRole.remove(player)
-        }
+        var playersWithoutRoleCount = playersWithoutRole.count()
+        val traitorCount: Int = if (playersWithoutRoleCount <= 4) 1 else playersWithoutRoleCount / 4
 
         for (index in 1..traitorCount) {
             val player = playersWithoutRole.random()
             tttPlayers.add(TTTPlayer(player, Role.TRAITOR))
             playersWithoutRole.remove(player)
+            playersWithoutRoleCount--
+        }
+
+        if (playersWithoutRoleCount < 1 && Settings.detectiveEnabled) {
+            val player = playersWithoutRole.random()
+            tttPlayers.add(TTTPlayer(player, Role.DETECTIVE))
+            playersWithoutRole.remove(player)
+            playersWithoutRoleCount--
+        }
+
+        if (playersWithoutRoleCount < 1 &&  when (Settings.jackalMode) {
+                JackalMode.ALWAYS -> true
+                JackalMode.HALF_TIME -> Random.Default.nextBoolean()
+                JackalMode.NEVER -> false
+            }) {
+            val player = playersWithoutRole.random()
+            tttPlayers.add(TTTPlayer(player, Role.JACKAL))
+            playersWithoutRole.remove(player)
+            @Suppress("UNUSED_CHANGED_VALUE")
+            playersWithoutRoleCount--
         }
 
         playersWithoutRole.forEach { tttPlayers.add(TTTPlayer(it, Role.INNOCENT)) }

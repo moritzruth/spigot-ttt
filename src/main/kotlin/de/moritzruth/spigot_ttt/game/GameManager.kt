@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.game
 
+import de.moritzruth.spigot_ttt.Settings
 import de.moritzruth.spigot_ttt.game.corpses.CorpseListener
 import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.game.items.ItemManager
@@ -36,14 +37,13 @@ object GameManager {
         GameMessenger.win(role)
         phase = GamePhase.OVER
         Timers.cancelCurrentTask()
-        Shop.stopCreditsTimer()
         ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
 
         PlayerManager.tttPlayers.forEach {
             Shop.clear(it)
         }
 
-        Timers.startOverPhaseTimer(plugin.config.getInt("duration.over", 10)) {
+        Timers.startOverPhaseTimer {
             GameEndEvent(false).call()
 
             phase = null
@@ -95,7 +95,6 @@ object GameManager {
         Timers.cancelCurrentTask()
         resetWorld()
         PlayerManager.resetAfterGame()
-        Shop.stopCreditsTimer()
 
         if (broadcast) {
             GameMessenger.aborted()
@@ -105,7 +104,7 @@ object GameManager {
     fun startPreparingPhase() {
         ensurePhase(null)
 
-        if (PlayerManager.availablePlayers.count() < plugin.config.getInt("min-players", 4)) {
+        if (PlayerManager.availablePlayers.count() < Settings.minPlayers) {
             throw NotEnoughPlayersException()
         }
 
@@ -129,7 +128,7 @@ object GameManager {
         Timers.playTimerSound()
         ItemSpawner.spawnWeapons()
 
-        Timers.startPreparingPhaseTimer(plugin.config.getInt("duration.preparing", 20)) {
+        Timers.startPreparingPhaseTimer {
             startCombatPhase()
         }
     }
@@ -140,12 +139,11 @@ object GameManager {
         phase = GamePhase.COMBAT
         PlayerManager.tttPlayers.forEach { Shop.setItems(it) }
         ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
-        Shop.startCreditsTimer()
 
         Timers.playTimerSound()
         GameMessenger.combatPhaseStarted()
 
-        Timers.startCombatPhaseTimer(plugin.config.getInt("duration.combat", 480)) {
+        Timers.startCombatPhaseTimer {
             if (PlayerManager.stillLivingRoles.contains(Role.INNOCENT)) {
                 letRoleWin(Role.INNOCENT)
             } else {

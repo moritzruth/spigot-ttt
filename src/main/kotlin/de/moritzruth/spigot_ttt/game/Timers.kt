@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.game
 
+import de.moritzruth.spigot_ttt.Settings
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
@@ -17,8 +18,8 @@ object Timers {
         bukkitTask = null
     }
 
-    fun startPreparingPhaseTimer(duration: Int, onFinished: () -> Unit) {
-        runCountdown(duration, onFinished) { remainingSeconds ->
+    fun startPreparingPhaseTimer(onFinished: () -> Unit) {
+        runCountdown(Settings.preparingPhaseDuration, onFinished) { remainingSeconds ->
             when (remainingSeconds) {
                 in 1..5, 10, 30 -> {
                     playTimerSound()
@@ -28,8 +29,8 @@ object Timers {
         }
     }
 
-    fun startCombatPhaseTimer(duration: Int, onFinished: () -> Unit) {
-        runCountdown(duration, onFinished) { remainingSeconds ->
+    fun startCombatPhaseTimer(onFinished: () -> Unit) {
+        runCountdown(Settings.combatPhaseDuration, onFinished) { remainingSeconds ->
             if (remainingSeconds % 60 == 0) {
                 playTimerSound()
                 GameMessenger.remainingRoundTime(remainingSeconds / 60)
@@ -37,8 +38,8 @@ object Timers {
         }
     }
 
-    fun startOverPhaseTimer(duration: Int, onFinished: () -> Unit) {
-        runCountdown(duration, onFinished) {}
+    fun startOverPhaseTimer(onFinished: () -> Unit) {
+        runCountdown(Settings.overPhaseDuration, onFinished) {}
     }
 
     fun playTimerSound() {

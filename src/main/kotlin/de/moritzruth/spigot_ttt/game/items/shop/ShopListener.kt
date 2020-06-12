@@ -1,11 +1,12 @@
 package de.moritzruth.spigot_ttt.game.items.shop
 
 import com.connorlinfoot.actionbarapi.ActionBarAPI
+import de.moritzruth.spigot_ttt.Settings
+import de.moritzruth.spigot_ttt.game.items.Buyable
+import de.moritzruth.spigot_ttt.game.items.ItemManager
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathEvent
-import de.moritzruth.spigot_ttt.game.items.Buyable
-import de.moritzruth.spigot_ttt.game.items.ItemManager
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
@@ -69,8 +70,8 @@ object ShopListener: Listener {
             PlayerManager.tttPlayers
                 .filter { it.role.canOwnCredits && it.role.group == killer.role.group }
                 .forEach {
-                    it.credits += 1
-                    ActionBarAPI.sendActionBar(it.player, "${ChatColor.GREEN}Du hast einen Credit erhalten")
+                    it.credits += Settings.creditsPerKill
+                    ActionBarAPI.sendActionBar(it.player, "${ChatColor.GREEN}Du hast ${Settings.creditsPerKill} Credit(s) erhalten")
                 }
         }
     }

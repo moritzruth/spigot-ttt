@@ -12,5 +12,6 @@ object CommandManager {
         AddItemSpawnCommand()
         ReviveCommand()
         ResourcepackCommand()
+        ReloadTTTConfigCommand()
     }
 }

@@ -1,8 +1,7 @@
 package de.moritzruth.spigot_ttt
 
-import de.moritzruth.spigot_ttt.game.players.PlayerManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.utils.isLeftClick
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.entity.Player
@@ -31,8 +30,13 @@ open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamag
         else if (event.action.isLeftClick) onLeftClick(data)
     }
 
-    open fun onRightClick(data: ClickEventData) {}
-    open fun onLeftClick(data: ClickEventData) {}
+    open fun onRightClick(data: ClickEventData) {
+        data.event.isCancelled = false
+    }
+
+    open fun onLeftClick(data: ClickEventData) {
+        data.event.isCancelled = false
+    }
 
     protected fun handle(event: PlayerInteractEvent, handler: (tttPlayer: TTTPlayer) -> Unit) {
         if (event.item?.type == tttItem.itemStack.type) {

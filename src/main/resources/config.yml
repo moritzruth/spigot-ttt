@@ -1,12 +1,16 @@
 min-players: 4
-min-players-for:
-  detective: 5
-  jackal: 6
+
+roles:
+  jackal:
+    mode: HALF_TIME
+
+  detective:
+    enabled: true
 
 duration:
   preparing: 20
   combat: 480
   over: 10
 
-first-credits-after: 5
-credits-interval: 10
+initial-credits: 2
+credits-per-kill: 1

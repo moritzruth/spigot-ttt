@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.game.players
 
 import de.moritzruth.spigot_ttt.Resourcepack
+import de.moritzruth.spigot_ttt.Settings
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
@@ -36,7 +37,7 @@ class TTTPlayer(player: Player, role: Role) {
     var itemInHand by Delegates.observable<TTTItem?>(null) { _, oldItem, newItem ->
         if (oldItem !== newItem) onItemInHandChanged(oldItem, newItem)
     }
-    var credits by Delegates.observable(10) { _, _, _ -> scoreboard.updateCredits() }
+    var credits by Delegates.observable(Settings.initialCredits) { _, _, _ -> scoreboard.updateCredits() }
     val boughtItems = mutableListOf<TTTItem>()
 
     var invisible by Delegates.observable(false) { _, _, value ->
