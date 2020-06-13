@@ -104,14 +104,14 @@ object PlayerManager {
             playersWithoutRoleCount--
         }
 
-        if (playersWithoutRoleCount < 1 && Settings.detectiveEnabled) {
+        if (playersWithoutRoleCount > 1 && Settings.detectiveEnabled) {
             val player = playersWithoutRole.random()
             tttPlayers.add(TTTPlayer(player, Role.DETECTIVE))
             playersWithoutRole.remove(player)
             playersWithoutRoleCount--
         }
 
-        if (playersWithoutRoleCount < 1 &&  when (Settings.jackalMode) {
+        if (playersWithoutRoleCount > 1 && when (Settings.jackalMode) {
                 JackalMode.ALWAYS -> true
                 JackalMode.HALF_TIME -> Random.Default.nextBoolean()
                 JackalMode.NEVER -> false

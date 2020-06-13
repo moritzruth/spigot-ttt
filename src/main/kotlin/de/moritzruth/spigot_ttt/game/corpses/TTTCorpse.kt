@@ -3,10 +3,10 @@ package de.moritzruth.spigot_ttt.game.corpses
 import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.GameMessenger
+import de.moritzruth.spigot_ttt.game.items.impl.weapons.guns.Pistol
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.items.impl.weapons.guns.Pistol
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
@@ -89,10 +89,10 @@ class TTTCorpse private constructor(
         setReasonItem()
     }
 
-    fun identify(tttPlayer: TTTPlayer, inspect: Boolean) {
+    fun identify(by: TTTPlayer, inspect: Boolean) {
         ensureNotDestroyed()
         if (status == Status.UNIDENTIFIED) {
-            GameMessenger.corpseIdentified(tttPlayer.player.displayName, tttPlayer.player.displayName, role)
+            GameMessenger.corpseIdentified(by.player.displayName, tttPlayer.player.displayName, role)
 
             if (!inspect) {
                 status = Status.IDENTIFIED
@@ -104,15 +104,15 @@ class TTTCorpse private constructor(
             setItems()
         }
 
-        if (credits != 0 && tttPlayer.role.canOwnCredits) {
+        if (credits != 0 && by.role.canOwnCredits) {
             val c = credits
             credits = 0
-            tttPlayer.credits += c
+            by.credits += c
 
             if (c > 1) {
-                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.GREEN}Du hast $c Credits aufgesammelt")
+                ActionBarAPI.sendActionBar(by.player, "${ChatColor.GREEN}Du hast $c Credits aufgesammelt")
             } else  {
-                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.GREEN}Du hast 1 Credit aufgesammelt")
+                ActionBarAPI.sendActionBar(by.player, "${ChatColor.GREEN}Du hast 1 Credit aufgesammelt")
             }
         }
     }
