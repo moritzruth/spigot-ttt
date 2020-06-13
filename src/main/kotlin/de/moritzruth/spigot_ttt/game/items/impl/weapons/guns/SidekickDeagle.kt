@@ -1,14 +1,14 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
-import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.Resourcepack
+import de.moritzruth.spigot_ttt.game.items.Buyable
+import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.roles
-import de.moritzruth.spigot_ttt.game.items.Buyable
-import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
+import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.entity.Item
 import org.bukkit.inventory.ItemStack
@@ -41,7 +41,7 @@ object SidekickDeagle: Gun(
     }
 
     override fun reload(tttPlayer: TTTPlayer, itemStack: ItemStack, state: Gun.State) {
-        ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du kannst diese Waffe nicht nachladen")
+        tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Du kannst diese Waffe nicht nachladen")
     }
 
     override fun onHit(tttPlayer: TTTPlayer, hitTTTPlayer: TTTPlayer) {
@@ -61,7 +61,7 @@ object SidekickDeagle: Gun(
 
     override fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: Gun.State): Boolean {
         if (tttPlayer.role != Role.JACKAL) {
-            ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Diese Waffe kann nur der Jackal benutzen")
+            tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Diese Waffe kann nur der Jackal benutzen")
             return false
         }
 

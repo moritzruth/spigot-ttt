@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     java
-    kotlin("jvm") version "1.3.71"
+    kotlin("jvm") version "1.3.72"
     id("com.github.johnrengelman.shadow") version("5.2.0")
 }
 
@@ -15,16 +15,15 @@ repositories {
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://oss.sonatype.org/content/repositories/central")
+    maven("https://repo.dmulloy2.net/nexus/repository/public/")
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
     implementation("commons-codec:commons-codec:1.14")
-    compileOnly(files("./libs/CorpseReborn.jar"))
-    compileOnly(files("./libs/ActionBarAPI.jar"))
-    compileOnly(files("./libs/ProtocolLib.jar"))
-    compileOnly("org.spigotmc", "spigot-api", "1.14.4-R0.1-SNAPSHOT")
+    compileOnly("com.comphenix.protocol", "ProtocolLib", "4.5.0")
+    compileOnly("org.spigotmc", "spigot-api", "1.15.2-R0.1-SNAPSHOT")
 }
 
 configure<JavaPluginConvention> {

@@ -79,7 +79,6 @@ class TTTPlayer(player: Player, role: Role) {
     }
 
     fun onDeath(reason: DeathReason, killer: TTTPlayer?, scream: Boolean = true) {
-        if (killer == this) throw IllegalArgumentException("You cannot be your own killer")
         GameManager.ensurePhase(GamePhase.COMBAT)
 
         player.sendMessage(TTTPlugin.prefix +
@@ -181,7 +180,7 @@ class TTTPlayer(player: Player, role: Role) {
 
     fun resetAfterGameEnd() {
         if (!alive) {
-            teleportToSpawn()
+            player.teleportToWorldSpawn()
         }
 
         // Required to be delayed because of a Minecraft bug which sometimes turns players invisible
@@ -214,8 +213,6 @@ class TTTPlayer(player: Player, role: Role) {
 
         player.inventory.clear()
     }
-
-    fun teleportToSpawn() = teleportPlayerToWorldSpawn(player)
 
     fun updateItemInHand() {
         val itemStack = player.inventory.itemInMainHand

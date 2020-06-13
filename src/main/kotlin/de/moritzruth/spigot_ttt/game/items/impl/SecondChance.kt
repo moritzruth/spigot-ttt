@@ -1,12 +1,12 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.PASSIVE
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
@@ -81,7 +81,7 @@ object SecondChance: TTTItem, Buyable {
                 if (Random.nextBoolean()) {
                     event.winnerRoleGroup = null
                     event.tttPlayer.player.openInventory(chooseSpawnInventory)
-                    state.timeoutAction = TimeoutAction(event.tttPlayer, event.tttCorpse.corpse.trueLocation)
+                    state.timeoutAction = TimeoutAction(event.tttPlayer, event.tttCorpse.location)
                 }
             }
         }

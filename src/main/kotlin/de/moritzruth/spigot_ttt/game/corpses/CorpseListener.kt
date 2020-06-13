@@ -7,8 +7,12 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityCombustEvent
+import org.bukkit.event.entity.EntityDamageEvent
+import org.bukkit.event.entity.EntityTargetEvent
 import org.bukkit.event.inventory.InventoryClickEvent
-import org.golde.bukkit.corpsereborn.CorpseAPI.events.CorpseClickEvent
+import org.bukkit.event.player.PlayerInteractEntityEvent
+import java.time.Duration
 import java.time.Instant
 
 object CorpseListener: Listener {
@@ -26,21 +30,34 @@ object CorpseListener: Listener {
         }
     }
 
+    @EventHandler
+    fun onPlayerInteractEntity(event: PlayerInteractEntityEvent) {
+        val tttPlayer = TTTPlayer.of(event.player) ?: return
+        val tttCorpse = CorpseManager.getTTTCorpse(event.rightClicked) ?: return
+
+        if (Duration.between(tttCorpse.timestamp, Instant.now()).toMillis() < 200) return
+        event.isCancelled = true
+        plugin.server.pluginManager.callEvent(CorpseClickEvent(tttPlayer, tttCorpse))
+    }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onCorpseClick(event: CorpseClickEvent) {
-        // bug: always ClickType.UNKNOWN
-        // if (event.clickType !== ClickType.RIGHT) return
+        if (event.tttPlayer.alive) event.tttCorpse.identify(event.tttPlayer, event.tttPlayer.role == Role.DETECTIVE)
+        event.tttPlayer.player.openInventory(event.tttCorpse.inventory)
+    }
 
-        val tttPlayer = TTTPlayer.of(event.clicker) ?: return
-        val tttCorpse = CorpseManager.getTTTCorpse(event.corpse)
+    @EventHandler
+    fun onEntityCombust(event: EntityCombustEvent) {
+        if (CorpseManager.getTTTCorpse(event.entity) != null) event.isCancelled = true
+    }
 
-        if (tttCorpse !== null) {
-            if (Instant.now().toEpochMilli() - tttCorpse.timestamp.toEpochMilli() < 200) return
+    @EventHandler
+    fun onEntityDamage(event: EntityDamageEvent) {
+        if (CorpseManager.getTTTCorpse(event.entity) != null) event.isCancelled = true
+    }
 
-            if (tttPlayer.alive) tttCorpse.identify(tttPlayer, tttPlayer.role == Role.DETECTIVE)
-            event.clicker.openInventory(tttCorpse.inventory)
-        }
-
-        event.isCancelled = true
+    @EventHandler
+    fun onEntityTarget(event: EntityTargetEvent) {
+        if (event.target != null && CorpseManager.getTTTCorpse(event.entity) != null) event.isCancelled = true
     }
 }

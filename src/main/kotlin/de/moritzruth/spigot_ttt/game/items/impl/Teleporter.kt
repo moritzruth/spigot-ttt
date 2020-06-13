@@ -1,14 +1,14 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
-import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.clearHeldItemSlot
+import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.Sound
 import org.bukkit.event.EventHandler
@@ -48,11 +48,10 @@ object Teleporter: TTTItem, Buyable {
             val state = isc.getOrCreate(tttPlayer)
             state.teleportSelf = !state.teleportSelf
 
-            if (state.teleportSelf) {
-                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.AQUA}Mode: Teleportiere dich selbst")
-            } else {
-                ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.AQUA}Mode: Teleportiere jemand anderen")
-            }
+            tttPlayer.player.sendActionBarMessage(
+                if (state.teleportSelf) "${ChatColor.AQUA}Mode: Teleportiere dich selbst"
+                else "${ChatColor.AQUA}Mode: Teleportiere jemand anderen"
+            )
         }
 
         override fun onRightClick(data: ClickEventData) {
@@ -61,10 +60,10 @@ object Teleporter: TTTItem, Buyable {
 
             val firstPlayer = if (state.teleportSelf) {
                 if (!tttPlayer.player.isOnGround) {
-                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}${ChatColor.BOLD}Du musst auf dem Boden stehen")
+                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}${ChatColor.BOLD}Du musst auf dem Boden stehen")
                     null
                 } else if (tttPlayer.player.isSneaking) {
-                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}${ChatColor.BOLD}Du darfst nicht sneaken")
+                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}${ChatColor.BOLD}Du darfst nicht sneaken")
                     null
                 } else tttPlayer
             } else getRandomPlayerToTeleport(tttPlayer)
