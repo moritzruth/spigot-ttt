@@ -1,14 +1,13 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
-import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
-import de.moritzruth.spigot_ttt.game.players.*
+import de.moritzruth.spigot_ttt.game.corpses.CorpseClickEvent
 import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.*
 import org.bukkit.ChatColor
@@ -18,7 +17,6 @@ import org.bukkit.boss.BarStyle
 import org.bukkit.event.EventHandler
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
-import org.golde.bukkit.corpsereborn.CorpseAPI.events.CorpseClickEvent
 import java.time.Duration
 import java.time.Instant
 
@@ -45,19 +43,16 @@ object Defibrillator: TTTItem, Buyable {
     }
 
     override val listener = object : TTTItemListener(this, true) {
-        @EventHandler
+        @EventHandler(ignoreCancelled = true)
         fun onCorpseClick(event: CorpseClickEvent) {
-            val tttPlayer = TTTPlayer.of(event.clicker) ?: return
-            if (tttPlayer.player.inventory.itemInMainHand.type != itemStack.type) return
-
-            val tttCorpse = CorpseManager.getTTTCorpse(event.corpse) ?: return
+            if (event.tttPlayer.player.inventory.itemInMainHand.type != itemStack.type) return
             event.isCancelled = true
 
-            val state = isc.getOrCreate(tttPlayer)
-            state.bossBar.addPlayer(tttPlayer.player)
+            val state = isc.getOrCreate(event.tttPlayer)
+            state.bossBar.addPlayer(event.tttPlayer.player)
 
             when(val action = state.action) {
-                null -> state.action = Action.Reviving(tttPlayer, state)
+                null -> state.action = Action.Reviving(event.tttPlayer, state)
                 is Action.Reviving -> {
                     action.cancelTask.cancel()
                     action.cancelTask = action.createCancelTask()
@@ -66,18 +61,17 @@ object Defibrillator: TTTItem, Buyable {
 
                     if (progress >= 1) {
                         try {
-                            tttCorpse.revive()
+                            event.tttCorpse.revive()
 
-                            ActionBarAPI.sendActionBar(
-                                tttPlayer.player,
-                                "${ChatColor.BOLD}${tttCorpse.tttPlayer.player.displayName} " +
+                            event.tttPlayer.player.sendActionBarMessage(
+                                "${ChatColor.BOLD}${event.tttCorpse.tttPlayer.player.displayName} " +
                                         "${ChatColor.GREEN}wurde wiederbelebt"
                             )
 
                             action.cancelTask.cancel()
-                            tttPlayer.player.inventory.removeTTTItemNextTick(Defibrillator)
-                            state.reset(tttPlayer)
-                            isc.remove(tttPlayer)
+                            event.tttPlayer.player.inventory.removeTTTItemNextTick(Defibrillator)
+                            state.reset(event.tttPlayer)
+                            isc.remove(event.tttPlayer)
                         } catch(e: TTTPlayer.AlreadyLivingException) {
                             action.cancel()
                         }

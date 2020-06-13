@@ -1,16 +1,16 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
-import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
-import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.removeTTTItem
+import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
@@ -101,7 +101,7 @@ object FakeCorpse: TTTItem, Buyable {
                         val corpseTTTPlayer = TTTPlayer.of(corpsePlayer)
 
                         if (corpseTTTPlayer == null) {
-                            ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Das hat nicht funktioniert")
+                            tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Das hat nicht funktioniert")
                         } else {
                             TTTCorpse.spawnFake(state.chosenRole!!, corpseTTTPlayer, tttPlayer.player.location)
 

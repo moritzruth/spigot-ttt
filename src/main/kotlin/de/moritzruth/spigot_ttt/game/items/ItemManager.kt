@@ -1,7 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items
 
 import com.comphenix.protocol.ProtocolLibrary
-import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.impl.*
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.BaseballBat
@@ -11,6 +10,7 @@ import de.moritzruth.spigot_ttt.game.players.IState
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.nextTick
+import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Item
@@ -82,7 +82,7 @@ object ItemManager {
                     tttPlayer.updateItemInHand()
                 })
             } else {
-                ActionBarAPI.sendActionBar(event.player, "${ChatColor.RED}Du kannst dieses Item nicht droppen")
+                event.player.sendActionBarMessage("${ChatColor.RED}Du kannst dieses Item nicht droppen")
                 event.isCancelled = true
             }
         }

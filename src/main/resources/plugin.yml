@@ -1,11 +1,8 @@
 name: TTT
 version: 1.0.0
 author: Moritz Ruth
-api-version: "1.14"
+api-version: "1.15"
 main: de.moritzruth.spigot_ttt.TTTPlugin
-depend:
-  - CorpseReborn
-  - ActionBarAPI
 
 commands:
   start:

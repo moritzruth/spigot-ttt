@@ -1,6 +1,5 @@
 package de.moritzruth.spigot_ttt.game.items.shop
 
-import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.Settings
 import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.ItemManager
@@ -8,6 +7,7 @@ import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathEvent
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -40,10 +40,10 @@ object ShopListener: Listener {
 
             when {
                 Shop.isOutOfStock(tttPlayer, tttItem) ->
-                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Dieses Item ist ausverkauft")
+                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Dieses Item ist ausverkauft")
 
                 tttPlayer.credits < tttItem.price ->
-                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast nicht genug Credits")
+                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Du hast nicht genug Credits")
 
                 else -> try {
                     tttPlayer.addItem(tttItem)
@@ -54,9 +54,9 @@ object ShopListener: Listener {
 
                     Shop.setItems(tttPlayer)
                 } catch (e: TTTPlayer.AlreadyHasItemException) {
-                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast dieses Item bereits")
+                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Du hast dieses Item bereits")
                 } catch (e: TTTPlayer.TooManyItemsOfTypeException) {
-                    ActionBarAPI.sendActionBar(tttPlayer.player, "${ChatColor.RED}Du hast keinen Platz dafür")
+                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Du hast keinen Platz dafür")
                 }
             }
         }
@@ -71,7 +71,7 @@ object ShopListener: Listener {
                 .filter { it.role.canOwnCredits && it.role.group == killer.role.group }
                 .forEach {
                     it.credits += Settings.creditsPerKill
-                    ActionBarAPI.sendActionBar(it.player, "${ChatColor.GREEN}Du hast ${Settings.creditsPerKill} Credit(s) erhalten")
+                    it.player.sendActionBarMessage("${ChatColor.GREEN}Du hast ${Settings.creditsPerKill} Credit(s) erhalten")
                 }
         }
     }

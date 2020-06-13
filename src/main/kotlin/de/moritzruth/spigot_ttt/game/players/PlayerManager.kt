@@ -9,7 +9,7 @@ import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.noop
-import de.moritzruth.spigot_ttt.utils.teleportPlayerToWorldSpawn
+import de.moritzruth.spigot_ttt.utils.teleportToWorldSpawn
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
@@ -29,8 +29,7 @@ object PlayerManager {
 
     fun resetAfterGame() {
         playersJoinedDuringRound.forEach {
-            teleportPlayerToWorldSpawn(it)
-
+            it.teleportToWorldSpawn()
             nextTick { it.gameMode = GameMode.SURVIVAL }
         }
 
@@ -54,7 +53,7 @@ object PlayerManager {
 
         if (tttPlayer == null) {
             if (GameManager.phase == null) {
-                teleportPlayerToWorldSpawn(player)
+                player.teleportToWorldSpawn()
                 player.gameMode = GameMode.SURVIVAL
             } else {
                 player.gameMode = GameMode.SPECTATOR
@@ -71,7 +70,7 @@ object PlayerManager {
                     player.gameMode = GameMode.SPECTATOR
                 }
                 GamePhase.OVER -> {
-                    tttPlayer.teleportToSpawn()
+                    tttPlayer.player.teleportToWorldSpawn()
                     player.gameMode = GameMode.SURVIVAL
                 }
             }

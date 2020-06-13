@@ -1,7 +1,7 @@
 package de.moritzruth.spigot_ttt.game.corpses
 
-import com.connorlinfoot.actionbarapi.ActionBarAPI
 import de.moritzruth.spigot_ttt.Resourcepack
+import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GameMessenger
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.guns.Pistol
 import de.moritzruth.spigot_ttt.game.players.DeathReason
@@ -10,13 +10,15 @@ import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
+import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.Location
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.Zombie
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
-import org.golde.bukkit.corpsereborn.CorpseAPI.CorpseAPI
-import org.golde.bukkit.corpsereborn.nms.Corpses
+import org.bukkit.util.Vector
 import java.time.Instant
 
 class TTTCorpse private constructor(
@@ -24,16 +26,19 @@ class TTTCorpse private constructor(
     location: Location,
     private val role: Role,
     private val reason: DeathReason,
-    private var credits: Int
+    private var credits: Int,
+    velocity: Vector = Vector()
 ) {
     var status = Status.UNIDENTIFIED; private set
+    val entity: Zombie
 
-    val corpse: Corpses.CorpseData
     val inventory = tttPlayer.player.server.createInventory(null, InventoryType.HOPPER, "${role.chatColor}${tttPlayer.player.displayName}")
-
     val timestamp: Instant = Instant.now()
+
+    val location get() = entity.location
+
     private var fullMinutesSinceDeath = 0
-    private var updateTimeListener: BukkitTask
+    private var updateTimeTask: BukkitTask
 
     init {
         inventory.setItem(ROLE_SLOT, ItemStack(role.iconItemMaterial).applyMeta {
@@ -43,9 +48,16 @@ class TTTCorpse private constructor(
 
         setItems()
 
-        corpse = CorpseAPI.spawnCorpse(tttPlayer.player, location)
+        entity = GameManager.world.spawnEntity(location, EntityType.ZOMBIE) as Zombie
+        entity.apply {
+            setAI(false)
+            isSilent = true
+            removeWhenFarAway = false
+            isBaby = false
+            isCollidable = false
+        }
 
-        updateTimeListener = plugin.server.scheduler.runTaskTimer(plugin, fun() {
+        updateTimeTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
             fullMinutesSinceDeath += 1
             setTimeItem()
         }, secondsToTicks(60).toLong(), secondsToTicks(60).toLong())
@@ -109,25 +121,24 @@ class TTTCorpse private constructor(
             credits = 0
             by.credits += c
 
-            if (c > 1) {
-                ActionBarAPI.sendActionBar(by.player, "${ChatColor.GREEN}Du hast $c Credits aufgesammelt")
-            } else  {
-                ActionBarAPI.sendActionBar(by.player, "${ChatColor.GREEN}Du hast 1 Credit aufgesammelt")
-            }
+            by.player.sendActionBarMessage(
+                if (c > 1) "${ChatColor.GREEN}Du hast $c Credits aufgesammelt"
+                else "${ChatColor.GREEN}Du hast 1 Credit aufgesammelt"
+            )
         }
     }
 
     fun revive() {
         ensureNotDestroyed()
-        tttPlayer.revive(corpse.trueLocation, credits)
+        tttPlayer.revive(entity.location, credits)
         destroy()
     }
 
     fun destroy() {
         ensureNotDestroyed()
         status = Status.DESTROYED
-        CorpseAPI.removeCorpse(corpse)
-        updateTimeListener.cancel()
+        entity.remove()
+        updateTimeTask.cancel()
         inventory.viewers.toSet().forEach { it.closeInventory() }
     }
 
@@ -152,13 +163,16 @@ class TTTCorpse private constructor(
             tttPlayer.player.location,
             tttPlayer.role,
             reason,
-            tttPlayer.credits
+            tttPlayer.credits,
+            tttPlayer.player.velocity
         ).also { CorpseManager.add(it) }
 
         fun spawnFake(role: Role, tttPlayer: TTTPlayer, location: Location) {
+            val loc = location.clone()
+            loc.pitch = 0F
             CorpseManager.add(TTTCorpse(
                 tttPlayer,
-                location,
+                loc,
                 role,
                 DeathReason.Item(Pistol),
                 0

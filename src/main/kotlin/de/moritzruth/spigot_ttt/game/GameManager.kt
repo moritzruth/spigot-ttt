@@ -11,6 +11,7 @@ import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
+import de.moritzruth.spigot_ttt.utils.teleportToWorldSpawn
 import org.bukkit.GameRule
 import org.bukkit.Location
 import org.bukkit.Material
@@ -129,7 +130,7 @@ object GameManager {
 
         PlayerManager.tttPlayers.forEach {
             it.reset()
-            it.teleportToSpawn()
+            it.player.teleportToWorldSpawn()
             it.activateStamina()
         }
 

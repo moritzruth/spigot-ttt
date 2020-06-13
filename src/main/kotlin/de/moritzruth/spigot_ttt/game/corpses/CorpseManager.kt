@@ -1,14 +1,14 @@
 package de.moritzruth.spigot_ttt.game.corpses
 
+import org.bukkit.entity.Entity
+import org.bukkit.entity.Zombie
 import org.bukkit.inventory.Inventory
-import org.golde.bukkit.corpsereborn.nms.Corpses
 
 object CorpseManager {
     private val corpses = mutableListOf<TTTCorpse>()
 
-    fun getTTTCorpse(corpse: Corpses.CorpseData): TTTCorpse? {
-        return corpses.find { it.corpse === corpse }
-    }
+    fun getTTTCorpse(entity: Entity): TTTCorpse? =
+        if (entity is Zombie) corpses.find { it.entity === entity } else null
 
     fun add(corpse: TTTCorpse) {
         corpses.add(corpse)
