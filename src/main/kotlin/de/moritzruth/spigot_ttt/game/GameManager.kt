@@ -12,6 +12,8 @@ import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
 import org.bukkit.GameRule
+import org.bukkit.Location
+import org.bukkit.Material
 import kotlin.random.Random
 
 object GameManager {
@@ -22,6 +24,8 @@ object GameManager {
         }
 
     val world = plugin.server.getWorld("world")!!
+
+    val destroyedBlocks = mutableMapOf<Location, Material>()
 
     fun initialize() {
         adjustWorld()
@@ -78,6 +82,11 @@ object GameManager {
     fun resetWorld() {
         CorpseManager.destroyAll()
         ItemManager.reset()
+
+        destroyedBlocks.forEach { (location, material) ->
+            world.getBlockAt(location).type = material
+        }
+        destroyedBlocks.clear()
 
         world.run {
             setStorm(false)

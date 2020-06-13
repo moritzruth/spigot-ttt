@@ -5,8 +5,8 @@ import de.moritzruth.spigot_ttt.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
-import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.game.items.*
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
@@ -88,6 +88,22 @@ abstract class Gun(
             ) { it !== tttPlayer.player }
 
             if (rayTraceResult !== null) {
+                val hitBlock = rayTraceResult.hitBlock
+
+                if (hitBlock != null) {
+                    if (hitBlock.type.toString().contains("glass", true)) {
+                        GameManager.destroyedBlocks[hitBlock.location] = hitBlock.type
+                        hitBlock.type = Material.AIR
+                        GameManager.world.playSound(
+                            hitBlock.location,
+                            Sound.BLOCK_GLASS_BREAK,
+                            SoundCategory.BLOCKS,
+                            1F,
+                            1F
+                        )
+                    }
+                }
+
                 val entity = rayTraceResult.hitEntity
 
                 if (entity is Player) {

@@ -15,7 +15,6 @@ repositories {
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://oss.sonatype.org/content/repositories/central")
-    maven("https://repo.dmulloy2.net/nexus/repository/public/")
 }
 
 dependencies {
@@ -39,9 +38,6 @@ tasks.withType<ShadowJar> {
     }
 
     archiveFileName.set("TTT.jar")
-    dependencies {
-        exclude(dependency("org.spigotmc:spigot-api"))
-    }
 }
 
 tasks {

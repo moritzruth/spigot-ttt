@@ -2,9 +2,9 @@ package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
 import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.items.Spawning
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
@@ -38,8 +38,8 @@ object Shotgun: Gun(
         val distance = tttPlayer.player.location.distance(receiver.location)
 
         return when {
-            distance <= 1 -> heartsToHealth(8.0)
-            distance >= 14 -> 0.0
+            distance <= 1 -> heartsToHealth(10.0)
+            distance >= 14 -> 0.5
             distance > 8 -> heartsToHealth(1.5)
             else -> heartsToHealth(damage)
         }
