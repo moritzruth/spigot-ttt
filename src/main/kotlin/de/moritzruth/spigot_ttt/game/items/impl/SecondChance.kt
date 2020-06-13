@@ -84,6 +84,8 @@ object SecondChance: TTTItem, Buyable {
                     state.timeoutAction = TimeoutAction(event.tttPlayer, event.tttCorpse.location)
                 }
             }
+
+            isc.forEveryState { s, _ -> if (s.timeoutAction != null) event.winnerRoleGroup = null }
         }
 
         @EventHandler
@@ -137,18 +139,22 @@ object SecondChance: TTTItem, Buyable {
             val duration = Duration.between(startedAt, Instant.now()).toMillis().toDouble() / 1000
             val progress = duration / TIMEOUT
 
-            if (progress > 1) stop() else bossBar.progress = 1.0 - progress
+            if (progress > 1) onTimeout() else bossBar.progress = 1.0 - progress
         }, 0, 1)
+
+        private fun onTimeout() {
+            try {
+                PlayerManager.letRemainingRoleGroupWin()
+            } catch (e: IllegalStateException) {}
+
+            stop()
+        }
 
         fun stop() {
             isc.remove(tttPlayer)
             task.cancel()
             tttPlayer.player.closeInventory()
             bossBar.removePlayer(tttPlayer.player)
-
-            try {
-                PlayerManager.letRemainingRoleGroupWin()
-            } catch (e: IllegalStateException) {}
         }
     }
 
