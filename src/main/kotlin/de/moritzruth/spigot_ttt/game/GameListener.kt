@@ -21,6 +21,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
+import java.util.*
 
 object GameListener : Listener {
     private val BLOCKED_COMMANDS = setOf("me", "tell")
@@ -63,15 +64,28 @@ object GameListener : Listener {
         }
     }
 
+    private val ZERO_NO_DAMAGE_TICKS_CAUSES = EnumSet.of(
+        EntityDamageEvent.DamageCause.ENTITY_ATTACK,
+        EntityDamageEvent.DamageCause.CUSTOM,
+        EntityDamageEvent.DamageCause.ENTITY_EXPLOSION,
+        EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
+        EntityDamageEvent.DamageCause.FALL,
+        EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK,
+        EntityDamageEvent.DamageCause.FALLING_BLOCK,
+        EntityDamageEvent.DamageCause.SUICIDE
+    )
+
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     fun onEntityDamageLow(event: EntityDamageEvent) {
         if (GameManager.phase !== GamePhase.COMBAT) {
             event.isCancelled = true
         }
 
-        val player = event.entity
-        if (player is Player) {
-            nextTick { player.noDamageTicks = 0 }
+        if (ZERO_NO_DAMAGE_TICKS_CAUSES.contains(event.cause)) {
+            val player = event.entity
+            if (player is Player) {
+                nextTick { player.noDamageTicks = 0 }
+            }
         }
     }
 
