@@ -107,7 +107,7 @@ object Defibrillator: TTTItem, Buyable {
                     tttPlayer.player.location,
                     Resourcepack.Sounds.Item.Defibrillator.use,
                     SoundCategory.PLAYERS,
-                    1F,
+                    0.8F,
                     1F
                 )
 
