@@ -16,6 +16,8 @@ class TTTPlugin: JavaPlugin() {
         GameManager.initialize()
 
         TTTListener.register()
+
+        server.spawnRadius = 0
     }
 
     override fun onDisable() {

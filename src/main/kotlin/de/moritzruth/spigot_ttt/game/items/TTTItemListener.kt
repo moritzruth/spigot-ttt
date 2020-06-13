@@ -1,6 +1,5 @@
-package de.moritzruth.spigot_ttt
+package de.moritzruth.spigot_ttt.game.items
 
-import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.utils.isLeftClick
 import de.moritzruth.spigot_ttt.utils.isRightClick

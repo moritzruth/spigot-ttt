@@ -5,7 +5,7 @@ import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.TTTItemListener
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.game.items.Buyable

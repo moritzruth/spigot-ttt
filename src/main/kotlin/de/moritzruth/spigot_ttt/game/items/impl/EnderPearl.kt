@@ -1,6 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
-import de.moritzruth.spigot_ttt.TTTItemListener
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.game.items.Buyable
