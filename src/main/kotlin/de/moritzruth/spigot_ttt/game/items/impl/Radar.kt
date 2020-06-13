@@ -5,12 +5,12 @@ import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
-import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.PASSIVE
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
@@ -112,17 +112,19 @@ object Radar: TTTItem, Buyable {
 
     override val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {
         override fun onPacketSending(event: PacketEvent) {
-            val tttPlayer = TTTPlayer.of(event.player) ?: return
-            val packet = WrapperPlayServerEntityMetadata(event.packet)
+            val receivingTTTPlayer = TTTPlayer.of(event.player) ?: return
 
+            val packet = WrapperPlayServerEntityMetadata(event.packet)
             val playerOfPacket = plugin.server.onlinePlayers.find { it.entityId == packet.entityID } ?: return
             val tttPlayerOfPacket = TTTPlayer.of(playerOfPacket) ?: return
+
             if (tttPlayerOfPacket.alive) {
                 // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
                 try {
                     val modifiers = packet.metadata[0].value as Byte
-                    packet.metadata[0].value = if (isc.get(tttPlayer)?.active == true) modifiers or 0x40
-                    else modifiers and 0b10111111.toByte()
+                    packet.metadata[0].value =
+                        if (isc.get(receivingTTTPlayer)?.active == true) modifiers or 0x40
+                        else modifiers and 0xBF.toByte()
                 } catch (ignored: Exception) {
                     // Idk why this throws exceptions, but it works anyways
                 }

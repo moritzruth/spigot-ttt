@@ -13,6 +13,7 @@ import de.moritzruth.spigot_ttt.utils.teleportToWorldSpawn
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
+import kotlin.math.ceil
 import kotlin.random.Random
 
 object PlayerManager {
@@ -94,7 +95,7 @@ object PlayerManager {
     fun createTTTPlayers() {
         val playersWithoutRole = availablePlayers.toMutableSet()
         var playersWithoutRoleCount = playersWithoutRole.count()
-        val traitorCount: Int = if (playersWithoutRoleCount <= 4) 1 else playersWithoutRoleCount / 4
+        val traitorCount: Int = if (playersWithoutRoleCount <= 4) 1 else ceil(playersWithoutRoleCount / 4.0).toInt()
 
         for (index in 1..traitorCount) {
             val player = playersWithoutRole.random()
