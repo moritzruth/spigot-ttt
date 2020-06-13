@@ -66,7 +66,8 @@ class TTTPlayer(player: Player, role: Role) {
         player.sendMessage(TTTPlugin.prefix +
             if (killer == null) "${ChatColor.RED}${ChatColor.BOLD}Du bist gestorben"
             else "${ChatColor.RED}${ChatColor.BOLD}Du wurdest von " +
-                    "${ChatColor.RESET}${killer.player.displayName}" +
+                    "${ChatColor.RESET}${killer.player.displayName} " +
+                    "${ChatColor.RESET}(${killer.role.coloredDisplayName}${ChatColor.RESET}) " +
                     " ${ChatColor.RED}${ChatColor.BOLD}getötet"
         )
 
