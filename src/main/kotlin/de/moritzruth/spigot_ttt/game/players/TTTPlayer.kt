@@ -14,8 +14,6 @@ import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.*
 import org.bukkit.*
 import org.bukkit.entity.Player
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitTask
 import kotlin.properties.Delegates
 
@@ -39,22 +37,6 @@ class TTTPlayer(player: Player, role: Role) {
     }
     var credits by Delegates.observable(Settings.initialCredits) { _, _, _ -> scoreboard.updateCredits() }
     val boughtItems = mutableListOf<TTTItem>()
-
-    var invisible by Delegates.observable(false) { _, _, value ->
-        if (value) {
-            PlayerManager.tttPlayers.forEach {
-                if (it.alive && it.role != role) {
-                    it.player.hidePlayer(plugin, player)
-                }
-            }
-
-            // for the translucent effect seen by teammates
-            player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 0, false, false))
-        } else {
-            plugin.server.onlinePlayers.forEach { it.showPlayer(plugin, player) }
-            player.removePotionEffect(PotionEffectType.INVISIBILITY)
-        }
-    }
     var damageInfo: DamageInfo? = null
 
     private var staminaCooldown: Int = 0
@@ -197,8 +179,6 @@ class TTTPlayer(player: Player, role: Role) {
                 it.onDeselect(this)
             }
         }
-
-        invisible = false
 
         player.gameMode = GameMode.SURVIVAL
         player.activePotionEffects.forEach { player.removePotionEffect(it.type) }

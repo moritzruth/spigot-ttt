@@ -1,11 +1,11 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.Selectable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
@@ -19,9 +19,7 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitTask
 
-object CloakingDevice: TTTItem,
-    Buyable,
-    Selectable {
+object CloakingDevice: TTTItem, Buyable, Selectable {
     override val itemStack = ItemStack(Resourcepack.Items.cloakingDevice).applyMeta {
         setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}###${ChatColor.RESET}${ChatColor.GRAY} Cloaking Device ${ChatColor.MAGIC}###")
         lore = listOf(
@@ -49,13 +47,10 @@ object CloakingDevice: TTTItem,
             isSprinting = false
             walkSpeed = 0.1F
 
-            // To prevent jumping (amplifier 200)
-            addPotionEffect(PotionEffect(PotionEffectType.JUMP, 1000000, 200, false, false))
-
+            addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 0, false, false))
             playSound(location, Resourcepack.Sounds.Item.CloakingDevice.on, SoundCategory.PLAYERS, 1F, 1F)
         }
 
-        tttPlayer.invisible = true
         state.enabled = true
         state.itemStack = itemStack
     }
@@ -66,11 +61,10 @@ object CloakingDevice: TTTItem,
 
         tttPlayer.player.apply {
             walkSpeed = 0.2F
-            removePotionEffect(PotionEffectType.JUMP)
+            removePotionEffect(PotionEffectType.INVISIBILITY)
             playSound(location, Resourcepack.Sounds.Item.CloakingDevice.off, SoundCategory.PLAYERS, 1F, 1F)
         }
 
-        tttPlayer.invisible = false
         state.enabled = false
 
         val itemStack = state.itemStack
