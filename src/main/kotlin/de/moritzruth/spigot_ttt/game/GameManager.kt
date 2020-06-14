@@ -13,6 +13,7 @@ import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
+import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import de.moritzruth.spigot_ttt.utils.teleportToWorldSpawn
 import org.bukkit.*
 import org.bukkit.block.Block
@@ -135,6 +136,7 @@ object GameManager {
         PlayerManager.tttPlayers.forEach {
             it.player.teleportToWorldSpawn()
             it.addDefaultClassItems()
+            it.player.health = heartsToHealth(10.0)
         }
 
         GameMessenger.preparingPhaseStarted()
