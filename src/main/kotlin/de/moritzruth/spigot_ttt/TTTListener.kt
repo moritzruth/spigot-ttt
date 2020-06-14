@@ -92,6 +92,6 @@ object TTTListener: Listener {
 
     @EventHandler
     fun onFoodLevelChange(event: FoodLevelChangeEvent) {
-        if (GameManager.phase == null) event.isCancelled = true
+        event.isCancelled = true
     }
 }
