@@ -71,7 +71,9 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
 
     fun damage(damage: Double, reason: DeathReason, damager: TTTPlayer, scream: Boolean = true) {
         if (!alive) return
-        val finalHealth = player.health - damage
+
+        val event = TTTPlayerDamageEvent(this, damage, reason).call()
+        val finalHealth = player.health - event.damage
 
         if (finalHealth <= 0.0) onDeath(reason, damager, scream)
         else player.damage(damage)

@@ -9,6 +9,7 @@ import com.comphenix.protocol.wrappers.PlayerInfoData
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.call
 import de.moritzruth.spigot_ttt.utils.nextTick
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -86,22 +87,24 @@ object GameListener : Listener {
         val tttPlayer = TTTPlayer.of(event.entity as Player) ?: return
         if (event.cause == EntityDamageEvent.DamageCause.CUSTOM) return
 
-        if (tttPlayer.player.health - event.finalDamage <= 0) {
-            val reason = when (event.cause) {
-                EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
-                EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
-                EntityDamageEvent.DamageCause.ENTITY_EXPLOSION -> DeathReason.EXPLOSION
-                EntityDamageEvent.DamageCause.DROWNING -> DeathReason.DROWNED
-                EntityDamageEvent.DamageCause.FIRE,
-                EntityDamageEvent.DamageCause.FIRE_TICK,
-                EntityDamageEvent.DamageCause.LAVA,
-                EntityDamageEvent.DamageCause.HOT_FLOOR -> DeathReason.FIRE
-                EntityDamageEvent.DamageCause.POISON, EntityDamageEvent.DamageCause.WITHER -> DeathReason.POISON
-                else -> DeathReason.SUICIDE
-            }
+        val reason = when (event.cause) {
+            EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
+            EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
+            EntityDamageEvent.DamageCause.ENTITY_EXPLOSION -> DeathReason.EXPLOSION
+            EntityDamageEvent.DamageCause.DROWNING -> DeathReason.DROWNED
+            EntityDamageEvent.DamageCause.FIRE,
+            EntityDamageEvent.DamageCause.FIRE_TICK,
+            EntityDamageEvent.DamageCause.LAVA,
+            EntityDamageEvent.DamageCause.HOT_FLOOR -> DeathReason.FIRE
+            EntityDamageEvent.DamageCause.POISON,
+            EntityDamageEvent.DamageCause.WITHER -> DeathReason.POISON
+            else -> DeathReason.SUICIDE
+        }
 
+        val e = TTTPlayerDamageEvent(tttPlayer, event.finalDamage, reason).call()
+
+        if (tttPlayer.player.health - e.damage <= 0) {
             tttPlayer.onDeath(reason, null)
-
             event.damage = 0.0
         }
     }
