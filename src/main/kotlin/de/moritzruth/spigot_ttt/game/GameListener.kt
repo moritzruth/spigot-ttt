@@ -16,6 +16,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.PlayerDeathEvent
@@ -108,6 +109,13 @@ object GameListener : Listener {
     @EventHandler
     fun onPlayerDeath(event: PlayerDeathEvent) {
         event.deathMessage = null
+    }
+
+    @EventHandler
+    fun onPlayerInteract(event: PlayerInteractEvent) {
+        if (event.player.inventory.itemInMainHand.type == Material.AIR && event.action == Action.LEFT_CLICK_BLOCK) {
+            GameManager.destroyBlock(event.clickedBlock!!)
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

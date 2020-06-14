@@ -14,9 +14,8 @@ import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
 import de.moritzruth.spigot_ttt.utils.teleportToWorldSpawn
-import org.bukkit.GameRule
-import org.bukkit.Location
-import org.bukkit.Material
+import org.bukkit.*
+import org.bukkit.block.Block
 import kotlin.random.Random
 
 object GameManager {
@@ -174,6 +173,20 @@ object GameManager {
             } else {
                 letRoleWin(null)
             }
+        }
+    }
+
+    fun destroyBlock(block: Block) {
+        if (phase != null && block.type.toString().contains("glass", true)) {
+            destroyedBlocks[block.location] = block.type
+            block.type = Material.AIR
+            world.playSound(
+                block.location,
+                Sound.BLOCK_GLASS_BREAK,
+                SoundCategory.BLOCKS,
+                1F,
+                1F
+            )
         }
     }
 

@@ -88,20 +88,7 @@ abstract class Gun(
 
             if (rayTraceResult !== null) {
                 val hitBlock = rayTraceResult.hitBlock
-
-                if (hitBlock != null) {
-                    if (hitBlock.type.toString().contains("glass", true)) {
-                        GameManager.destroyedBlocks[hitBlock.location] = hitBlock.type
-                        hitBlock.type = Material.AIR
-                        GameManager.world.playSound(
-                            hitBlock.location,
-                            Sound.BLOCK_GLASS_BREAK,
-                            SoundCategory.BLOCKS,
-                            1F,
-                            1F
-                        )
-                    }
-                }
+                if (hitBlock != null) GameManager.destroyBlock(hitBlock)
 
                 val entity = rayTraceResult.hitEntity
 
