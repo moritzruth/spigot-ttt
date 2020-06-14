@@ -11,7 +11,6 @@ import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.items.ItemManager
 import de.moritzruth.spigot_ttt.game.items.Selectable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
-import de.moritzruth.spigot_ttt.game.items.impl.CloakingDevice
 import de.moritzruth.spigot_ttt.game.items.shop.Shop
 import de.moritzruth.spigot_ttt.utils.*
 import org.bukkit.*
@@ -79,6 +78,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
 
         alive = false
         player.gameMode = GameMode.SPECTATOR
+        Shop.clear(this)
 
         var reallyScream = scream
 
@@ -107,12 +107,19 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
 
             val onlyRemainingRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
 
+            val firstEvent = TTTPlayerDeathEvent(
+                tttPlayer = this,
+                location = player.location,
+                killer = killer,
+                scream = reallyScream
+            ).call()
+
             val event = TTTPlayerTrueDeathEvent(
                 tttPlayer = this,
                 location = player.location,
                 tttCorpse = tttCorpse,
                 killer = killer,
-                scream = reallyScream,
+                scream = firstEvent.scream,
                 winnerRoleGroup = onlyRemainingRoleGroup
             ).call()
 
@@ -234,7 +241,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
     }
 
     fun removeItem(item: TTTItem) {
-        player.inventory.removeTTTItem(CloakingDevice)
+        player.inventory.removeTTTItem(item)
         item.onRemove(this)
         updateItemInHand()
     }

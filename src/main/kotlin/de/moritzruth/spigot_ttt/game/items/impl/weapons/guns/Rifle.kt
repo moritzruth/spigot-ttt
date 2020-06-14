@@ -9,8 +9,8 @@ import org.bukkit.ChatColor
 object Rifle: Gun(
     stateClass = State::class,
     displayName = "${ChatColor.YELLOW}${ChatColor.BOLD}Rifle",
-    damage = heartsToHealth(0.5),
-    cooldown = 0.1,
+    damage = heartsToHealth(0.8),
+    cooldown = 0.15,
     magazineSize = 40,
     reloadTime = 2.0,
     itemMaterial = Resourcepack.Items.rifle,

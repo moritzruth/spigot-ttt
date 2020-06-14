@@ -78,7 +78,7 @@ object SecondChance: TTTItem, Buyable {
         fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
             val state = isc.get(event.tttPlayer)
             if (state != null) {
-                if (Random.nextBoolean()) {
+                if (true || Random.nextBoolean()) {
                     event.winnerRoleGroup = null
                     event.tttPlayer.player.openInventory(chooseSpawnInventory)
                     state.timeoutAction = TimeoutAction(event.tttPlayer, event.tttCorpse.location)
