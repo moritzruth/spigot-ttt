@@ -2,7 +2,6 @@ package de.moritzruth.spigot_ttt.game
 
 import com.comphenix.packetwrapper.WrapperPlayServerPlayerInfo
 import com.comphenix.protocol.PacketType
-import com.comphenix.protocol.ProtocolLibrary
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import com.comphenix.protocol.wrappers.EnumWrappers
@@ -25,11 +24,6 @@ import java.util.*
 
 object GameListener : Listener {
     private val BLOCKED_COMMANDS = setOf("me", "tell")
-
-    fun register() {
-        plugin.server.pluginManager.registerEvents(this, plugin)
-        ProtocolLibrary.getProtocolManager().addPacketListener(packetListener)
-    }
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) = PlayerManager.onPlayerJoin(event.player)
@@ -73,14 +67,10 @@ object GameListener : Listener {
         EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK,
         EntityDamageEvent.DamageCause.FALLING_BLOCK,
         EntityDamageEvent.DamageCause.SUICIDE
-    )
+    )!!
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     fun onEntityDamageLow(event: EntityDamageEvent) {
-        if (GameManager.phase !== GamePhase.COMBAT) {
-            event.isCancelled = true
-        }
-
         if (ZERO_NO_DAMAGE_TICKS_CAUSES.contains(event.cause)) {
             val player = event.entity
             if (player is Player) {
@@ -93,29 +83,23 @@ object GameListener : Listener {
     fun onEntityDamageHighest(event: EntityDamageEvent) {
         if (event.entity !is Player) return
         val tttPlayer = TTTPlayer.of(event.entity as Player) ?: return
+        if (event.cause == EntityDamageEvent.DamageCause.CUSTOM) return
 
         if (tttPlayer.player.health - event.finalDamage <= 0) {
-            val damageInfo = tttPlayer.damageInfo
-
-            if (damageInfo != null && damageInfo.expectedDamageCause == event.cause) {
-                tttPlayer.damageInfo = null
-                tttPlayer.onDeath(damageInfo.deathReason, damageInfo.damager, damageInfo.scream)
-            } else {
-                val reason = when (event.cause) {
-                    EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
-                    EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
-                    EntityDamageEvent.DamageCause.ENTITY_EXPLOSION -> DeathReason.EXPLOSION
-                    EntityDamageEvent.DamageCause.DROWNING -> DeathReason.DROWNED
-                    EntityDamageEvent.DamageCause.FIRE,
-                    EntityDamageEvent.DamageCause.FIRE_TICK,
-                    EntityDamageEvent.DamageCause.LAVA,
-                    EntityDamageEvent.DamageCause.HOT_FLOOR -> DeathReason.FIRE
-                    EntityDamageEvent.DamageCause.POISON, EntityDamageEvent.DamageCause.WITHER -> DeathReason.POISON
-                    else -> DeathReason.SUICIDE
-                }
-
-                tttPlayer.onDeath(reason, null)
+            val reason = when (event.cause) {
+                EntityDamageEvent.DamageCause.FALL -> DeathReason.FALL
+                EntityDamageEvent.DamageCause.BLOCK_EXPLOSION,
+                EntityDamageEvent.DamageCause.ENTITY_EXPLOSION -> DeathReason.EXPLOSION
+                EntityDamageEvent.DamageCause.DROWNING -> DeathReason.DROWNED
+                EntityDamageEvent.DamageCause.FIRE,
+                EntityDamageEvent.DamageCause.FIRE_TICK,
+                EntityDamageEvent.DamageCause.LAVA,
+                EntityDamageEvent.DamageCause.HOT_FLOOR -> DeathReason.FIRE
+                EntityDamageEvent.DamageCause.POISON, EntityDamageEvent.DamageCause.WITHER -> DeathReason.POISON
+                else -> DeathReason.SUICIDE
             }
+
+            tttPlayer.onDeath(reason, null)
 
             event.damage = 0.0
         }
@@ -145,7 +129,7 @@ object GameListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+    fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
         if (!setOf(RoleGroup.JACKAL, null).contains(event.winnerRoleGroup) && event.tttPlayer.role == Role.JACKAL) {
             val sidekicks = PlayerManager.tttPlayers.filter { it.role == Role.SIDEKICK }
 
@@ -162,7 +146,7 @@ object GameListener : Listener {
         }
     }
 
-    private val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.PLAYER_INFO) {
+    val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.PLAYER_INFO) {
         override fun onPacketSending(event: PacketEvent) {
             val packet = WrapperPlayServerPlayerInfo(event.packet)
 

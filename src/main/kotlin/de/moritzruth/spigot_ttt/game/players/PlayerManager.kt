@@ -6,6 +6,7 @@ import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GameMessenger
 import de.moritzruth.spigot_ttt.game.GamePhase
+import de.moritzruth.spigot_ttt.game.classes.TTTClassManager
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.noop
@@ -95,34 +96,27 @@ object PlayerManager {
     fun createTTTPlayers() {
         val playersWithoutRole = availablePlayers.toMutableSet()
         var playersWithoutRoleCount = playersWithoutRole.count()
+        val classesIterator = TTTClassManager.createClassesIterator(playersWithoutRoleCount)
+
+        fun createTTTPlayer(role: Role) {
+            val player = playersWithoutRole.random()
+            tttPlayers.add(TTTPlayer(player, role, classesIterator.next()))
+            playersWithoutRole.remove(player)
+            playersWithoutRoleCount--
+        }
+
         val traitorCount: Int = if (playersWithoutRoleCount <= 4) 1 else ceil(playersWithoutRoleCount / 4.0).toInt()
+        for (index in 1..traitorCount) createTTTPlayer(Role.TRAITOR)
 
-        for (index in 1..traitorCount) {
-            val player = playersWithoutRole.random()
-            tttPlayers.add(TTTPlayer(player, Role.TRAITOR))
-            playersWithoutRole.remove(player)
-            playersWithoutRoleCount--
-        }
-
-        if (playersWithoutRoleCount > 1 && Settings.detectiveEnabled) {
-            val player = playersWithoutRole.random()
-            tttPlayers.add(TTTPlayer(player, Role.DETECTIVE))
-            playersWithoutRole.remove(player)
-            playersWithoutRoleCount--
-        }
+        if (playersWithoutRoleCount > 1 && Settings.detectiveEnabled) createTTTPlayer(Role.TRAITOR)
 
         if (playersWithoutRoleCount > 1 && when (Settings.jackalMode) {
                 JackalMode.ALWAYS -> true
                 JackalMode.HALF_TIME -> Random.Default.nextBoolean()
                 JackalMode.NEVER -> false
-            }) {
-            val player = playersWithoutRole.random()
-            tttPlayers.add(TTTPlayer(player, Role.JACKAL))
-            playersWithoutRole.remove(player)
-            @Suppress("UNUSED_CHANGED_VALUE")
-            playersWithoutRoleCount--
-        }
+            }
+        ) createTTTPlayer(Role.JACKAL)
 
-        playersWithoutRole.forEach { tttPlayers.add(TTTPlayer(it, Role.INNOCENT)) }
+        playersWithoutRole.forEach { tttPlayers.add(TTTPlayer(it, Role.INNOCENT, classesIterator.next())) }
     }
 }

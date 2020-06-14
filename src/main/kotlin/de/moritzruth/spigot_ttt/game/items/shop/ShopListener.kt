@@ -5,8 +5,7 @@ import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.ItemManager
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathEvent
-import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.game.players.TTTPlayerTrueDeathEvent
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
@@ -16,10 +15,6 @@ import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
 
 object ShopListener: Listener {
-    fun register() {
-        plugin.server.pluginManager.registerEvents(this, plugin)
-    }
-
     @EventHandler(ignoreCancelled = true)
     fun onInventoryClick(event: InventoryClickEvent) {
         if (event.whoClicked !is Player) return
@@ -50,8 +45,6 @@ object ShopListener: Listener {
                     tttPlayer.boughtItems.add(tttItem)
                     tttPlayer.credits -= tttItem.price
 
-                    tttItem.onBuy(tttPlayer)
-
                     Shop.setItems(tttPlayer)
                 } catch (e: TTTPlayer.AlreadyHasItemException) {
                     tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Du hast dieses Item bereits")
@@ -63,7 +56,7 @@ object ShopListener: Listener {
     }
 
     @EventHandler
-    fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+    fun onTTTPlayerDeath(event: TTTPlayerTrueDeathEvent) {
         val killer = event.killer ?: return
 
         if (event.tttPlayer.role.group != killer.role.group) {

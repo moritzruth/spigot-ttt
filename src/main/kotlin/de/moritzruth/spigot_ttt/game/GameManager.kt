@@ -1,6 +1,8 @@
 package de.moritzruth.spigot_ttt.game
 
+import com.comphenix.protocol.ProtocolLibrary
 import de.moritzruth.spigot_ttt.Settings
+import de.moritzruth.spigot_ttt.game.classes.TTTClassManager
 import de.moritzruth.spigot_ttt.game.corpses.CorpseListener
 import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
 import de.moritzruth.spigot_ttt.game.items.ItemManager
@@ -28,13 +30,20 @@ object GameManager {
 
     val destroyedBlocks = mutableMapOf<Location, Material>()
 
+    private val listeners = ItemManager.listeners
+        .plus(GameListener)
+        .plus(ShopListener)
+        .plus(CorpseListener)
+        .plus(TTTClassManager.listeners)
+
+    private val packetListeners = ItemManager.packetListeners
+        .plus(GameListener.packetListener)
+
     fun initialize() {
         adjustWorld()
 
-        ItemManager.registerListeners()
-        GameListener.register()
-        ShopListener.register()
-        CorpseListener.register()
+        listeners.forEach { plugin.server.pluginManager.registerEvents(it, plugin) }
+        packetListeners.forEach { ProtocolLibrary.getProtocolManager().addPacketListener(it) }
     }
 
     fun letRoleWin(role: Role?) {
@@ -129,9 +138,9 @@ object GameManager {
         PlayerManager.createTTTPlayers()
 
         PlayerManager.tttPlayers.forEach {
-            it.reset()
             it.player.teleportToWorldSpawn()
             it.activateStamina()
+            it.addDefaultClassItems()
         }
 
         GameMessenger.preparingPhaseStarted()
@@ -145,9 +154,15 @@ object GameManager {
 
     private fun startCombatPhase() {
         ensurePhase(GamePhase.PREPARING)
-
         phase = GamePhase.COMBAT
-        PlayerManager.tttPlayers.forEach { Shop.setItems(it) }
+
+        PlayerManager.tttPlayers.forEach {
+            Shop.setItems(it)
+
+            if (!it.alive) {
+                it.revive(world.spawnLocation, Settings.initialCredits)
+            }
+        }
         ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
 
         Timers.playTimerSound()

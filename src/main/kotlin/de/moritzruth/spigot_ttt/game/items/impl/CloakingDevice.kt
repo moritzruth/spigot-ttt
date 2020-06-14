@@ -80,7 +80,10 @@ object CloakingDevice: TTTItem, Buyable, Selectable {
         }
 
         @EventHandler
-        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) = isc.get(event.tttPlayer)?.cooldownTask?.cancel()
+        override fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+            super.onTTTPlayerDeath(event)
+            isc.get(event.tttPlayer)?.cooldownTask?.cancel()
+        }
 
         @EventHandler
         fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, _ -> state.cooldownTask?.cancel() }

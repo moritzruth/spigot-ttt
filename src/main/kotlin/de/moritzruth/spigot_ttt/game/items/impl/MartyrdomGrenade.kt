@@ -1,13 +1,13 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.PASSIVE
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
+import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.createKillExplosion
@@ -36,13 +36,13 @@ object MartyrdomGrenade: TTTItem, Buyable {
     override val price = 1
     val isc = InversedStateContainer(State::class)
 
-    override fun onBuy(tttPlayer: TTTPlayer) {
+    override fun onOwn(tttPlayer: TTTPlayer) {
         isc.getOrCreate(tttPlayer)
     }
 
     override val listener = object : TTTItemListener(this, true) {
         @EventHandler
-        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+        fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
             val state = isc.get(event.tttPlayer) ?: return
 
             state.explodeTask = plugin.server.scheduler.runTaskLater(plugin, fun() {

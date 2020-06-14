@@ -50,7 +50,7 @@ object Radar: TTTItem, Buyable {
 
     val isc = InversedStateContainer(State::class)
 
-    override fun onBuy(tttPlayer: TTTPlayer) {
+    override fun onOwn(tttPlayer: TTTPlayer) {
         val state = isc.getOrCreate(tttPlayer)
 
         state.bossBar = plugin.server.createBossBar(DISPLAY_NAME, BarColor.BLUE, BarStyle.SOLID)
@@ -101,13 +101,17 @@ object Radar: TTTItem, Buyable {
 
     override val listener = object : TTTItemListener(this, true) {
         @EventHandler
-        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+        fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
             isc.get(event.tttPlayer)?.reset(event.tttPlayer)
             isc.remove(event.tttPlayer)
         }
 
         @EventHandler
         fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, tttPlayer -> state.reset(tttPlayer) }
+
+        override fun onRightClick(data: ClickEventData) {
+            data.event.isCancelled = true
+        }
     }
 
     override val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {

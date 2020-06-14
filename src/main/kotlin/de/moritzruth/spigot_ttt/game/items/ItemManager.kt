@@ -1,6 +1,5 @@
 package de.moritzruth.spigot_ttt.game.items
 
-import com.comphenix.protocol.ProtocolLibrary
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.impl.*
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.BaseballBat
@@ -35,14 +34,8 @@ object ItemManager {
 
     val droppedItemStates = mutableMapOf<Int, IState>()
 
-    fun registerListeners() {
-        plugin.server.pluginManager.registerEvents(listener, plugin)
-
-        for (item in ITEMS) {
-            if (item.listener != null) plugin.server.pluginManager.registerEvents(item.listener!!, plugin)
-            if (item.packetListener != null) ProtocolLibrary.getProtocolManager().addPacketListener(item.packetListener!!)
-        }
-    }
+    val listeners get () = ITEMS.mapNotNull { it.listener }.plus(listener)
+    val packetListeners get () = ITEMS.mapNotNull { it.packetListener }
 
     private fun getItemByMaterial(material: Material) = ITEMS.find { tttItem -> material === tttItem.itemStack.type }
     fun getItemByItemStack(itemStack: ItemStack) = getItemByMaterial(itemStack.type)

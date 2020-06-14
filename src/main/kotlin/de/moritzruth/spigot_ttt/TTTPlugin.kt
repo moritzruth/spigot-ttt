@@ -17,6 +17,7 @@ class TTTPlugin: JavaPlugin() {
 
         TTTListener.register()
 
+        // This is required to prevent a lot of bugs
         server.spawnRadius = 0
     }
 

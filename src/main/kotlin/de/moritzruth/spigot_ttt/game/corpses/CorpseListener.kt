@@ -16,10 +16,6 @@ import java.time.Duration
 import java.time.Instant
 
 object CorpseListener: Listener {
-    fun register() {
-        plugin.server.pluginManager.registerEvents(this, plugin)
-    }
-
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
         if (event.whoClicked !is Player) return

@@ -4,11 +4,13 @@ import de.moritzruth.spigot_ttt.game.GameManager
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
@@ -79,6 +81,13 @@ object TTTListener: Listener {
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
         event.quitMessage = "${TTTPlugin.prefix}${event.player.displayName} ${ChatColor.GOLD}hat das Spiel verlassen."
+    }
+
+    @EventHandler
+    fun onEntityDamage(event: EntityDamageEvent) {
+        if (GameManager.phase == null && event.entity is Player) {
+            event.isCancelled = true
+        }
     }
 
     @EventHandler

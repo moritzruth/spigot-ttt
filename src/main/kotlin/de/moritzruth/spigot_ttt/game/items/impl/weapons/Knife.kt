@@ -1,15 +1,14 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.players.DamageInfo
+import de.moritzruth.spigot_ttt.game.items.Buyable
+import de.moritzruth.spigot_ttt.game.items.LoreHelper
+import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.roles
-import de.moritzruth.spigot_ttt.game.items.Buyable
-import de.moritzruth.spigot_ttt.game.items.TTTItem
-import de.moritzruth.spigot_ttt.game.items.LoreHelper
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.removeTTTItemNextTick
@@ -20,7 +19,6 @@ import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.event.EventHandler
 import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.inventory.ItemStack
 
 object Knife: TTTItem, Buyable {
@@ -50,18 +48,18 @@ object Knife: TTTItem, Buyable {
     override val listener = object : TTTItemListener(this, false) {
         @EventHandler(ignoreCancelled = true)
         override fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) = handle(event) { damagerTTTPlayer, damagedTTTPlayer ->
+            event.isCancelled = true
+
             if (event.damage == 1.0) {
                 val distance = damagerTTTPlayer.player.location.distance(damagedTTTPlayer.player.location)
 
                 if (distance <= 1.5) {
-                    damagedTTTPlayer.damageInfo = DamageInfo(
-                        damagerTTTPlayer,
+                    damagedTTTPlayer.damage(
+                        1000.0,
                         DeathReason.Item(Knife),
-                        EntityDamageEvent.DamageCause.ENTITY_ATTACK,
-                        scream = false
+                        damagerTTTPlayer,
+                        false
                     )
-                    event.damage = 1000.0
-                    event.isCancelled = false
 
                     GameManager.world.playSound(
                         damagedTTTPlayer.player.location,
@@ -80,11 +78,8 @@ object Knife: TTTItem, Buyable {
                     )
 
                     damagerTTTPlayer.player.inventory.removeTTTItemNextTick(Knife)
-                    return@handle
                 }
             }
-
-            event.isCancelled = true
         }
     }
 }

@@ -1,7 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
@@ -136,10 +135,9 @@ abstract class Gun(
     }
 
     open fun onHit(tttPlayer: TTTPlayer, hitTTTPlayer: TTTPlayer) {
-        hitTTTPlayer.damageInfo = DamageInfo(tttPlayer, DeathReason.Item(this))
         val actualDamage = computeActualDamage(tttPlayer, hitTTTPlayer.player)
 
-        hitTTTPlayer.player.damage(actualDamage)
+        hitTTTPlayer.damage(actualDamage, DeathReason.Item(this), tttPlayer, true)
         tttPlayer.player.playSound(tttPlayer.player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 2f, 1.2f)
         hitTTTPlayer.player.velocity = tttPlayer.player.location.direction.multiply(
             (actualDamage / 20).coerceAtMost(3.0)
@@ -215,7 +213,7 @@ abstract class Gun(
         }
 
         @EventHandler
-        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) = isc.get(event.tttPlayer)?.reset()
+        fun onTTTPlayerDeath(event: TTTPlayerTrueDeathEvent) = isc.get(event.tttPlayer)?.reset()
 
         @EventHandler
         fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, _ -> state.reset() }
@@ -278,9 +276,5 @@ abstract class Gun(
                 }
             }
         }
-    }
-
-    companion object {
-        const val INFINITE_DAMAGE: Double = -1.0
     }
 }

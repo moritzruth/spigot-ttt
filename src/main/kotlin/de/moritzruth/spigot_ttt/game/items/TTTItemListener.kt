@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.game.items
 
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathEvent
 import de.moritzruth.spigot_ttt.utils.isLeftClick
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import org.bukkit.entity.Player
@@ -15,10 +16,19 @@ import org.bukkit.event.player.PlayerItemConsumeEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.ItemStack
 
-open class TTTItemListener(private val tttItem: TTTItem, private val cancelDamage: Boolean): Listener {
+open class TTTItemListener(
+    private val tttItem: TTTItem,
+    private val cancelDamage: Boolean,
+    private val removeOnDeath: Boolean = true
+): Listener {
     @EventHandler
     open fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) = handle(event) { _, _ ->
         if (cancelDamage) event.isCancelled = true
+    }
+
+    @EventHandler
+    open fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+        if (removeOnDeath) event.tttPlayer.removeItem(tttItem)
     }
 
     @EventHandler

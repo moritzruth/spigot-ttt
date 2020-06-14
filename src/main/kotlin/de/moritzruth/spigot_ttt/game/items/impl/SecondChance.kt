@@ -69,13 +69,13 @@ object SecondChance: TTTItem, Buyable {
         })
     }
 
-    override fun onBuy(tttPlayer: TTTPlayer) {
+    override fun onOwn(tttPlayer: TTTPlayer) {
         isc.getOrCreate(tttPlayer)
     }
 
-    override val listener = object : TTTItemListener(this, true) {
+    override val listener = object : TTTItemListener(this, true, false) {
         @EventHandler
-        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+        fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
             val state = isc.get(event.tttPlayer)
             if (state != null) {
                 if (Random.nextBoolean()) {
@@ -154,6 +154,7 @@ object SecondChance: TTTItem, Buyable {
             isc.remove(tttPlayer)
             task.cancel()
             tttPlayer.player.closeInventory()
+            tttPlayer.removeItem(SecondChance)
             bossBar.removePlayer(tttPlayer.player)
         }
     }

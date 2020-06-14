@@ -23,8 +23,6 @@ interface Buyable {
     val buyableBy: EnumSet<Role>
     val price: Int
     val buyLimit: Int?
-
-    fun onBuy(tttPlayer: TTTPlayer) {}
 }
 
 val PASSIVE = "${ChatColor.RESET}${ChatColor.RED}(Passiv)"
@@ -37,6 +35,9 @@ interface TTTItem {
     val packetListener: PacketListener? get() = null
     val itemStack: ItemStack
     val type: Type
+
+    fun onOwn(tttPlayer: TTTPlayer) {}
+    fun onRemove(tttPlayer: TTTPlayer) {}
 
     enum class Type(val maxItemsOfTypeInInventory: Int?) {
         MELEE(1),

@@ -5,10 +5,13 @@ import de.moritzruth.spigot_ttt.Settings
 import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
+import de.moritzruth.spigot_ttt.game.ScoreboardHelper
+import de.moritzruth.spigot_ttt.game.classes.TTTClass
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.items.ItemManager
 import de.moritzruth.spigot_ttt.game.items.Selectable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.impl.CloakingDevice
 import de.moritzruth.spigot_ttt.game.items.shop.Shop
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.*
@@ -17,7 +20,7 @@ import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitTask
 import kotlin.properties.Delegates
 
-class TTTPlayer(player: Player, role: Role) {
+class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
     var alive = true
     var player by Delegates.observable(player) { _, _, _ -> adjustPlayer() }
 
@@ -26,6 +29,7 @@ class TTTPlayer(player: Player, role: Role) {
             if (value !== field) {
                 field = value
                 scoreboard.updateRole()
+                ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
                 scoreboard.showCorrectSidebarScoreboard()
                 Shop.setItems(this)
             }
@@ -35,9 +39,13 @@ class TTTPlayer(player: Player, role: Role) {
     var itemInHand by Delegates.observable<TTTItem?>(null) { _, oldItem, newItem ->
         if (oldItem !== newItem) onItemInHandChanged(oldItem, newItem)
     }
+
+    var walkSpeed
+        get() = player.walkSpeed
+        set(value) { player.walkSpeed = value }
+
     var credits by Delegates.observable(Settings.initialCredits) { _, _, _ -> scoreboard.updateCredits() }
     val boughtItems = mutableListOf<TTTItem>()
-    var damageInfo: DamageInfo? = null
 
     private var staminaCooldown: Int = 0
     private var staminaTask: BukkitTask? = null
@@ -48,6 +56,7 @@ class TTTPlayer(player: Player, role: Role) {
     init {
         adjustPlayer()
         scoreboard.initialize()
+        tttClass?.onInit(this)
     }
 
     private fun onItemInHandChanged(oldItem: TTTItem?, newItem: TTTItem?) {
@@ -60,46 +69,67 @@ class TTTPlayer(player: Player, role: Role) {
         }
     }
 
+    fun damage(damage: Double, reason: DeathReason, damager: TTTPlayer, scream: Boolean = true) {
+        if (!alive) return
+        val finalHealth = player.health - damage
+
+        if (finalHealth <= 0.0) onDeath(reason, damager, scream)
+        else player.damage(damage)
+    }
+
     fun onDeath(reason: DeathReason, killer: TTTPlayer?, scream: Boolean = true) {
-        GameManager.ensurePhase(GamePhase.COMBAT)
+        if (!alive) return
+
+        alive = false
+        player.gameMode = GameMode.SPECTATOR
+
+        var reallyScream = scream
 
         player.sendMessage(TTTPlugin.prefix +
-            if (killer == null) "${ChatColor.RED}${ChatColor.BOLD}Du bist gestorben"
-            else "${ChatColor.RED}${ChatColor.BOLD}Du wurdest von " +
-                    "${ChatColor.RESET}${killer.player.displayName} " +
-                    "${ChatColor.RESET}(${killer.role.coloredDisplayName}${ChatColor.RESET}) " +
-                    " ${ChatColor.RED}${ChatColor.BOLD}getötet"
+                if (killer == null) "${ChatColor.RED}${ChatColor.BOLD}Du bist gestorben"
+                else "${ChatColor.RED}${ChatColor.BOLD}Du wurdest von " +
+                        "${ChatColor.RESET}${killer.player.displayName} " +
+                        "${ChatColor.RESET}(${killer.role.coloredDisplayName}${ChatColor.RESET}) " +
+                        " ${ChatColor.RED}${ChatColor.BOLD}getötet"
         )
 
-        player.gameMode = GameMode.SPECTATOR
-        alive = false
-        val tttCorpse = TTTCorpse.spawn(this, reason)
+        if (GameManager.phase == GamePhase.PREPARING) {
+            player.sendMessage("${TTTPlugin.prefix}${ChatColor.GRAY}${ChatColor.ITALIC}Du wirst nach der Vorbereitungsphase wiederbelebt")
 
-        player.inventory.clear()
-        credits = 0
+            val event = TTTPlayerDeathEvent(
+                tttPlayer = this,
+                location = player.location,
+                killer = killer,
+                scream = reallyScream
+            ).call()
 
-        val onlyRemainingRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
+            reallyScream = event.scream
+        } else {
+            val tttCorpse = TTTCorpse.spawn(this, reason)
+            credits = 0
 
-        val event = TTTPlayerDeathEvent(
-            this,
-            player.location,
-            tttCorpse,
-            killer,
-            scream,
-            onlyRemainingRoleGroup
-        ).call()
+            val onlyRemainingRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
 
-        event.winnerRoleGroup?.run { GameManager.letRoleWin(primaryRole) }
+            val event = TTTPlayerTrueDeathEvent(
+                tttPlayer = this,
+                location = player.location,
+                tttCorpse = tttCorpse,
+                killer = killer,
+                scream = reallyScream,
+                winnerRoleGroup = onlyRemainingRoleGroup
+            ).call()
 
-        if (event.scream) {
-            GameManager.world.playSound(
-                player.location,
-                Resourcepack.Sounds.playerDeath,
-                SoundCategory.PLAYERS,
-                1F,
-                1F
-            )
+            reallyScream = event.scream
+            event.winnerRoleGroup?.run { GameManager.letRoleWin(primaryRole) }
         }
+
+        if (reallyScream) GameManager.world.playSound(
+            player.location,
+            Resourcepack.Sounds.playerDeath,
+            SoundCategory.PLAYERS,
+            1F,
+            1F
+        )
     }
 
     fun revive(location: Location, credits: Int = 0) {
@@ -221,8 +251,17 @@ class TTTPlayer(player: Player, role: Role) {
     fun addItem(item: TTTItem) {
         checkAddItemPreconditions(item)
         player.inventory.addItem(item.itemStack.clone())
+        item.onOwn(this)
         updateItemInHand()
     }
+
+    fun removeItem(item: TTTItem) {
+        player.inventory.removeTTTItem(CloakingDevice)
+        item.onRemove(this)
+        updateItemInHand()
+    }
+
+    fun addDefaultClassItems() = tttClass?.defaultItems?.forEach { addItem(it) }
 
     override fun toString() = "TTTPlayer(${player.name} is $role)"
 

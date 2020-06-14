@@ -17,6 +17,7 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
         scoreboard.registerNewTeam(ValueTeam.ROLE.teamName).addEntry(ValueTeam.ROLE.entry)
         scoreboard.registerNewTeam(ValueTeam.PHASE_AND_TIME.teamName).addEntry(ValueTeam.PHASE_AND_TIME.entry)
         scoreboard.registerNewTeam(ValueTeam.CREDITS.teamName).addEntry(ValueTeam.CREDITS.entry)
+        scoreboard.registerNewTeam(ValueTeam.CLASS.teamName).addEntry(ValueTeam.CLASS.entry)
 
         scoreboard.registerNewObjective(
                 INACTIVE_OBJECTIVE,
@@ -40,11 +41,12 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
                 RenderType.INTEGER
         ).apply {
             val lines = mutableListOf(
-                    " ".repeat(20),
-                    ValueTeam.PHASE_AND_TIME.entry,
-                    "  ",
-                    ValueTeam.ROLE.entry,
-                    " "
+                " ".repeat(20),
+                ValueTeam.PHASE_AND_TIME.entry,
+                "  ",
+                ValueTeam.ROLE.entry,
+                ValueTeam.CLASS.entry,
+                " "
             )
 
             lines.reversed().forEachIndexed { index, line -> getScore(line).score = index }
@@ -61,6 +63,7 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
                 ValueTeam.PHASE_AND_TIME.entry,
                 "  ",
                 ValueTeam.ROLE.entry,
+                ValueTeam.CLASS.entry,
                 ValueTeam.CREDITS.entry,
                 " "
             )
@@ -81,6 +84,8 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
             setOption(Team.Option.DEATH_MESSAGE_VISIBILITY, Team.OptionStatus.NEVER)
             setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
         }
+
+        setValue(ValueTeam.CLASS, "Klasse: ${tttPlayer.tttClass?.coloredDisplayName ?: "${ChatColor.GRAY}Keine"}")
 
         updateEverything()
         showCorrectSidebarScoreboard()
@@ -106,7 +111,10 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
         when (GameManager.phase) {
             null -> setValue(ValueTeam.ROLE, "")
             GamePhase.PREPARING -> setValue(ValueTeam.ROLE, "Du bist: ${ChatColor.MAGIC}xxxxxxxx")
-            GamePhase.COMBAT, GamePhase.OVER -> setValue(ValueTeam.ROLE, "Du bist: " + tttPlayer.role.coloredDisplayName.toUpperCase())
+            GamePhase.COMBAT, GamePhase.OVER -> setValue(
+                ValueTeam.ROLE,
+                "Du bist: ${tttPlayer.role.chatColor}${ChatColor.BOLD}${tttPlayer.role.displayName}"
+            )
         }
     }
 
@@ -170,7 +178,8 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
     private enum class ValueTeam(val teamName: String, val entry: String) {
         PHASE_AND_TIME("_phase-and-time", "${ChatColor.AQUA}"),
         ROLE("_role", "${ChatColor.BLACK}"),
-        CREDITS("_credits", "${ChatColor.GOLD}")
+        CREDITS("_credits", "${ChatColor.GOLD}"),
+        CLASS("_class", "${ChatColor.GREEN}")
     }
 
     companion object {
