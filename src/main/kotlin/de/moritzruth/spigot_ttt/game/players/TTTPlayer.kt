@@ -13,11 +13,9 @@ import de.moritzruth.spigot_ttt.game.items.Selectable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.impl.CloakingDevice
 import de.moritzruth.spigot_ttt.game.items.shop.Shop
-import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.*
 import org.bukkit.*
 import org.bukkit.entity.Player
-import org.bukkit.scheduler.BukkitTask
 import kotlin.properties.Delegates
 
 class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
@@ -46,9 +44,6 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
 
     var credits by Delegates.observable(Settings.initialCredits) { _, _, _ -> scoreboard.updateCredits() }
     val boughtItems = mutableListOf<TTTItem>()
-
-    private var staminaCooldown: Int = 0
-    private var staminaTask: BukkitTask? = null
 
     val scoreboard = TTTScoreboard(this)
     val stateContainer = StateContainer(this)
@@ -159,23 +154,6 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
 
     private fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
 
-    fun activateStamina() {
-        if (staminaTask != null) return
-
-        staminaTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
-            if (!alive) return
-
-            if (player.isSprinting) {
-                player.foodLevel -= 2
-                staminaCooldown = 4
-            } else {
-                if (staminaCooldown == 0) {
-                    if (player.foodLevel < 20) player.foodLevel += 2
-                } else staminaCooldown -= 1
-            }
-        }, 0, secondsToTicks(0.5).toLong())
-    }
-
     fun changeRole(newRole: Role) {
         roleHistory.add(role)
         role = newRole
@@ -219,9 +197,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
         player.walkSpeed = 0.2F // yes, this is the default value
         player.level = 0
         player.exp = 0F
-
-        staminaTask?.cancel()
-        staminaTask = null
+        player.allowFlight = player.gameMode == GameMode.CREATIVE
         player.foodLevel = 20
 
         player.inventory.clear()

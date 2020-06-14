@@ -138,7 +138,6 @@ object GameManager {
 
         PlayerManager.tttPlayers.forEach {
             it.player.teleportToWorldSpawn()
-            it.activateStamina()
             it.addDefaultClassItems()
         }
 

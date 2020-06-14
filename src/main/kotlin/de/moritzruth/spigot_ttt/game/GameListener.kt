@@ -106,6 +106,8 @@ object GameListener : Listener {
         if (tttPlayer.player.health - e.damage <= 0) {
             tttPlayer.onDeath(reason, null)
             event.damage = 0.0
+        } else {
+            event.damage = e.damage
         }
     }
 

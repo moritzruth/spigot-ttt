@@ -1,14 +1,11 @@
 package de.moritzruth.spigot_ttt.game.classes
 
-import de.moritzruth.spigot_ttt.game.classes.impl.Gambler
-import de.moritzruth.spigot_ttt.game.classes.impl.Oracle
-import de.moritzruth.spigot_ttt.game.classes.impl.Stuntman
-import de.moritzruth.spigot_ttt.game.classes.impl.Warrior
+import de.moritzruth.spigot_ttt.game.classes.impl.*
 import java.util.*
 
 object TTTClassManager {
     private val TTT_CLASSES = setOf(
-        Warrior, Oracle, Gambler, Stuntman
+        Warrior, Oracle, Gambler, Stuntman, Ninja
     )
 
     val listeners = TTT_CLASSES.mapNotNull { it.listener }
