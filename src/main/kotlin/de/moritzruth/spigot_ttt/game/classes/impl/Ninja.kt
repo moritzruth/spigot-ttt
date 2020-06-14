@@ -43,8 +43,6 @@ object Ninja: TTTClass(
                 tttPlayer.player.velocity = Vector(current.x * 3, 0.8, current.z * 3)
                 state.jumpsRemaining -= 1
 
-                println(state.jumpsRemaining)
-
                 if (state.jumpsRemaining == 0) {
                     tttPlayer.player.allowFlight = false
 

@@ -112,7 +112,7 @@ object PlayerManager {
             playersWithoutRole.remove(player)
         }
 
-        for (index in 1..Settings.traitorCount) createTTTPlayer(Role.JACKAL)
+        for (index in 1..Settings.traitorCount) createTTTPlayer(Role.TRAITOR)
 
         if (Settings.detectiveEnabled) createTTTPlayer(Role.DETECTIVE)
 

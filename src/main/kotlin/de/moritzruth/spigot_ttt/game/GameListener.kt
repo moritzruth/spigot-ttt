@@ -12,6 +12,7 @@ import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
 import de.moritzruth.spigot_ttt.utils.nextTick
 import org.bukkit.ChatColor
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -165,24 +166,23 @@ object GameListener : Listener {
         override fun onPacketSending(event: PacketEvent) {
             val packet = WrapperPlayServerPlayerInfo(event.packet)
 
-            if (packet.action == EnumWrappers.PlayerInfoAction.UPDATE_GAME_MODE ||
-                    packet.action == EnumWrappers.PlayerInfoAction.ADD_PLAYER) {
+            if (
+                packet.action == EnumWrappers.PlayerInfoAction.UPDATE_GAME_MODE ||
+                packet.action == EnumWrappers.PlayerInfoAction.ADD_PLAYER
+            ) {
+                packet.data = packet.data.map { info ->
+                    val tttPlayer = PlayerManager.tttPlayers.find { it.player.uniqueId == info.profile.uuid }
 
-                packet.data = packet.data.mapNotNull { info ->
-                    if (event.player.uniqueId == info.profile.uuid) info
-                    else {
-                        val tttPlayer = PlayerManager.tttPlayers.find { it.player.uniqueId == info.profile.uuid }
-
-                        if (tttPlayer == null) info
-                        else PlayerInfoData(
-                            info.profile,
-                            info.latency,
-                            if (info.gameMode == EnumWrappers.NativeGameMode.SPECTATOR)
-                                EnumWrappers.NativeGameMode.SURVIVAL
-                            else info.gameMode,
-                            info.displayName
-                        )
-                    }
+                    if (tttPlayer == null) info
+                    else PlayerInfoData(
+                        info.profile,
+                        info.latency,
+                        if (event.player.uniqueId == info.profile.uuid) {
+                            if (event.player.gameMode == GameMode.SPECTATOR) EnumWrappers.NativeGameMode.SPECTATOR
+                            else EnumWrappers.NativeGameMode.SURVIVAL
+                        } else EnumWrappers.NativeGameMode.SURVIVAL,
+                        info.displayName
+                    )
                 }.toMutableList()
             }
         }
