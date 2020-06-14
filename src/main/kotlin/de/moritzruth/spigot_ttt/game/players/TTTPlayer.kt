@@ -161,18 +161,20 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
 
     private fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
 
-    fun changeRole(newRole: Role) {
+    fun changeRole(newRole: Role, notify: Boolean = true) {
         roleHistory.add(role)
         role = newRole
 
-        val message = if (role == Role.SIDEKICK) {
-            val jackal = PlayerManager.tttPlayers.find { it.role == Role.JACKAL }
-                ?: throw NoJackalLivingException()
+        if (notify) {
+            val message = if (role == Role.SIDEKICK) {
+                val jackal = PlayerManager.tttPlayers.find { it.role == Role.JACKAL }
+                    ?: throw NoJackalLivingException()
 
-            "${ChatColor.WHITE}Du bist jetzt ${role.coloredDisplayName} von ${jackal.role.chatColor}${jackal.player.displayName}"
-        } else "${ChatColor.WHITE}Du bist jetzt ${role.coloredDisplayName}"
+                "${ChatColor.WHITE}Du bist jetzt ${role.coloredDisplayName} von ${jackal.role.chatColor}${jackal.player.displayName}"
+            } else "${ChatColor.WHITE}Du bist jetzt ${role.coloredDisplayName}"
 
-        player.sendTitle("", message, secondsToTicks(0.2), secondsToTicks(3), secondsToTicks(0.5))
+            player.sendTitle("", message, secondsToTicks(0.2), secondsToTicks(3), secondsToTicks(0.5))
+        }
         PlayerManager.letRemainingRoleGroupWin()
     }
 

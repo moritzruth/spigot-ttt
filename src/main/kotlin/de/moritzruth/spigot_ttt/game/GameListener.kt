@@ -143,12 +143,14 @@ object GameListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
-        if (event.winnerRoleGroup == RoleGroup.JACKAL && event.tttPlayer.role == Role.JACKAL) {
+        if (event.winnerRoleGroup != RoleGroup.JACKAL && event.tttPlayer.role == Role.JACKAL) {
             val sidekicks = PlayerManager.tttPlayers.filter { it.role == Role.SIDEKICK }
 
             if (sidekicks.isNotEmpty()) {
                 val newJackal = sidekicks.random()
                 newJackal.changeRole(Role.JACKAL)
+
+                event.tttPlayer.changeRole(Role.SIDEKICK) // The old Jackal
 
                 sidekicks.forEach { sidekick ->
                     if (sidekick != newJackal) {
