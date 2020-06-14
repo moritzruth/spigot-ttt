@@ -8,7 +8,7 @@ enum class JackalMode {
 
 object Settings {
     val jackalMode get() = JackalMode.valueOf(plugin.config.getString("roles.jackal.mode", JackalMode.HALF_TIME.toString())!!)
-    val minPlayers get() = plugin.config.getInt("min-players", 4)
+    val traitorCount get() = plugin.config.getInt("roles.traitor.count", 2)
     val detectiveEnabled get() = plugin.config.getBoolean("roles.detective.enabled", true)
     val preparingPhaseDuration get() = plugin.config.getInt("duration.preparing", 20)
     val combatPhaseDuration get() = plugin.config.getInt("duration.combat", 480) // 8 minutes

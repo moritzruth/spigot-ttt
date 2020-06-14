@@ -1,11 +1,12 @@
-min-players: 4
-
 roles:
   jackal:
     mode: HALF_TIME
 
   detective:
     enabled: true
+
+  traitor:
+    count: 2
 
 duration:
   preparing: 20

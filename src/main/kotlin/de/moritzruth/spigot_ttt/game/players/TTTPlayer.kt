@@ -87,7 +87,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
                 else "${ChatColor.RED}${ChatColor.BOLD}Du wurdest von " +
                         "${ChatColor.RESET}${killer.player.displayName} " +
                         "${ChatColor.RESET}(${killer.role.coloredDisplayName}${ChatColor.RESET}) " +
-                        " ${ChatColor.RED}${ChatColor.BOLD}getötet"
+                        "${ChatColor.RED}${ChatColor.BOLD}getötet"
         )
 
         if (GameManager.phase == GamePhase.PREPARING) {

@@ -14,7 +14,6 @@ import de.moritzruth.spigot_ttt.utils.teleportToWorldSpawn
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
-import kotlin.math.ceil
 import kotlin.random.Random
 
 object PlayerManager {
@@ -95,22 +94,29 @@ object PlayerManager {
 
     fun createTTTPlayers() {
         val playersWithoutRole = availablePlayers.toMutableSet()
-        var playersWithoutRoleCount = playersWithoutRole.count()
-        val classesIterator = TTTClassManager.createClassesIterator(playersWithoutRoleCount)
+        val playerCount = playersWithoutRole.count()
+
+        if (Settings.traitorCount < 1) throw IllegalStateException("roles.traitor.count may not be lower than 1")
+
+        var requiredPlayerCount = Settings.traitorCount
+        if (Settings.detectiveEnabled) requiredPlayerCount += 1
+        if (Settings.jackalMode != JackalMode.NEVER) requiredPlayerCount += 1
+        requiredPlayerCount += 1 // Innocent
+        if (playerCount < requiredPlayerCount) throw NotEnoughPlayersException(playerCount, requiredPlayerCount)
+
+        val classesIterator = TTTClassManager.createClassesIterator(playerCount)
 
         fun createTTTPlayer(role: Role) {
             val player = playersWithoutRole.random()
             tttPlayers.add(TTTPlayer(player, role, classesIterator.next()))
             playersWithoutRole.remove(player)
-            playersWithoutRoleCount--
         }
 
-        val traitorCount: Int = if (playersWithoutRoleCount <= 4) 1 else ceil(playersWithoutRoleCount / 4.0).toInt()
-        for (index in 1..traitorCount) createTTTPlayer(Role.TRAITOR)
+        for (index in 1..Settings.traitorCount) createTTTPlayer(Role.TRAITOR)
 
-        if (playersWithoutRoleCount > 1 && Settings.detectiveEnabled) createTTTPlayer(Role.TRAITOR)
+        if (Settings.detectiveEnabled) createTTTPlayer(Role.DETECTIVE)
 
-        if (playersWithoutRoleCount > 1 && when (Settings.jackalMode) {
+        if (when (Settings.jackalMode) {
                 JackalMode.ALWAYS -> true
                 JackalMode.HALF_TIME -> Random.Default.nextBoolean()
                 JackalMode.NEVER -> false
@@ -119,4 +125,9 @@ object PlayerManager {
 
         playersWithoutRole.forEach { tttPlayers.add(TTTPlayer(it, Role.INNOCENT, classesIterator.next())) }
     }
+
+    class NotEnoughPlayersException(
+        val actual: Int,
+        val required: Int
+    ): Exception("There are not enough players to start the game")
 }

@@ -122,9 +122,8 @@ object GameManager {
     fun startPreparingPhase() {
         ensurePhase(null)
 
-        if (PlayerManager.availablePlayers.count() < Settings.minPlayers) {
-            throw NotEnoughPlayersException()
-        }
+        PlayerManager.createTTTPlayers()
+        phase = GamePhase.PREPARING
 
         world.run {
             setStorm(Random.nextInt(4) == 1)
@@ -132,9 +131,6 @@ object GameManager {
             setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true)
             setGameRule(GameRule.DO_WEATHER_CYCLE, true)
         }
-
-        phase = GamePhase.PREPARING
-        PlayerManager.createTTTPlayers()
 
         PlayerManager.tttPlayers.forEach {
             it.player.teleportToWorldSpawn()
@@ -176,7 +172,7 @@ object GameManager {
     }
 
     fun destroyBlock(block: Block) {
-        if (phase != null && block.type.toString().contains("glass", true)) {
+        if (phase != null && block.type.toString().contains("glass_pane", true)) {
             destroyedBlocks[block.location] = block.type
             block.type = Material.AIR
             world.playSound(
@@ -192,6 +188,4 @@ object GameManager {
     fun ensurePhase(phase: GamePhase?) {
         if (this.phase !== phase) throw IllegalStateException("The game must be in $phase phase")
     }
-
-    class NotEnoughPlayersException: Exception("There are not enough players to start the game")
 }

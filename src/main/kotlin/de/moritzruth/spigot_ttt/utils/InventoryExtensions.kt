@@ -9,7 +9,10 @@ fun Inventory.setAllToItem(indexes: Iterable<Int>, itemStack: ItemStack) {
     indexes.forEach { setItem(it, itemStack) }
 }
 
-fun Inventory.removeTTTItem(tttItem: TTTItem) = clear(indexOfFirst { it?.type == tttItem.itemStack.type })
+fun Inventory.removeTTTItem(tttItem: TTTItem) {
+    val index = indexOfFirst { it?.type == tttItem.itemStack.type }
+    if (index != -1) clear(index)
+}
 fun Inventory.removeTTTItemNextTick(tttItem: TTTItem) = nextTick { removeTTTItem(tttItem) }
 
 fun PlayerInventory.clearHeldItemSlot() = clear(heldItemSlot)

@@ -143,7 +143,7 @@ object GameListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
-        if (!setOf(RoleGroup.JACKAL, null).contains(event.winnerRoleGroup) && event.tttPlayer.role == Role.JACKAL) {
+        if (event.winnerRoleGroup == RoleGroup.JACKAL && event.tttPlayer.role == Role.JACKAL) {
             val sidekicks = PlayerManager.tttPlayers.filter { it.role == Role.SIDEKICK }
 
             if (sidekicks.isNotEmpty()) {
