@@ -3,6 +3,8 @@ version: 1.0.0
 author: Moritz Ruth
 api-version: "1.15"
 main: de.moritzruth.spigot_ttt.TTTPlugin
+depend:
+  - ProtocolLib
 
 commands:
   start:

@@ -127,8 +127,8 @@ object Radar: TTTItem, Buyable {
                 try {
                     val modifiers = packet.metadata[0].value as Byte
                     packet.metadata[0].value =
-                        if (isc.get(receivingTTTPlayer)?.active == true) modifiers or 0x40
-                        else modifiers and 0xBF.toByte()
+                        if (isc.get(receivingTTTPlayer)?.active == true) modifiers or 0x40.toByte()
+                        else modifiers and 0b10111111.toByte()
                 } catch (ignored: Exception) {
                     // Idk why this throws exceptions, but it works anyways
                 }
