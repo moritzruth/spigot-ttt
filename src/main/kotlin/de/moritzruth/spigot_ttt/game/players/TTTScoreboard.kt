@@ -3,6 +3,7 @@ package de.moritzruth.spigot_ttt.game.players
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.Timers
+import de.moritzruth.spigot_ttt.game.classes.TTTClass
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.ChatColor
 import org.bukkit.scoreboard.DisplaySlot
@@ -53,10 +54,10 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
         }
 
         scoreboard.registerNewObjective(
-                ACTIVE_WITH_CREDITS_OBJECTIVE,
-        "dummy",
-        "${ChatColor.GOLD}TTT",
-        RenderType.INTEGER
+            ACTIVE_WITH_CREDITS_OBJECTIVE,
+            "dummy",
+            "${ChatColor.GOLD}TTT",
+            RenderType.INTEGER
         ).apply {
             val lines = mutableListOf(
                 " ".repeat(20),
@@ -85,7 +86,11 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
             setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
         }
 
-        setValue(ValueTeam.CLASS, "Klasse: ${tttPlayer.tttClass?.coloredDisplayName ?: "${ChatColor.GRAY}Keine"}")
+        val classDisplayName =
+            if (tttPlayer.tttClass == TTTClass.None) TTTClass.None.coloredDisplayName
+            else "${tttPlayer.tttClass.chatColor}${ChatColor.BOLD}${tttPlayer.tttClass.displayName}"
+
+        setValue(ValueTeam.CLASS, "Klasse: $classDisplayName")
 
         updateEverything()
         showCorrectSidebarScoreboard()

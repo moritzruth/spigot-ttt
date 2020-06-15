@@ -10,9 +10,14 @@ abstract class TTTClass(
     val chatColor: ChatColor,
     val defaultItems: Set<TTTItem> = emptySet()
 ) {
-    val coloredDisplayName = "$chatColor${ChatColor.BOLD}$displayName"
+    val coloredDisplayName = "$chatColor$displayName"
 
     open val listener: Listener? = null
 
     open fun onInit(tttPlayer: TTTPlayer) {}
+
+    object None: TTTClass(
+        "Keine",
+        ChatColor.GRAY
+    )
 }

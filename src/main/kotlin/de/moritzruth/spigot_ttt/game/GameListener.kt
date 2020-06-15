@@ -26,7 +26,7 @@ import org.bukkit.event.player.*
 import java.util.*
 
 object GameListener : Listener {
-    private val BLOCKED_COMMANDS = setOf("me", "tell")
+    private val BLOCKED_COMMANDS = setOf("me", "tell", "msg")
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) = PlayerManager.onPlayerJoin(event.player)

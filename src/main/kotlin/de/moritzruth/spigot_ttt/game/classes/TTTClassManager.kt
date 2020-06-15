@@ -14,13 +14,11 @@ object TTTClassManager {
 
     val listeners = TTT_CLASSES.mapNotNull { it.listener }
 
-    fun createClassesIterator(count: Int): Iterator<TTTClass?> {
-        val set: MutableSet<TTTClass?> = TTT_CLASSES.toMutableSet()
+    fun createClassesIterator(count: Int): Iterator<TTTClass> {
+        val set: MutableSet<TTTClass> = TTT_CLASSES.toMutableSet()
 
         val playersWithoutClass = count - TTT_CLASSES.size
-        if (playersWithoutClass > 0) {
-            set.addAll(Collections.nCopies(playersWithoutClass, null))
-        }
+        if (playersWithoutClass > 0) set.addAll(Collections.nCopies(playersWithoutClass, TTTClass.None))
 
         return set.shuffled().iterator()
     }

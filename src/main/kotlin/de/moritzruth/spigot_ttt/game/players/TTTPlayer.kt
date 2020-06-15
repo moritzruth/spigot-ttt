@@ -17,7 +17,7 @@ import org.bukkit.*
 import org.bukkit.entity.Player
 import kotlin.properties.Delegates
 
-class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
+class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass = TTTClass.None) {
     var alive = true
     var player by Delegates.observable(player) { _, _, _ -> adjustPlayer() }
 
@@ -50,7 +50,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
     init {
         adjustPlayer()
         scoreboard.initialize()
-        tttClass?.onInit(this)
+        tttClass.onInit(this)
     }
 
     private fun onItemInHandChanged(oldItem: TTTItem?, newItem: TTTItem?) {
@@ -248,7 +248,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass?) {
         updateItemInHand()
     }
 
-    fun addDefaultClassItems() = tttClass?.defaultItems?.forEach { addItem(it) }
+    fun addDefaultClassItems() = tttClass.defaultItems.forEach { addItem(it) }
 
     override fun toString() = "TTTPlayer(${player.name} is $role)"
 
