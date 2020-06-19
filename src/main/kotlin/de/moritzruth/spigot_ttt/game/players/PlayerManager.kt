@@ -22,7 +22,7 @@ object PlayerManager {
 
     private fun getAvailablePlayers() = plugin.server.onlinePlayers.filter { it.gameMode === GameMode.SURVIVAL }
     private fun getStillLivingRoleGroups() = getStillLivingRoles().map { it.group }.toSet()
-    fun getStillLivingRoles() = tttPlayers.filter {
+    private fun getStillLivingRoles() = tttPlayers.filter {
         it.alive || SecondChance.getInstance(it)?.preventRoundEnd == true
     }.map { it.role }.toSet()
 

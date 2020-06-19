@@ -46,7 +46,7 @@ object GameManager {
         packetListeners.forEach { ProtocolLibrary.getProtocolManager().addPacketListener(it) }
     }
 
-    fun letRoleWin(role: Role?) {
+    fun letRoleWin(role: Role) {
         ensurePhase(GamePhase.COMBAT)
         GameMessenger.win(role)
         phase = GamePhase.OVER
@@ -165,11 +165,7 @@ object GameManager {
         GameMessenger.combatPhaseStarted()
 
         Timers.startCombatPhaseTimer {
-            if (PlayerManager.getStillLivingRoles().contains(Role.INNOCENT)) {
-                letRoleWin(Role.INNOCENT)
-            } else {
-                letRoleWin(null)
-            }
+            letRoleWin(Role.INNOCENT)
         }
     }
 
