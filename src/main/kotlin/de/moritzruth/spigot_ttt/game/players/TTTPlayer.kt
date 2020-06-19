@@ -7,19 +7,24 @@ import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.ScoreboardHelper
 import de.moritzruth.spigot_ttt.game.classes.TTTClass
+import de.moritzruth.spigot_ttt.game.classes.TTTClassCompanion
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.items.ItemManager
-import de.moritzruth.spigot_ttt.game.items.Selectable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.shop.Shop
 import de.moritzruth.spigot_ttt.utils.*
-import org.bukkit.*
+import org.bukkit.ChatColor
+import org.bukkit.GameMode
+import org.bukkit.Location
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import kotlin.properties.Delegates
 
-class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass = TTTClass.None) {
+class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TTTClass.None) {
     var alive = true
     var player by Delegates.observable(player) { _, _, _ -> adjustPlayer() }
+
+    val tttClassInstance = tttClass.createInstance(this)
 
     var role = role
         private set(value) {
@@ -33,34 +38,20 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass = TTTClass.No
         }
     val roleHistory = mutableListOf<Role>()
 
-    var itemInHand by Delegates.observable<TTTItem?>(null) { _, oldItem, newItem ->
-        if (oldItem !== newItem) onItemInHandChanged(oldItem, newItem)
-    }
-
     var walkSpeed
         get() = player.walkSpeed
         set(value) { player.walkSpeed = value }
 
     var credits by Delegates.observable(Settings.initialCredits) { _, _, _ -> scoreboard.updateCredits() }
-    val boughtItems = mutableListOf<TTTItem>()
+    val boughtItems = mutableListOf<TTTItem<*>>()
 
     val scoreboard = TTTScoreboard(this)
-    val stateContainer = StateContainer(this)
 
     init {
         adjustPlayer()
         scoreboard.initialize()
-        tttClass.onInit(this)
-    }
-
-    private fun onItemInHandChanged(oldItem: TTTItem?, newItem: TTTItem?) {
-        if (oldItem !== null && oldItem is Selectable) {
-            oldItem.onDeselect(this)
-        }
-
-        if (newItem !== null && newItem is Selectable) {
-            newItem.onSelect(this)
-        }
+        tttClassInstance.tttPlayer = this
+        tttClassInstance.init()
     }
 
     fun damage(damage: Double, reason: DeathReason, damager: TTTPlayer, scream: Boolean = true) {
@@ -159,7 +150,9 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass = TTTClass.No
         player.scoreboard = scoreboard.scoreboard
     }
 
-    private fun getOwningTTTItems() = player.inventory.hotbarContents.mapNotNull { it?.run { ItemManager.getItemByItemStack(this) } }
+    fun getOwningTTTItemInstances() = player.inventory.hotbarContents
+        .filterNotNull()
+        .mapNotNull { ItemManager.getInstanceByItemStack(it) }
 
     fun changeRole(newRole: Role, notify: Boolean = true) {
         roleHistory.add(role)
@@ -194,12 +187,6 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass = TTTClass.No
             player.spigot().respawn()
         }
 
-        itemInHand?.let {
-            if (it is Selectable) {
-                it.onDeselect(this)
-            }
-        }
-
         player.gameMode = GameMode.SURVIVAL
         player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
         player.health = 20.0
@@ -208,44 +195,39 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClass = TTTClass.No
         player.exp = 0F
         player.allowFlight = player.gameMode == GameMode.CREATIVE
         player.foodLevel = 20
-
         player.inventory.clear()
+
+        tttClassInstance.reset()
     }
 
-    fun updateItemInHand() {
-        val itemStack = player.inventory.itemInMainHand
-        this.itemInHand =
-                if (itemStack.type === Material.AIR) null
-                else ItemManager.getItemByItemStack(itemStack)
+    fun checkAddItemPreconditions(tttItem: TTTItem<*>) {
+        val owningTTTItemInstances = getOwningTTTItemInstances()
+        if (owningTTTItemInstances.find { it.tttItem === tttItem } != null) throw AlreadyHasItemException()
+
+        val maxItemsOfTypeInInventory = tttItem.type.maxItemsOfTypeInInventory
+        if (
+            maxItemsOfTypeInInventory != null &&
+            owningTTTItemInstances.filter { it.tttItem.type == tttItem.type }.count() >= maxItemsOfTypeInInventory
+        ) throw TooManyItemsOfTypeException()
     }
 
-    fun checkAddItemPreconditions(item: TTTItem) {
-        val owningTTTItems = getOwningTTTItems()
-
-        if (owningTTTItems.contains(item)) {
-            throw AlreadyHasItemException()
-        }
-
-        val maxItemsOfTypeInInventory = item.type.maxItemsOfTypeInInventory
-        if (maxItemsOfTypeInInventory !== null && owningTTTItems.filter { it.type === item.type }.count() >= maxItemsOfTypeInInventory) {
-            throw TooManyItemsOfTypeException()
-        }
-    }
     class AlreadyHasItemException: Exception("The player already owns this item")
-
     class TooManyItemsOfTypeException: Exception("The player already owns too much items of this type")
 
-    fun addItem(item: TTTItem) {
+    fun addItem(item: TTTItem<*>) {
         checkAddItemPreconditions(item)
-        player.inventory.addItem(item.itemStack.clone())
-        item.onOwn(this)
-        updateItemInHand()
+        val instance = item.createInstance()
+        player.inventory.addItem(instance.createItemStack())
+        instance.carrier = this
     }
 
-    fun removeItem(item: TTTItem) {
+    fun removeItem(item: TTTItem<*>, removeInstance: Boolean = true) {
+        item.getInstance(this)?.let {
+            it.carrier = null
+            if (removeInstance) item.instancesByUUID.remove(it.uuid)
+        }
+
         player.inventory.removeTTTItem(item)
-        item.onRemove(this)
-        updateItemInHand()
     }
 
     fun addDefaultClassItems() = tttClass.defaultItems.forEach { addItem(it) }

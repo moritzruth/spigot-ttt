@@ -5,35 +5,29 @@ import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.GameEndEvent
-import de.moritzruth.spigot_ttt.game.items.Buyable
-import de.moritzruth.spigot_ttt.game.items.PASSIVE
 import de.moritzruth.spigot_ttt.game.items.TTTItem
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
-import de.moritzruth.spigot_ttt.game.players.*
+import de.moritzruth.spigot_ttt.game.players.PlayerManager
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import org.bukkit.ChatColor
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
-import org.bukkit.boss.BossBar
-import org.bukkit.event.EventHandler
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import java.time.Duration
 import java.time.Instant
-import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.or
 
-object Radar: TTTItem, Buyable {
-    private val DISPLAY_NAME = "${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar"
-    private const val ACTIVE_DURATION = 10
-    private const val COOLDOWN_DURATION = 40
-
-    override val itemStack = ItemStack(Resourcepack.Items.radar).applyMeta {
-        setDisplayName("$DISPLAY_NAME $PASSIVE")
+object Radar: TTTItem<Radar.Instance>(
+    type = Type.SPECIAL,
+    instanceType = Instance::class,
+    templateItemStack = ItemStack(Resourcepack.Items.radar).applyMeta {
+        setDisplayName("${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar$PASSIVE_SUFFIX")
         lore = listOf(
             "",
             "${ChatColor.GOLD}Zeigt dir alle 30 Sekunden",
@@ -42,75 +36,66 @@ object Radar: TTTItem, Buyable {
         )
 
         hideInfo()
-    }
-    override val type = TTTItem.Type.SPECIAL
-    override val buyableBy: EnumSet<Role> = EnumSet.of(Role.TRAITOR, Role.DETECTIVE, Role.JACKAL)
-    override val price = 2
-    override val buyLimit: Int? = null
+    },
+    shopInfo = ShopInfo(
+        buyableBy = roles(Role.TRAITOR, Role.DETECTIVE, Role.JACKAL),
+        price = 2
+    )
+) {
+    private const val ACTIVE_DURATION = 10
+    private const val COOLDOWN_DURATION = 40
+    private val BOSS_BAR_TITLE = "${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar"
 
-    val isc = InversedStateContainer(State::class)
+    class Instance: TTTItem.Instance(Radar) {
+        var active: Boolean = true
+        private var timestamp = Instant.now()!!
+        private val bossBar = plugin.server.createBossBar(BOSS_BAR_TITLE, BarColor.BLUE, BarStyle.SOLID)
 
-    override fun onOwn(tttPlayer: TTTPlayer) {
-        val state = isc.getOrCreate(tttPlayer)
+        private var task: BukkitTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
+            val duration = Duration.between(timestamp, Instant.now()).toMillis().toDouble() / 1000
 
-        state.bossBar = plugin.server.createBossBar(DISPLAY_NAME, BarColor.BLUE, BarStyle.SOLID)
-        state.bossBar.addPlayer(tttPlayer.player)
-
-        setActive(tttPlayer, true)
-        state.task = plugin.server.scheduler.runTaskTimer(plugin, fun() {
-            val duration = Duration.between(state.timestamp, Instant.now()).toMillis().toDouble() / 1000
-
-            if (state.active) {
+            if (active) {
                 if (duration > ACTIVE_DURATION) {
-                    setActive(tttPlayer, false)
+                    active = false
+                    bossBar.setTitle(BOSS_BAR_TITLE + "${ChatColor.WHITE} - ${ChatColor.GRAY}Cooldown")
+                    carrier?.let { resendEntityMetadata(it) }
+                    timestamp = Instant.now()
                 } else {
-                    state.bossBar.progress = 1.0 - duration / ACTIVE_DURATION
+                    bossBar.progress = 1.0 - duration / ACTIVE_DURATION
                 }
             } else {
                 if (duration > COOLDOWN_DURATION) {
-                    setActive(tttPlayer, true)
+                    active = true
+                    bossBar.setTitle(BOSS_BAR_TITLE + "${ChatColor.WHITE} - ${ChatColor.GREEN}Aktiv")
+                    carrier?.let { resendEntityMetadata(it) }
+                    timestamp = Instant.now()
                 } else {
-                    state.bossBar.progress = duration / COOLDOWN_DURATION
+                    bossBar.progress = duration / COOLDOWN_DURATION
                 }
             }
-        }, 0, 2)
-    }
+        }, 0, 1)
 
-    private fun setActive(tttPlayer: TTTPlayer, value: Boolean) {
-        val state = isc.getOrCreate(tttPlayer)
+        override fun onCarrierSet(carrier: TTTPlayer, isFirst: Boolean) {
+            bossBar.addPlayer(carrier.player)
+            if (active) resendEntityMetadata(carrier)
+        }
 
-        if (state.active != value) {
-            state.active = value
-            state.timestamp = Instant.now()
+        override fun onCarrierRemoved(oldCarrier: TTTPlayer) {
+            bossBar.removePlayer(oldCarrier.player)
+            if (active) resendEntityMetadata(oldCarrier)
+        }
 
-            if (value) {
-                state.bossBar.setTitle(DISPLAY_NAME + "${ChatColor.WHITE} - ${ChatColor.GREEN}Aktiv")
-            } else {
-                state.bossBar.setTitle(DISPLAY_NAME + "${ChatColor.WHITE} - ${ChatColor.GRAY}Cooldown")
-            }
-
-            // Toggle sending the entity metadata
-            PlayerManager.tttPlayers.forEach {
-                if (it !== tttPlayer) {
-                    tttPlayer.player.hidePlayer(plugin, it.player)
-                    tttPlayer.player.showPlayer(plugin, it.player)
-                }
-            }
+        override fun reset() {
+            task.cancel()
         }
     }
 
-    override val listener = object : TTTItemListener(this, true) {
-        @EventHandler
-        fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
-            isc.get(event.tttPlayer)?.reset(event.tttPlayer)
-            isc.remove(event.tttPlayer)
-        }
-
-        @EventHandler
-        fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, tttPlayer -> state.reset(tttPlayer) }
-
-        override fun onRightClick(data: ClickEventData) {
-            data.event.isCancelled = true
+    fun resendEntityMetadata(tttPlayer: TTTPlayer) {
+        PlayerManager.tttPlayers.forEach {
+            if (it !== tttPlayer) {
+                tttPlayer.player.hidePlayer(plugin, it.player)
+                tttPlayer.player.showPlayer(plugin, it.player)
+            }
         }
     }
 
@@ -119,34 +104,22 @@ object Radar: TTTItem, Buyable {
             val receivingTTTPlayer = TTTPlayer.of(event.player) ?: return
 
             val packet = WrapperPlayServerEntityMetadata(event.packet)
-            val playerOfPacket = plugin.server.onlinePlayers.find { it.entityId == packet.entityID } ?: return
-            val tttPlayerOfPacket = TTTPlayer.of(playerOfPacket) ?: return
+            val tttPlayerOfPacket = plugin.server.onlinePlayers
+                .find { it.entityId == packet.entityID }
+                ?.let { TTTPlayer.of(it) } ?: return
+            val instance = getInstance(receivingTTTPlayer) ?: return
 
             if (tttPlayerOfPacket.alive) {
                 // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
                 try {
                     val modifiers = packet.metadata[0].value as Byte
                     packet.metadata[0].value =
-                        if (isc.get(receivingTTTPlayer)?.active == true) modifiers or 0x40.toByte()
+                        if (instance.active) modifiers or 0x40.toByte()
                         else modifiers and 0b10111111.toByte()
                 } catch (ignored: Exception) {
                     // Idk why this throws exceptions, but it works anyways
                 }
             }
-        }
-    }
-
-    class State: IState {
-        var task: BukkitTask? = null
-        var active: Boolean = false
-        lateinit var timestamp: Instant
-        lateinit var bossBar: BossBar
-
-        fun reset(tttPlayer: TTTPlayer) {
-            setActive(tttPlayer, false)
-
-            task?.cancel()
-            bossBar.removePlayer(tttPlayer.player)
         }
     }
 }

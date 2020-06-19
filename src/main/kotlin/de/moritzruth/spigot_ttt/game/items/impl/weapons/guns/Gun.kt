@@ -1,89 +1,99 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.GamePhase
-import de.moritzruth.spigot_ttt.game.items.*
-import de.moritzruth.spigot_ttt.game.players.*
+import de.moritzruth.spigot_ttt.game.items.ClickEvent
+import de.moritzruth.spigot_ttt.game.items.LoreHelper
+import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.players.DeathReason
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.utils.Probability
 import de.moritzruth.spigot_ttt.utils.applyMeta
-import de.moritzruth.spigot_ttt.utils.nextTick
-import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
+import de.moritzruth.spigot_ttt.utils.hideInfo
+import de.moritzruth.spigot_ttt.utils.startProgressTask
 import org.bukkit.*
-import org.bukkit.entity.Item
 import org.bukkit.entity.Player
-import org.bukkit.event.EventHandler
-import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.Damageable
-import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.scheduler.BukkitTask
-import java.time.Duration
 import java.time.Instant
 import kotlin.reflect.KClass
 
-typealias ClickAction = org.bukkit.event.block.Action
-
 abstract class Gun(
-    private val stateClass: KClass<out State>,
+    type: Type,
+    instanceType: KClass<out Instance>,
+    spawnProbability: Probability? = null,
+    shopInfo: ShopInfo? = null,
+    material: Material,
     displayName: String,
-    additionalLore: List<String>? = null,
+    itemLore: List<String>? = null,
+    appendLore: Boolean = true,
     val damage: Double,
     val cooldown: Double,
     val magazineSize: Int,
     val reloadTime: Double,
-    val itemMaterial: Material,
     val shootSound: String,
     val reloadSound: String
-): TTTItem, Selectable, DropHandler {
-    override val itemStack = ItemStack(itemMaterial).applyMeta {
+): TTTItem<Gun.Instance>(
+    type = type,
+    instanceType = instanceType,
+    spawnProbability = spawnProbability,
+    shopInfo = shopInfo,
+    templateItemStack = ItemStack(material).applyMeta {
         setDisplayName(displayName)
-        lore = listOf(
-            "",
-            "${ChatColor.GRAY}Schaden: ${LoreHelper.damage(if (damage < 0) null else (damage / 2))}",
-            "${ChatColor.GRAY}Cooldown: ${LoreHelper.cooldown(cooldown)}",
-            "${ChatColor.GRAY}Magazin: ${LoreHelper.uses(magazineSize)} Schuss"
-        ) + run {
-            if (additionalLore == null) emptyList()
-            else listOf("") + additionalLore
+        lore =
+            if (appendLore) listOf(
+                "",
+                "${ChatColor.GRAY}Schaden: ${LoreHelper.damage(if (damage < 0) null else (damage / 2))}",
+                "${ChatColor.GRAY}Cooldown: ${LoreHelper.cooldown(cooldown)}",
+                "${ChatColor.GRAY}Magazin: ${LoreHelper.uses(magazineSize)} Schuss"
+            ) + run {
+                if (itemLore == null) emptyList()
+                else listOf("") + itemLore
+            }
+            else itemLore ?: emptyList()
+
+        hideInfo()
+    }
+) {
+    open class Instance(val gun: Gun): TTTItem.Instance(gun) {
+        var currentAction: Action? = null
+        var remainingShots: Int = gun.magazineSize
+            set(value) {
+                field = value
+                setCarrierLevel()
+            }
+
+        private fun setCarrierLevel() {
+            if (isSelected) carrier!!.player.level = remainingShots
         }
 
-        addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
-    }
+        private fun shoot() {
+            val tttPlayer = requireCarrier()
+            if (!onBeforeShoot()) return
 
-    val isc = InversedStateContainer(stateClass)
+            if (remainingShots == 0) {
+                GameManager.world.playSound(
+                    tttPlayer.player.location,
+                    Resourcepack.Sounds.Item.Weapon.Generic.emptyMagazine,
+                    SoundCategory.PLAYERS,
+                    1F,
+                    1F
+                )
 
-    protected fun updateLevel(tttPlayer: TTTPlayer, state: State = isc.getOrCreate(tttPlayer)) {
-        tttPlayer.player.level = state.remainingShots
-    }
+                return
+            }
 
-    fun shoot(tttPlayer: TTTPlayer, itemStack: ItemStack, state: State = isc.getOrCreate(tttPlayer)) {
-        if (!onBeforeShoot(tttPlayer, itemStack, state)) return
+            GameManager.world.playSound(tttPlayer.player.location, gun.shootSound, SoundCategory.PLAYERS, 1F, 1F)
 
-        if (state.remainingShots == 0) {
-            GameManager.world.playSound(
-                tttPlayer.player.location,
-                Resourcepack.Sounds.Item.Weapon.Generic.emptyMagazine,
-                SoundCategory.PLAYERS,
-                1F,
-                1F
-            )
-            return
-        }
+            remainingShots--
 
-        GameManager.world.playSound(tttPlayer.player.location, shootSound, SoundCategory.PLAYERS, 1F, 1F)
-
-        state.remainingShots--
-        updateLevel(tttPlayer)
-
-        if (GameManager.phase == GamePhase.COMBAT) {
             val rayTraceResult = GameManager.world.rayTrace(
-                    tttPlayer.player.eyeLocation,
-                    tttPlayer.player.eyeLocation.direction,
-                    200.0,
-                    FluidCollisionMode.ALWAYS,
-                    true,
-                    0.01
+                tttPlayer.player.eyeLocation,
+                tttPlayer.player.eyeLocation.direction,
+                200.0,
+                FluidCollisionMode.ALWAYS,
+                true,
+                0.01
             ) { it !== tttPlayer.player }
 
             if (rayTraceResult !== null) {
@@ -100,167 +110,124 @@ abstract class Gun(
                     }
                 }
             }
+
+            currentAction = Action.Cooldown(this)
         }
 
-        state.currentAction = Action.Cooldown(this, itemStack, state)
-    }
+        open fun reload() {
+            val carrier = requireCarrier()
+            if (currentAction != null) throw ActionInProgressError()
+            if (remainingShots == gun.magazineSize) return
 
-    open fun reload(tttPlayer: TTTPlayer, itemStack: ItemStack, state: State = isc.getOrCreate(tttPlayer)) {
-        if (state.currentAction != null) throw ActionInProgressError()
-        if (state.remainingShots == magazineSize) return
+            currentAction = Action.Reloading(this)
 
-        state.currentAction = Action.Reloading(this, itemStack, state, tttPlayer).also { it.start() }
-
-        GameManager.world.playSound(tttPlayer.player.location, reloadSound, SoundCategory.PLAYERS, 1F, 1F)
-    }
-
-    open fun computeActualDamage(tttPlayer: TTTPlayer, receiver: Player) = if (damage < 0 ) 1000.0 else damage
-
-    open fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: State = isc.getOrCreate(tttPlayer)): Boolean {
-        if (state.currentAction !== null) throw ActionInProgressError()
-        return true
-    }
-
-    open fun onHit(tttPlayer: TTTPlayer, hitTTTPlayer: TTTPlayer) {
-        val actualDamage = computeActualDamage(tttPlayer, hitTTTPlayer.player)
-
-        hitTTTPlayer.damage(actualDamage, DeathReason.Item(this), tttPlayer, true)
-        tttPlayer.player.playSound(tttPlayer.player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 2f, 1.2f)
-        hitTTTPlayer.player.velocity = tttPlayer.player.location.direction.multiply(
-            (actualDamage / 20).coerceAtMost(3.0)
-        )
-    }
-
-    override fun onSelect(tttPlayer: TTTPlayer) {
-        updateLevel(tttPlayer)
-    }
-
-    override fun onDeselect(tttPlayer: TTTPlayer) {
-        tttPlayer.player.level = 0
-
-        val state = isc.get(tttPlayer) ?: return
-        val currentAction = state.currentAction
-
-        if (currentAction is Action.Reloading) {
-            state.currentAction = null
-            currentAction.task.cancel()
-
-            val meta = currentAction.itemStack.itemMeta as Damageable
-            meta.damage = 0
-            currentAction.itemStack.itemMeta = meta as ItemMeta
-        }
-    }
-
-    override fun onDrop(tttPlayer: TTTPlayer, itemEntity: Item): Boolean {
-        val state = isc.get(tttPlayer) ?: return true
-
-        when(val currentAction = state.currentAction) {
-            is Action.Reloading -> {
-                state.currentAction = null
-                currentAction.task.cancel()
-            }
-            is Action.Cooldown -> {
-                currentAction.pause()
-            }
+            GameManager.world.playSound(
+                carrier.player.location,
+                gun.reloadSound,
+                SoundCategory.PLAYERS,
+                1F,
+                1F
+            )
         }
 
-        itemEntity.setItemStack(itemStack.clone())
-
-        ItemManager.droppedItemStates[itemEntity.entityId] = state
-        isc.remove(tttPlayer)
-        return true
-    }
-
-    override fun onPickup(tttPlayer: TTTPlayer, itemEntity: Item) {
-        val state = ItemManager.droppedItemStates[itemEntity.entityId] as State?
-
-        if (state != null) {
-            tttPlayer.stateContainer.put(stateClass, state)
-            val currentAction = state.currentAction ?: return
-
-            nextTick { currentAction.itemStack = tttPlayer.player.inventory.find { it.type == itemEntity.itemStack.type }!!
-
-                if (currentAction is Action.Cooldown) {
-                    currentAction.resume()
-                } }
+        open fun computeActualDamage(receiver: TTTPlayer): Double {
+            requireCarrier() // Only to keep parity with possible override
+            return if (gun.damage < 0 ) 1000.0 else gun.damage
         }
-    }
 
-    override val listener = object : TTTItemListener(this, true) {
-        override fun onLeftClick(data: ClickEventData) {
+        /**
+         * @return Whether the gun will really shoot
+         */
+        open fun onBeforeShoot(): Boolean {
+            if (currentAction !== null) throw ActionInProgressError()
+            return true
+        }
+
+        open fun onHit(tttPlayer: TTTPlayer, hitTTTPlayer: TTTPlayer) {
+            val actualDamage = computeActualDamage(hitTTTPlayer)
+            hitTTTPlayer.damage(actualDamage, DeathReason.Item(gun), tttPlayer, true)
+            tttPlayer.player.playSound(
+                tttPlayer.player.location,
+                Sound.ENTITY_EXPERIENCE_ORB_PICKUP,
+                SoundCategory.MASTER,
+                2f,
+                1.2f
+            )
+            hitTTTPlayer.player.velocity = tttPlayer.player.location.direction.multiply(
+                (actualDamage / 20).coerceAtMost(3.0)
+            )
+        }
+
+        override fun onLeftClick(event: ClickEvent) {
             try {
-                reload(data.tttPlayer, data.event.item!!)
+                reload()
             } catch (e: ActionInProgressError) {}
         }
 
-        override fun onRightClick(data: ClickEventData) {
+        override fun onRightClick(event: ClickEvent) {
             try {
-                shoot(data.tttPlayer, data.event.item!!)
+                shoot()
             } catch (e: ActionInProgressError) {}
         }
 
-        @EventHandler
-        fun onTTTPlayerDeath(event: TTTPlayerTrueDeathEvent) = isc.get(event.tttPlayer)?.reset()
+        protected open fun onMovedOutOfHand(tttPlayer: TTTPlayer) {
+            tttPlayer.player.level = 0
+            tttPlayer.player.exp = 0F
 
-        @EventHandler
-        fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, _ -> state.reset() }
+            val action = currentAction
+            if (action is Action.Reloading) {
+                currentAction = null
+                action.cancel()
+            }
+        }
+
+        override fun onCarrierSet(carrier: TTTPlayer, isFirst: Boolean) {
+            setCarrierLevel()
+        }
+
+        override fun onSelect() {
+            setCarrierLevel()
+        }
+
+        override fun onCarrierRemoved(oldCarrier: TTTPlayer) {
+            onMovedOutOfHand(oldCarrier)
+        }
+
+        override fun onDeselect() {
+            onMovedOutOfHand(carrier!!)
+        }
     }
 
-    class ActionInProgressError: RuntimeException("The gun has an ongoing action which may not be canceled")
+    class ActionInProgressError: RuntimeException("The gun has an ongoing action")
 
-    abstract class State(magazineSize: Int): IState {
-        var currentAction: Action? = null
-        var remainingShots = magazineSize
-
-        fun reset() { currentAction?.reset() }
-    }
-
-    sealed class Action(var itemStack: ItemStack) {
+    sealed class Action(val instance: Instance) {
         val startedAt = Instant.now()!!
-        abstract var task: BukkitTask; protected set
+        abstract val task: BukkitTask
 
-        open fun reset() {
+        open fun cancel() {
             task.cancel()
         }
 
-        open class Reloading(
-            private val gun: Gun,
-            itemStack: ItemStack,
-            protected val state: State,
-            protected val tttPlayer: TTTPlayer
-        ): Action(itemStack) {
-            override lateinit var task: BukkitTask
+        open class Reloading(instance: Instance): Action(instance) {
+            override val task = createProgressTask()
 
-            open fun start() {
-                task = startItemDamageProgress(itemStack, gun.reloadTime) {
-                    state.currentAction = null
-                    state.remainingShots = gun.magazineSize
-                    gun.updateLevel(tttPlayer, state)
-                }
+            protected open fun createProgressTask() = startProgressTask(instance.gun.reloadTime) { data ->
+                val exp = if (data.isComplete) {
+                    instance.remainingShots = instance.gun.magazineSize
+                    instance.currentAction = null
+                    0F
+                } else data.progress.toFloat()
+                if (instance.isSelected) instance.carrier!!.player.exp = exp
             }
         }
 
-        class Cooldown(private val gun: Gun, itemStack: ItemStack, private val state: State): Action(itemStack) {
-            override var task = startTask()
-            private var pausedProgress: Double? = null
-
-            private fun startTask() = startItemDamageProgress(
-                itemStack = itemStack,
-                duration = gun.cooldown,
-                startProgress = pausedProgress ?: 0.0
-            ) {
-                state.currentAction = null
-            }
-
-            fun resume() {
-                if (task.isCancelled) task = startTask()
-            }
-
-            fun pause() {
-                if (!task.isCancelled) {
-                    task.cancel()
-                    pausedProgress = (Duration.between(startedAt, Instant.now()).toMillis().toDouble() / 1000) / gun.cooldown
-                }
+        class Cooldown(instance: Instance): Action(instance) {
+            override val task = startProgressTask(instance.gun.cooldown) { data ->
+                val exp = if (data.isComplete) {
+                    instance.currentAction = null
+                    0F
+                } else data.progress.toFloat()
+                if (instance.isSelected) instance.carrier!!.player.exp = exp
             }
         }
     }

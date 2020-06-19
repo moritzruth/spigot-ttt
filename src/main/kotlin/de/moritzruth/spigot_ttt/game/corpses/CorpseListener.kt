@@ -26,7 +26,7 @@ object CorpseListener: Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     fun onPlayerInteractEntity(event: PlayerInteractEntityEvent) {
         val tttPlayer = TTTPlayer.of(event.player) ?: return
         val tttCorpse = CorpseManager.getTTTCorpse(event.rightClicked) ?: return

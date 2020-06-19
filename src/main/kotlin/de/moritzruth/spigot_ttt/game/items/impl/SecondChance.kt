@@ -1,10 +1,7 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.items.Buyable
-import de.moritzruth.spigot_ttt.game.items.PASSIVE
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.*
@@ -27,26 +24,76 @@ import java.time.Duration
 import java.time.Instant
 import kotlin.random.Random
 
-object SecondChance: TTTItem, Buyable {
-    private val DISPLAY_NAME = "${ChatColor.GREEN}${ChatColor.BOLD}Second Chance"
-    val ON_CORPSE = Resourcepack.Items.arrowDown
-    val ON_SPAWN = Resourcepack.Items.dot
-    private const val TIMEOUT = 10.0
-
-    override val type = TTTItem.Type.SPECIAL
-    override val itemStack = ItemStack(Resourcepack.Items.secondChance).applyMeta {
-        setDisplayName("$DISPLAY_NAME $PASSIVE")
+object SecondChance: TTTItem<SecondChance.Instance>(
+    type = Type.SPECIAL,
+    instanceType = Instance::class,
+    templateItemStack = ItemStack(Resourcepack.Items.secondChance).applyMeta {
+        setDisplayName("${ChatColor.GREEN}${ChatColor.BOLD}Second Chance$PASSIVE_SUFFIX")
         hideInfo()
         lore = listOf(
             "",
             "${ChatColor.GOLD}Du wirst mit einer 50%-Chance",
             "${ChatColor.GOLD}wiederbelebt, wenn du stirbst"
         )
+    },
+    shopInfo = ShopInfo(
+        buyableBy = roles(Role.TRAITOR, Role.JACKAL),
+        buyLimit = 1,
+        price = 2
+    )
+) {
+    val ON_CORPSE = Resourcepack.Items.arrowDown
+    val ON_SPAWN = Resourcepack.Items.dot
+    private const val TIMEOUT = 10.0
+
+    class Instance: TTTItem.Instance(SecondChance, false) {
+        var preventRoundEnd = false; private set
+        var timeoutAction: TimeoutAction? = null
+
+        fun possiblyTrigger() {
+            if (Random.nextBoolean()) trigger()
+        }
+
+        private fun trigger() {
+            preventRoundEnd = true
+            timeoutAction = TimeoutAction(this)
+        }
+
+        class TimeoutAction(private val instance: Instance) {
+            val deathLocation: Location = instance.requireCarrier().player.location
+            private val startedAt = Instant.now()!!
+            private var bossBar = plugin.server.createBossBar(
+                "${ChatColor.GREEN}${ChatColor.BOLD}Second Chance",
+                BarColor.GREEN,
+                BarStyle.SOLID
+            ).also { it.addPlayer(instance.requireCarrier().player) }
+
+            private var task: BukkitTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
+                val duration = Duration.between(startedAt, Instant.now()).toMillis().toDouble() / 1000
+                val progress = duration / TIMEOUT
+
+                if (progress > 1) onTimeout() else bossBar.progress = 1.0 - progress
+            }, 0, 1)
+
+            private fun onTimeout() {
+                try {
+                    PlayerManager.letRemainingRoleGroupWin()
+                } catch (e: IllegalStateException) {}
+
+                stop()
+            }
+
+            fun stop() {
+                val carrier = instance.requireCarrier()
+                task.cancel()
+                carrier.player.apply {
+                    closeInventory()
+                    bossBar.removePlayer(this)
+                }
+                carrier.removeItem(SecondChance)
+            }
+        }
     }
-    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
-    override val buyLimit = 1
-    override val price = 2
-    val isc = InversedStateContainer(State::class)
 
     private val chooseSpawnInventory = plugin.server.createInventory(
         null,
@@ -69,97 +116,42 @@ object SecondChance: TTTItem, Buyable {
         })
     }
 
-    override fun onOwn(tttPlayer: TTTPlayer) {
-        isc.getOrCreate(tttPlayer)
-    }
-
-    override val listener = object : TTTItemListener(this, true, false) {
+    override val listener = object : TTTItemListener<Instance>(this) {
         @EventHandler
         fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
-            val state = isc.get(event.tttPlayer)
-            if (state != null) {
-                if (true || Random.nextBoolean()) {
-                    event.winnerRoleGroup = null
-                    event.tttPlayer.player.openInventory(chooseSpawnInventory)
-                    state.timeoutAction = TimeoutAction(event.tttPlayer, event.tttCorpse.location)
-                }
-            }
-
-            isc.forEveryState { s, _ -> if (s.timeoutAction != null) event.winnerRoleGroup = null }
+            val instance = getInstance(event.tttPlayer) ?: return
+            instance.possiblyTrigger()
+            if (instancesByUUID.values.find { it.preventRoundEnd } != null) event.winnerRoleGroup = null
         }
 
         @EventHandler
-        fun onInventoryClose(event: InventoryCloseEvent) = handle(event) { tttPlayer ->
+        fun onInventoryClose(event: InventoryCloseEvent) {
             if (event.inventory == chooseSpawnInventory) {
-                if (isc.get(tttPlayer)?.timeoutAction != null) {
-                    nextTick { if (isc.get(tttPlayer) != null) tttPlayer.player.openInventory(chooseSpawnInventory) }
+                handleWithInstance(event) { instance ->
+                    nextTick { instance.carrier?.player?.openInventory(chooseSpawnInventory) }
                 }
             }
         }
 
         @EventHandler
-        fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
-            if (event.clickedInventory != chooseSpawnInventory) return@handle
-            val state = isc.get(tttPlayer) ?: return@handle
-            val timeoutAction = state.timeoutAction ?: return@handle
+        fun onInventoryClick(event: InventoryClickEvent) {
+            if (event.clickedInventory != chooseSpawnInventory) return
 
-            val location = when (event.currentItem?.type) {
-                ON_SPAWN -> GameManager.world.spawnLocation
-                ON_CORPSE -> timeoutAction.deathLocation
-                else -> return@handle
+            handleWithInstance(event) { instance ->
+                val timeoutAction = instance.timeoutAction!!
+
+                val location = when (event.currentItem?.type) {
+                    ON_SPAWN -> GameManager.world.spawnLocation
+                    ON_CORPSE -> timeoutAction.deathLocation
+                    else -> return@handleWithInstance
+                }
+
+                timeoutAction.stop()
+                instance.carrier!!.revive(location)
             }
-
-            timeoutAction.stop()
-            tttPlayer.revive(location)
         }
 
         @EventHandler
-        fun onTTTPlayerRevive(event: TTTPlayerReviveEvent) {
-            isc.get(event.tttPlayer)?.timeoutAction?.stop()
-        }
-
-        @EventHandler
-        fun onGameEnd(event: GameEndEvent) {
-            isc.forEveryState { state, _ -> state.timeoutAction?.stop() }
-        }
-    }
-
-    class TimeoutAction(
-        private val tttPlayer: TTTPlayer,
-        val deathLocation: Location
-    ) {
-        private val startedAt = Instant.now()!!
-        private var bossBar = plugin.server.createBossBar(
-            "${ChatColor.GREEN}${ChatColor.BOLD}Second Chance",
-            BarColor.GREEN,
-            BarStyle.SOLID
-        ).also { it.addPlayer(tttPlayer.player) }
-
-        private var task: BukkitTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
-            val duration = Duration.between(startedAt, Instant.now()).toMillis().toDouble() / 1000
-            val progress = duration / TIMEOUT
-
-            if (progress > 1) onTimeout() else bossBar.progress = 1.0 - progress
-        }, 0, 1)
-
-        private fun onTimeout() {
-            try {
-                PlayerManager.letRemainingRoleGroupWin()
-            } catch (e: IllegalStateException) {}
-
-            stop()
-        }
-
-        fun stop() {
-            isc.remove(tttPlayer)
-            task.cancel()
-            tttPlayer.player.closeInventory()
-            tttPlayer.removeItem(SecondChance)
-            bossBar.removePlayer(tttPlayer.player)
-        }
-    }
-
-    class State: IState {
-        var timeoutAction: TimeoutAction? = null
+        fun onTTTPlayerRevive(event: TTTPlayerReviveEvent) = handle(event) { it.timeoutAction?.stop() }
     }
 }

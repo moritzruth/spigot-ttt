@@ -2,14 +2,15 @@ package de.moritzruth.spigot_ttt.game.items
 
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.utils.ConfigurationFile
+import de.moritzruth.spigot_ttt.utils.Probability
 import de.moritzruth.spigot_ttt.utils.roundToCenter
 import org.bukkit.Location
+import java.util.*
 
 object ItemSpawner {
     private const val CONFIG_PATH = "spawn-locations"
 
     private val spawnLocationsConfig = ConfigurationFile("spawnLocations")
-    private val spawningItems = ItemManager.ITEMS.filter { it is Spawning }
 
     private fun getSpawnLocations(): Set<Location> {
         return spawnLocationsConfig.getStringList(CONFIG_PATH).map {
@@ -25,14 +26,19 @@ object ItemSpawner {
     }
 
     fun spawnWeapons() {
-        var itemIterator = spawningItems.shuffled().iterator()
+        val spawningItems = mutableListOf<TTTItem<*>>()
+        loop@ for (tttItem in ItemManager.ITEMS) {
+            val count = Probability.values().indexOf(tttItem.spawnProbability) + 1
+            spawningItems.addAll(Collections.nCopies(count, tttItem))
+        }
 
+        var itemsIterator = spawningItems.shuffled().iterator()
         for (location in getSpawnLocations()) {
-            if (!itemIterator.hasNext()) {
-                itemIterator = spawningItems.shuffled().iterator()
+            if (!itemsIterator.hasNext()) {
+                itemsIterator = spawningItems.shuffled().iterator()
             }
 
-            GameManager.world.dropItem(location, itemIterator.next().itemStack.clone())
+            ItemManager.dropItem(location, itemsIterator.next())
         }
     }
 

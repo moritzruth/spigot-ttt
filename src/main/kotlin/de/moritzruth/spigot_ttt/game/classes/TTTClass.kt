@@ -1,23 +1,19 @@
 package de.moritzruth.spigot_ttt.game.classes
 
-import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import org.bukkit.ChatColor
-import org.bukkit.event.Listener
 
-abstract class TTTClass(
-    val displayName: String,
-    val chatColor: ChatColor,
-    val defaultItems: Set<TTTItem> = emptySet()
-) {
-    val coloredDisplayName = "$chatColor$displayName"
+abstract class TTTClass {
+    lateinit var tttPlayer: TTTPlayer
 
-    open val listener: Listener? = null
+    open fun init() {}
+    open fun reset() {}
 
-    open fun onInit(tttPlayer: TTTPlayer) {}
-
-    object None: TTTClass(
+    object None: TTTClassCompanion(
         "Keine",
-        ChatColor.GRAY
-    )
+        ChatColor.GRAY,
+        Instance::class
+    ) {
+        class Instance: TTTClass()
+    }
 }

@@ -18,7 +18,6 @@ import org.bukkit.entity.Zombie
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
-import org.bukkit.util.Vector
 import java.time.Instant
 
 class TTTCorpse private constructor(
@@ -26,10 +25,9 @@ class TTTCorpse private constructor(
     location: Location,
     private val role: Role,
     private val reason: DeathReason,
-    private var credits: Int,
-    velocity: Vector = Vector()
+    private var credits: Int
 ) {
-    var status = Status.UNIDENTIFIED; private set
+    private var status = Status.UNIDENTIFIED; private set
     val entity: Zombie
 
     val inventory = tttPlayer.player.server.createInventory(null, InventoryType.HOPPER, "${role.chatColor}${tttPlayer.player.displayName}")
@@ -83,7 +81,7 @@ class TTTCorpse private constructor(
 
     private fun setReasonItem() {
         if (status == Status.INSPECTED) {
-            val reasonItemStack = if (reason is DeathReason.Item) reason.item.itemStack.clone() else ItemStack(Resourcepack.Items.deathReason)
+            val reasonItemStack = if (reason is DeathReason.Item) reason.item.templateItemStack.clone() else ItemStack(Resourcepack.Items.deathReason)
             inventory.setItem(REASON_SLOT, reasonItemStack.applyMeta {
                 setDisplayName("${ChatColor.RESET}" + reason.displayText)
                 lore = listOf("${ChatColor.GRAY}Grund des Todes")
@@ -163,8 +161,7 @@ class TTTCorpse private constructor(
             tttPlayer.player.location,
             tttPlayer.role,
             reason,
-            tttPlayer.credits,
-            tttPlayer.player.velocity
+            tttPlayer.credits
         ).also { CorpseManager.add(it) }
 
         fun spawnFake(role: Role, tttPlayer: TTTPlayer, location: Location) {

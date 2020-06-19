@@ -1,117 +1,146 @@
 package de.moritzruth.spigot_ttt.game.items
 
+import de.moritzruth.spigot_ttt.game.GameListener
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.impl.*
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.BaseballBat
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.Knife
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.guns.*
-import de.moritzruth.spigot_ttt.game.players.IState
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.plugin
-import de.moritzruth.spigot_ttt.utils.nextTick
+import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathEvent
+import de.moritzruth.spigot_ttt.utils.isLeftClick
+import de.moritzruth.spigot_ttt.utils.isRightClick
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
-import org.bukkit.ChatColor
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
+import org.bukkit.event.EventPriority
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.ItemDespawnEvent
 import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.ItemStack
 
 object ItemManager {
-    val ITEMS: Set<TTTItem> = setOf(
-        Pistol,
-        Knife, Glock, Deagle, Shotgun, SidekickDeagle,
-        BaseballBat,
-        CloakingDevice, Rifle,
-        EnderPearl, Radar, HealingPotion, Fireball,
-        Teleporter, MartyrdomGrenade, FakeCorpse, Defibrillator, SecondChance
+    val ITEMS: Set<TTTItem<*>> = setOf(
+        Deagle, Glock, Pistol, Rifle, SidekickDeagle, BaseballBat, Knife, CloakingDevice, Defibrillator,
+        EnderPearl, FakeCorpse, Fireball, HealingPotion, MartyrdomGrenade, Radar, SecondChance, Teleporter,
+        Shotgun, Radar, SecondChance
     )
-
-    val droppedItemStates = mutableMapOf<Int, IState>()
 
     val listeners get () = ITEMS.mapNotNull { it.listener }.plus(listener)
     val packetListeners get () = ITEMS.mapNotNull { it.packetListener }
 
-    private fun getItemByMaterial(material: Material) = ITEMS.find { tttItem -> material === tttItem.itemStack.type }
-    fun getItemByItemStack(itemStack: ItemStack) = getItemByMaterial(itemStack.type)
+    private fun getTTTItemByMaterial(material: Material) = ITEMS.find { tttItem -> material == tttItem.material }
+    fun getTTTItemByItemStack(itemStack: ItemStack) = getTTTItemByMaterial(itemStack.type)
+    fun getInstanceByItemStack(itemStack: ItemStack) = getTTTItemByItemStack(itemStack)?.getInstance(itemStack)
 
-    fun reset() {
-        droppedItemStates.clear()
-        GameManager.world.getEntitiesByClass(Item::class.java).forEach {
-            it.remove()
-        }
+    fun dropItem(location: Location, tttItem: TTTItem<*>) {
+        val instance = tttItem.createInstance()
+        GameManager.world.dropItem(location, instance.createItemStack())
     }
 
-    val listener = object : Listener {
-        @EventHandler
-        fun onPlayerItemHeld(event: PlayerItemHeldEvent) {
-            val tttPlayer = TTTPlayer.of(event.player) ?: return
-            val itemStack = event.player.inventory.getItem(event.newSlot)
+    fun reset() {
+        GameManager.world.getEntitiesByClass(Item::class.java).forEach(Item::remove)
+        ITEMS.forEach(TTTItem<*>::reset)
+    }
 
-            tttPlayer.itemInHand =
-                if (itemStack == null || itemStack.type === Material.AIR) null
-                else getItemByItemStack(itemStack)
+    val listener = object : GameListener() {
+        @EventHandler
+        fun onPlayerInteract(event: PlayerInteractEvent) = handle(event) {
+            val instance = event.item?.let { getInstanceByItemStack(it) } ?: return@handle
+
+            val clickEvent = ClickEvent()
+            if (event.action.isLeftClick) instance.onLeftClick(clickEvent)
+            else if (event.action.isRightClick) instance.onRightClick(clickEvent)
+            event.isCancelled = clickEvent.isCancelled
         }
 
-        @EventHandler
-        fun onPlayerDropItem(event: PlayerDropItemEvent) {
-            val tttPlayer = TTTPlayer.of(event.player) ?: return
-            val tttItem = getItemByItemStack(event.itemDrop.itemStack) ?: return
-
-            if (tttItem.type != TTTItem.Type.SPECIAL) {
-                if (tttItem is DropHandler) {
-                    if (!tttItem.onDrop(tttPlayer, event.itemDrop)) {
-                        event.isCancelled = true
-                        return
-                    }
+        @EventHandler(ignoreCancelled = true)
+        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
+            val damager = event.damager
+            if (damager is Player) {
+                TTTPlayer.of(damager) ?: return
+                val item = damager.inventory.itemInMainHand
+                if (item.type != Material.AIR) {
+                    val tttItem = getTTTItemByItemStack(item) ?: return
+                    event.isCancelled = tttItem.disableDamage
                 }
-
-                plugin.server.scheduler.runTask(plugin, fun() {
-                    tttPlayer.updateItemInHand()
-                })
-            } else {
-                event.player.sendActionBarMessage("${ChatColor.RED}Du kannst dieses Item nicht droppen")
-                event.isCancelled = true
             }
         }
 
         @EventHandler
-        fun onItemDespawn(event: ItemDespawnEvent) {
-            if (getItemByItemStack(event.entity.itemStack) != null) {
-                event.entity.ticksLived = 1
+        fun onPlayerSwapHandItems(event: PlayerSwapHandItemsEvent) = handle(event) { _ ->
+            val instance = event.offHandItem?.let { getInstanceByItemStack(it) } ?: return@handle
+            instance.onHandSwap()
+            event.isCancelled = true
+        }
+
+        @EventHandler
+        fun onPlayerItemHeld(event: PlayerItemHeldEvent) = handle(event) { tttPlayer ->
+            tttPlayer.player.inventory.getItem(event.previousSlot)
+                ?.also { itemStack -> getInstanceByItemStack(itemStack)?.isSelected = false }
+
+            tttPlayer.player.inventory.getItem(event.newSlot)
+                ?.also { itemStack -> getInstanceByItemStack(itemStack)?.isSelected = true }
+        }
+
+        @EventHandler
+        fun onPlayerDropItem(event: PlayerDropItemEvent) = handle(event) { tttPlayer ->
+            val instance = getInstanceByItemStack(event.itemDrop.itemStack) ?: return@handle
+
+            val notDroppableReason = instance.notDroppableReason
+            if (notDroppableReason == null) {
+                instance.carrier = null
+            } else {
+                tttPlayer.player.sendActionBarMessage(notDroppableReason)
                 event.isCancelled = true
             }
         }
 
         @EventHandler
         fun onEntityPickupItem(event: EntityPickupItemEvent) {
-            if (event.entity !is Player) {
-                return
-            }
+            val player = event.entity
+            if (player !is Player) return
 
-            val player = event.entity as Player
             val tttPlayer = TTTPlayer.of(player) ?: return
+            val instance = getInstanceByItemStack(event.item.itemStack)
 
-            val tttItem = getItemByItemStack(event.item.itemStack)
-
-            if (tttItem != null) {
-                if (runCatching { tttPlayer.checkAddItemPreconditions(tttItem) }.isSuccess) {
-                    nextTick { tttPlayer.updateItemInHand() }
-
-                    if (tttItem is DropHandler) {
-                        tttItem.onPickup(tttPlayer, event.item)
-                    }
-
+            if (instance != null) {
+                if (runCatching { tttPlayer.checkAddItemPreconditions(instance.tttItem) }.isSuccess) {
+                    instance.carrier = tttPlayer
                     return
                 }
             }
 
             event.isCancelled = true
+        }
+
+        @EventHandler
+        fun onItemDespawn(event: ItemDespawnEvent) {
+            if (getTTTItemByItemStack(event.entity.itemStack) != null) {
+                event.entity.ticksLived = 1
+                event.isCancelled = true
+            }
+        }
+
+        @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+            val itemStackInHand = event.tttPlayer.player.inventory.itemInMainHand
+            if (itemStackInHand.type != Material.AIR) {
+                val instance = getInstanceByItemStack(itemStackInHand)
+                if (instance != null && instance.notDroppableReason == null)
+                    GameManager.world.dropItem(event.location, instance.createItemStack())
+
+                event.tttPlayer.getOwningTTTItemInstances().forEach {
+                    event.tttPlayer.removeItem(it.tttItem, false)
+                }
+            }
         }
     }
 }

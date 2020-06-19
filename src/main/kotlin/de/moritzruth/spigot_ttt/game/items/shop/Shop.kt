@@ -1,6 +1,5 @@
 package de.moritzruth.spigot_ttt.game.items.shop
 
-import de.moritzruth.spigot_ttt.game.items.Buyable
 import de.moritzruth.spigot_ttt.game.items.ItemManager
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
@@ -16,7 +15,9 @@ object Shop {
     }.toList()
     private val ITEMS_PER_PAGE = SHOP_SLOTS.count()
 
-    private fun getBuyableItems(tttPlayer: TTTPlayer) = ItemManager.ITEMS.filter { it is Buyable && it.buyableBy.contains(tttPlayer.role) }.toSet()
+    private fun getBuyableItems(tttPlayer: TTTPlayer) = ItemManager.ITEMS
+        .filter { it.shopInfo?.run { buyableBy.contains(tttPlayer.role) } ?: false }
+        .toSet()
 
     fun setItems(tttPlayer: TTTPlayer) {
         clear(tttPlayer)
@@ -26,12 +27,12 @@ object Shop {
             if (!itemsIterator.hasNext()) break
 
             val tttItem = itemsIterator.next()
-            if (tttItem !is Buyable) throw Error("Item is not buyable")
+            val shopInfo = tttItem.shopInfo!!
 
-            tttPlayer.player.inventory.setItem(index, tttItem.itemStack.clone().applyMeta {
+            tttPlayer.player.inventory.setItem(index, tttItem.templateItemStack.clone().applyMeta {
                 val displayNameSuffix =
                     if (isOutOfStock(tttPlayer, tttItem)) "${ChatColor.RED}Ausverkauft"
-                    else "$${tttItem.price}"
+                    else "$${shopInfo.price}"
 
                 setDisplayName("$displayName${ChatColor.RESET} - ${ChatColor.BOLD}$displayNameSuffix")
             })
@@ -42,8 +43,8 @@ object Shop {
         for(index in 9..35) tttPlayer.player.inventory.clear(index) // All slots except the hotbar and armor
     }
 
-    fun isOutOfStock(tttPlayer: TTTPlayer, tttItem: TTTItem): Boolean {
-        if (tttItem !is Buyable) throw Error("Item is not buyable")
-        return tttItem.buyLimit != null && tttPlayer.boughtItems.filter { it == tttItem }.count() >= tttItem.buyLimit!!
+    fun isOutOfStock(tttPlayer: TTTPlayer, tttItem: TTTItem<*>): Boolean {
+        val shopInfo = tttItem.shopInfo ?: throw Error("Item is not buyable")
+        return shopInfo.buyLimit != 0 && tttPlayer.boughtItems.filter { it == tttItem }.count() >= shopInfo.buyLimit
     }
 }

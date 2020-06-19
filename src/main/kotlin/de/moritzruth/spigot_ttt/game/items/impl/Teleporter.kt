@@ -2,24 +2,23 @@ package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.items.Buyable
+import de.moritzruth.spigot_ttt.game.items.ClickEvent
 import de.moritzruth.spigot_ttt.game.items.TTTItem
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
-import de.moritzruth.spigot_ttt.game.players.*
+import de.moritzruth.spigot_ttt.game.players.PlayerManager
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.utils.applyMeta
-import de.moritzruth.spigot_ttt.utils.clearHeldItemSlot
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.Sound
-import org.bukkit.event.EventHandler
-import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.ItemStack
 
-object Teleporter: TTTItem, Buyable {
-    override val type = TTTItem.Type.SPECIAL
-    override val itemStack = ItemStack(Resourcepack.Items.teleporter).applyMeta {
+object Teleporter: TTTItem<Teleporter.Instance>(
+    type = Type.SPECIAL,
+    instanceType = Instance::class,
+    templateItemStack = ItemStack(Resourcepack.Items.teleporter).applyMeta {
         setDisplayName("${ChatColor.LIGHT_PURPLE}${ChatColor.BOLD}Teleporter")
-
         lore = listOf(
             "",
             "${ChatColor.GOLD}Tausche die Positionen zweier Spieler",
@@ -28,42 +27,28 @@ object Teleporter: TTTItem, Buyable {
             "",
             "${ChatColor.RED}Kann nur einmal verwendet werden"
         )
-    }
-    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
-    override val price = 1
-    override val buyLimit = 1
-    val isc = InversedStateContainer(State::class)
+    },
+    shopInfo = ShopInfo(
+        buyableBy = roles(Role.TRAITOR, Role.JACKAL),
+        price = 1,
+        buyLimit = 1
+    )
+) {
+    class Instance: TTTItem.Instance(Teleporter) {
+        private var teleportSelf = false
 
-    private fun getRandomPlayerToTeleport(vararg exclude: TTTPlayer): TTTPlayer? {
-        return try {
-            PlayerManager.tttPlayers.filter { !exclude.contains(it) && it.alive && !it.player.isSneaking }.random()
-        } catch (e: NoSuchElementException) {
-            null
-        }
-    }
-
-    override val listener = object : TTTItemListener(this, true) {
-        @EventHandler
-        fun onPlayerSwapHandItems(event: PlayerSwapHandItemsEvent) = handle(event) { tttPlayer ->
-            val state = isc.getOrCreate(tttPlayer)
-            state.teleportSelf = !state.teleportSelf
-
-            tttPlayer.player.sendActionBarMessage(
-                if (state.teleportSelf) "${ChatColor.AQUA}Mode: Teleportiere dich selbst"
-                else "${ChatColor.AQUA}Mode: Teleportiere jemand anderen"
-            )
-        }
-
-        override fun onRightClick(data: ClickEventData) {
-            val tttPlayer = data.tttPlayer
-            val state = isc.getOrCreate(tttPlayer)
-
-            val firstPlayer = if (state.teleportSelf) {
+        override fun onRightClick(event: ClickEvent) {
+            val tttPlayer = carrier!!
+            val firstPlayer = if (teleportSelf) {
                 if (!tttPlayer.player.isOnGround) {
-                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}${ChatColor.BOLD}Du musst auf dem Boden stehen")
+                    tttPlayer.player.sendActionBarMessage(
+                        "${ChatColor.RED}${ChatColor.BOLD}Du musst auf dem Boden stehen"
+                    )
                     null
                 } else if (tttPlayer.player.isSneaking) {
-                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}${ChatColor.BOLD}Du darfst nicht sneaken")
+                    tttPlayer.player.sendActionBarMessage(
+                        "${ChatColor.RED}${ChatColor.BOLD}Du darfst nicht sneaken"
+                    )
                     null
                 } else tttPlayer
             } else getRandomPlayerToTeleport(tttPlayer)
@@ -76,7 +61,7 @@ object Teleporter: TTTItem, Buyable {
                     firstPlayer.player.teleport(secondPlayer.player.location)
                     secondPlayer.player.teleport(firstLocation)
 
-                    tttPlayer.player.inventory.clearHeldItemSlot()
+                    tttPlayer.removeItem(Teleporter)
 
                     GameManager.world.playSound(firstPlayer.player.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1F, 1F)
                     GameManager.world.playSound(secondPlayer.player.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1F, 1F)
@@ -87,9 +72,22 @@ object Teleporter: TTTItem, Buyable {
             // Teleport failed
             tttPlayer.player.playSound(tttPlayer.player.location, Resourcepack.Sounds.error, 1F, 1F)
         }
+
+        override fun onHandSwap() {
+            teleportSelf = !teleportSelf
+
+            carrier!!.player.sendActionBarMessage(
+                if (teleportSelf) "${ChatColor.AQUA}Mode: Teleportiere dich selbst"
+                else "${ChatColor.AQUA}Mode: Teleportiere jemand anderen"
+            )
+        }
     }
 
-    class State: IState {
-        var teleportSelf = false
+    private fun getRandomPlayerToTeleport(vararg exclude: TTTPlayer): TTTPlayer? {
+        return try {
+            PlayerManager.tttPlayers.filter { !exclude.contains(it) && it.alive && !it.player.isSneaking }.random()
+        } catch (e: NoSuchElementException) {
+            null
+        }
     }
 }

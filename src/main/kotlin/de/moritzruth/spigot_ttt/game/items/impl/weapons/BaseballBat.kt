@@ -1,17 +1,13 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.players.Role
-import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.players.roles
-import de.moritzruth.spigot_ttt.game.items.Buyable
-import de.moritzruth.spigot_ttt.game.items.Selectable
 import de.moritzruth.spigot_ttt.game.items.TTTItem
+import de.moritzruth.spigot_ttt.game.items.TTTItemListener
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
-import de.moritzruth.spigot_ttt.utils.removeTTTItemNextTick
 import org.bukkit.ChatColor
 import org.bukkit.SoundCategory
 import org.bukkit.attribute.Attribute
@@ -22,9 +18,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 
-object BaseballBat: TTTItem, Buyable, Selectable {
-    override val type = TTTItem.Type.MELEE
-    override val itemStack = ItemStack(Resourcepack.Items.baseballBat).applyMeta {
+object BaseballBat: TTTItem<BaseballBat.Instance>(
+    type = Type.SPECIAL,
+    instanceType = Instance::class,
+    templateItemStack = ItemStack(Resourcepack.Items.baseballBat).applyMeta {
         setDisplayName("${ChatColor.RESET}${ChatColor.BOLD}Baseball-Schläger")
         lore = listOf(
             "",
@@ -41,22 +38,28 @@ object BaseballBat: TTTItem, Buyable, Selectable {
             -0.8,
             AttributeModifier.Operation.ADD_SCALAR
         ))
-    }
-    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
-    override val price = 1
-    override val buyLimit: Int? = null
+    },
+    shopInfo = ShopInfo(
+        buyableBy = roles(Role.TRAITOR, Role.JACKAL),
+        price = 1
+    ),
+    disableDamage = false
+) {
+    const val WALK_SPEED_INCREASE = 0.1F
 
-    override fun onSelect(tttPlayer: TTTPlayer) {
-        tttPlayer.player.walkSpeed = 0.3F
+    class Instance: TTTItem.Instance(BaseballBat) {
+        override fun onSelect() {
+            carrier!!.walkSpeed += WALK_SPEED_INCREASE
+        }
+
+        override fun onDeselect() {
+            carrier!!.walkSpeed -= WALK_SPEED_INCREASE
+        }
     }
 
-    override fun onDeselect(tttPlayer: TTTPlayer) {
-        tttPlayer.player.walkSpeed = 0.2F
-    }
-
-    override val listener = object : TTTItemListener(this, false) {
+    override val listener = object : TTTItemListener<Instance>(this) {
         @EventHandler(ignoreCancelled = true)
-        override fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) = handle(event) { tttPlayer, _ ->
+        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) = handle(event) { tttPlayer, _ ->
             event.isCancelled = true
             if (event.damage != 1.0) return@handle // Cooldown on weapon
 
@@ -64,7 +67,7 @@ object BaseballBat: TTTItem, Buyable, Selectable {
             val distance = tttPlayer.player.location.distance(damagedPlayer.location)
 
             if (distance < 2.5) {
-                tttPlayer.player.inventory.removeTTTItemNextTick(BaseballBat)
+                tttPlayer.removeItem(BaseballBat)
 
                 GameManager.world.playSound(
                     damagedPlayer.location,
@@ -73,6 +76,8 @@ object BaseballBat: TTTItem, Buyable, Selectable {
                     1F,
                     1F
                 )
+
+                event.damage = 0.0
 
                 val direction = tttPlayer.player.location.direction
                 damagedPlayer.velocity = Vector(direction.x * 5, 8.0, direction.z * 5)

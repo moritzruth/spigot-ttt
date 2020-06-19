@@ -31,13 +31,13 @@ object GameManager {
     val destroyedBlocks = mutableMapOf<Location, Material>()
 
     private val listeners = ItemManager.listeners
-        .plus(GameListener)
+        .plus(GeneralGameListener)
         .plus(ShopListener)
         .plus(CorpseListener)
         .plus(TTTClassManager.listeners)
 
     private val packetListeners = ItemManager.packetListeners
-        .plus(GameListener.packetListener)
+        .plus(GeneralGameListener.packetListener)
 
     fun initialize() {
         adjustWorld()

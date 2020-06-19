@@ -1,14 +1,13 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.GameEndEvent
-import de.moritzruth.spigot_ttt.game.items.Buyable
-import de.moritzruth.spigot_ttt.game.items.Selectable
+import de.moritzruth.spigot_ttt.game.items.ClickEvent
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.TTTItemListener
-import de.moritzruth.spigot_ttt.game.players.*
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.utils.applyMeta
-import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
 import org.bukkit.ChatColor
 import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
@@ -19,90 +18,67 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitTask
 
-object CloakingDevice: TTTItem, Buyable, Selectable {
-    override val itemStack = ItemStack(Resourcepack.Items.cloakingDevice).applyMeta {
+object CloakingDevice: TTTItem<CloakingDevice.Instance>(
+    type = Type.SPECIAL,
+    instanceType = Instance::class,
+    templateItemStack = ItemStack(Resourcepack.Items.cloakingDevice).applyMeta {
         setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}###${ChatColor.RESET}${ChatColor.GRAY} Cloaking Device ${ChatColor.MAGIC}###")
         lore = listOf(
             "",
             "${ChatColor.GOLD}Macht dich unsichtbar"
         )
         addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
-    }
+    },
+    shopInfo = ShopInfo(
+        buyableBy = roles(Role.TRAITOR, Role.JACKAL),
+        buyLimit = 1,
+        price = 2
+    )
+) {
+    private const val WALK_SPEED_DECREASE = 0.1F
     private const val COOLDOWN = 10.0
 
-    override val type = TTTItem.Type.SPECIAL
-    override val price = 2
-    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
-    override val buyLimit = 1
+    class Instance: TTTItem.Instance(CloakingDevice) {
+        var enabled = false
+        private var cooldownTask: BukkitTask? = null
 
-    val isc = InversedStateContainer(State::class)
-
-    override fun onSelect(tttPlayer: TTTPlayer) {}
-    override fun onDeselect(tttPlayer: TTTPlayer) = disable(tttPlayer)
-
-    private fun enable(tttPlayer: TTTPlayer, itemStack: ItemStack) {
-        val state = isc.getOrCreate(tttPlayer)
-
-        tttPlayer.player.apply {
-            isSprinting = false
-            walkSpeed = 0.1F
-
-            addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 0, false, false))
-            playSound(location, Resourcepack.Sounds.Item.CloakingDevice.on, SoundCategory.PLAYERS, 1F, 1F)
+        override fun onRightClick(event: ClickEvent) {
+            if (cooldownTask == null) setEnabled(carrier!!, !enabled)
         }
 
-        state.enabled = true
-        state.itemStack = itemStack
-    }
-
-    private fun disable(tttPlayer: TTTPlayer) {
-        val state = isc.get(tttPlayer) ?: return
-        if (!state.enabled) return
-
-        tttPlayer.player.apply {
-            walkSpeed = 0.2F
-            removePotionEffect(PotionEffectType.INVISIBILITY)
-            playSound(location, Resourcepack.Sounds.Item.CloakingDevice.off, SoundCategory.PLAYERS, 1F, 1F)
+        override fun onCarrierRemoved(oldCarrier: TTTPlayer) {
+            setEnabled(oldCarrier, false)
         }
 
-        state.enabled = false
+        private fun setEnabled(tttPlayer: TTTPlayer, value: Boolean) {
+            if (value == enabled) return
 
-        val itemStack = state.itemStack
-        if (itemStack != null) {
-            state.cooldownTask = startItemDamageProgress(itemStack, COOLDOWN) { state.cooldownTask = null }
-        }
-    }
+            if (value) {
+                tttPlayer.walkSpeed -= WALK_SPEED_DECREASE
+                tttPlayer.player.apply {
+                    isSprinting = false
 
-    override val listener = object : TTTItemListener(this, true) {
-        @EventHandler
-        fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) = handle(event) { tttPlayer ->
-            if (event.isSprinting && isc.getOrCreate(tttPlayer).enabled) event.isCancelled = true
-        }
-
-        @EventHandler
-        override fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
-            super.onTTTPlayerDeath(event)
-            isc.get(event.tttPlayer)?.cooldownTask?.cancel()
-        }
-
-        @EventHandler
-        fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, _ -> state.cooldownTask?.cancel() }
-
-        override fun onRightClick(data: ClickEventData) {
-            val state = isc.getOrCreate(data.tttPlayer)
-            if (state.cooldownTask != null) return
-
-            if (state.enabled) {
-                disable(data.tttPlayer)
+                    addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 0, false, false))
+                    playSound(location, Resourcepack.Sounds.Item.CloakingDevice.on, SoundCategory.PLAYERS, 1F, 1F)
+                }
             } else {
-                enable(data.tttPlayer, data.itemStack)
+                tttPlayer.walkSpeed += WALK_SPEED_DECREASE
+                tttPlayer.player.apply {
+                    removePotionEffect(PotionEffectType.INVISIBILITY)
+                    playSound(location, Resourcepack.Sounds.Item.CloakingDevice.off, SoundCategory.PLAYERS, 1F, 1F)
+                }
+
+                // TODO: Show progress in level bar
             }
+
+            enabled = value
         }
     }
 
-    class State: IState {
-        var enabled: Boolean = false
-        var cooldownTask: BukkitTask? = null
-        var itemStack: ItemStack? = null
+    override val listener = object : TTTItemListener<Instance>(CloakingDevice) {
+        @EventHandler
+        fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) = handleWithInstance(event) { instance ->
+            if (event.isSprinting && instance.enabled) event.isCancelled = true
+        }
     }
 }

@@ -1,13 +1,12 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.game.GameEndEvent
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.items.Buyable
-import de.moritzruth.spigot_ttt.game.items.PASSIVE
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.TTTItemListener
-import de.moritzruth.spigot_ttt.game.players.*
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayerTrueDeathEvent
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.createKillExplosion
@@ -19,33 +18,39 @@ import org.bukkit.event.EventHandler
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 
-object MartyrdomGrenade: TTTItem, Buyable {
-    override val type = TTTItem.Type.SPECIAL
-    override val itemStack = ItemStack(Resourcepack.Items.martyrdomGrenade).applyMeta {
+object MartyrdomGrenade: TTTItem<MartyrdomGrenade.Instance>(
+    type = Type.SPECIAL,
+    instanceType = Instance::class,
+    templateItemStack = ItemStack(Resourcepack.Items.martyrdomGrenade).applyMeta {
         hideInfo()
-        setDisplayName("${ChatColor.DARK_PURPLE}${ChatColor.BOLD}Märtyriumsgranate $PASSIVE")
-
+        setDisplayName("${ChatColor.DARK_PURPLE}${ChatColor.BOLD}Märtyriumsgranate$PASSIVE_SUFFIX")
         lore = listOf(
             "",
             "${ChatColor.GOLD}Lasse bei deinem Tod",
             "${ChatColor.GOLD}eine Granate fallen"
         )
-    }
-    override val buyableBy = roles(Role.TRAITOR)
-    override val buyLimit: Int? = null
-    override val price = 1
-    val isc = InversedStateContainer(State::class)
+    },
+    shopInfo = ShopInfo(
+        buyableBy = roles(Role.TRAITOR, Role.JACKAL),
+        price = 1
+    )
+) {
+    class Instance: TTTItem.Instance(MartyrdomGrenade, true) {
+        var explodeTask: BukkitTask? = null
 
-    override fun onOwn(tttPlayer: TTTPlayer) {
-        isc.getOrCreate(tttPlayer)
+        override fun reset() {
+            explodeTask?.cancel()
+            explodeTask = null
+        }
     }
 
-    override val listener = object : TTTItemListener(this, true) {
+    override val listener = object : TTTItemListener<Instance>(this) {
         @EventHandler
         fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
-            val state = isc.get(event.tttPlayer) ?: return
+            val instance = getInstance(event.tttPlayer) ?: return
+            event.tttPlayer.removeItem(MartyrdomGrenade, false)
 
-            state.explodeTask = plugin.server.scheduler.runTaskLater(plugin, fun() {
+            instance.explodeTask = plugin.server.scheduler.runTaskLater(plugin, fun() {
                 GameManager.world.playSound(
                     event.location,
                     Resourcepack.Sounds.grenadeExplode,
@@ -57,15 +62,5 @@ object MartyrdomGrenade: TTTItem, Buyable {
                 createKillExplosion(event.tttPlayer, event.location, 2.5)
             }, secondsToTicks(3).toLong())
         }
-
-        @EventHandler
-        fun onGameEnd(event: GameEndEvent) = isc.forEveryState { state, _ ->
-            state.explodeTask?.cancel()
-            state.explodeTask = null
-        }
-    }
-
-    class State: IState {
-        var explodeTask: BukkitTask? = null
     }
 }

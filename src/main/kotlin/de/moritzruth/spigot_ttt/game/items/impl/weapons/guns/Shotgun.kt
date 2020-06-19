@@ -2,122 +2,99 @@ package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
 import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.game.items.Spawning
-import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.Probability
 import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
-import de.moritzruth.spigot_ttt.utils.startItemDamageProgress
+import de.moritzruth.spigot_ttt.utils.startProgressTask
 import org.bukkit.ChatColor
 import org.bukkit.SoundCategory
-import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.Damageable
-import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.scheduler.BukkitTask
 
 private const val RELOAD_TIME_PER_BULLET = 0.5
 private const val MAGAZINE_SIZE = 8
 
 object Shotgun: Gun(
-    stateClass = State::class,
+    type = Type.HEAVY_WEAPON,
+    instanceType = Instance::class,
+    spawnProbability = Probability.LOW,
     displayName = "${ChatColor.YELLOW}${ChatColor.BOLD}Shotgun",
     damage = heartsToHealth(3.0),
     cooldown = 0.9,
     magazineSize = MAGAZINE_SIZE,
     reloadTime = RELOAD_TIME_PER_BULLET * MAGAZINE_SIZE,
-    itemMaterial = Resourcepack.Items.shotgun,
-    additionalLore = listOf("${ChatColor.RED}Weniger Schaden auf Distanz"),
+    material = Resourcepack.Items.shotgun,
+    itemLore = listOf("${ChatColor.RED}Weniger Schaden auf Distanz"),
     shootSound = Resourcepack.Sounds.Item.Weapon.Shotgun.fire,
     reloadSound = Resourcepack.Sounds.Item.Weapon.Shotgun.reload
-), Spawning {
-    override val type = TTTItem.Type.HEAVY_WEAPON
+) {
+    class Instance: Gun.Instance(Shotgun) {
+        override fun computeActualDamage(receiver: TTTPlayer): Double {
+            val distance = requireCarrier().player.location.distance(receiver.player.location)
 
-    override fun computeActualDamage(tttPlayer: TTTPlayer, receiver: Player): Double {
-        val distance = tttPlayer.player.location.distance(receiver.location)
-
-        return when {
-            distance <= 1 -> heartsToHealth(10.0)
-            distance >= 14 -> 0.5
-            distance > 8 -> heartsToHealth(1.5)
-            else -> heartsToHealth(damage)
-        }
-    }
-
-    override fun onDeselect(tttPlayer: TTTPlayer) {
-        tttPlayer.player.level = 0
-        val state = (isc.get(tttPlayer) ?: return) as State
-
-        val currentAction = state.currentAction
-
-        if (currentAction is ReloadingAction) {
-            state.currentAction = null
-            currentAction.task.cancel()
-            currentAction.updateTask.cancel()
-
-            val meta = currentAction.itemStack.itemMeta as Damageable
-            meta.damage = 0
-            currentAction.itemStack.itemMeta = meta as ItemMeta
-        }
-    }
-
-    override fun reload(tttPlayer: TTTPlayer, itemStack: ItemStack, state: Gun.State) {
-        val ownState = state as State
-        if (ownState.currentAction != null) throw ActionInProgressError()
-        if (ownState.remainingShots == magazineSize) return
-
-        ownState.currentAction = ReloadingAction(itemStack, ownState, tttPlayer).also { it.start() }
-    }
-
-    override fun onBeforeShoot(tttPlayer: TTTPlayer, item: ItemStack, state: Gun.State): Boolean {
-        val ownState = state as State
-        if (ownState.remainingShots == 0) return true
-
-        when(val currentAction = ownState.currentAction) {
-            is Action.Cooldown -> throw ActionInProgressError()
-            is ReloadingAction -> {
-                currentAction.reset()
-                ownState.currentAction = null
-
-                val damageMeta = item.itemMeta!! as Damageable
-                damageMeta.damage = 0
-                item.itemMeta = damageMeta as ItemMeta
+            return when {
+                distance <= 1 -> heartsToHealth(10.0)
+                distance >= 14 -> 0.5
+                distance > 8 -> heartsToHealth(1.5)
+                else -> heartsToHealth(damage)
             }
         }
 
-        return true
-    }
+        override fun onMovedOutOfHand(tttPlayer: TTTPlayer) {
+            tttPlayer.player.level = 0
+            tttPlayer.player.exp = 0F
 
-    class State: Gun.State(magazineSize)
-
-    private class ReloadingAction(itemStack: ItemStack, state: State, tttPlayer: TTTPlayer): Action.Reloading(Shotgun, itemStack, state, tttPlayer) {
-        lateinit var updateTask: BukkitTask
-
-        override fun reset() {
-            task.cancel()
-            updateTask.cancel()
+            val action = currentAction
+            if (action is ReloadingAction) {
+                currentAction = null
+                action.cancel()
+            }
         }
 
-        override fun start() {
-            task = startItemDamageProgress(
-                itemStack,
-                reloadTime,
-                state.remainingShots.toDouble() / magazineSize
-            ) { state.currentAction = null }
+        override fun reload() {
+            if (currentAction != null) throw ActionInProgressError()
+            if (remainingShots == magazineSize) return
+            currentAction = ReloadingAction(this)
+        }
 
+        override fun onBeforeShoot(): Boolean {
+            if (remainingShots == 0) return true
+
+            when(val action = currentAction) {
+                is Action.Cooldown -> throw ActionInProgressError()
+                is ReloadingAction -> action.cancel()
+            }
+
+            return true
+        }
+    }
+
+    private class ReloadingAction(instance: Instance): Action.Reloading(instance) {
+        override fun createProgressTask(): BukkitTask = startProgressTask(
+            instance.gun.reloadTime,
+            startAt = instance.remainingShots.toDouble() / instance.gun.magazineSize
+        ) { data ->
+            val exp = if (data.isComplete) {
+                instance.currentAction = null
+                0F
+            } else data.progress.toFloat()
+            if (instance.isSelected) instance.carrier!!.player.exp = exp
+        }
+
+        private var updateTask: BukkitTask? = null
+
+        init {
             updateTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
-                state.remainingShots++
-                updateLevel(tttPlayer)
+                instance.remainingShots++
+                GameManager.world.playSound(instance.carrier!!.player.location, reloadSound, SoundCategory.PLAYERS, 1F, 1F)
+                if (instance.remainingShots == magazineSize) updateTask?.cancel()
+            }, secondsToTicks(RELOAD_TIME_PER_BULLET).toLong(), secondsToTicks(RELOAD_TIME_PER_BULLET).toLong())
+        }
 
-                GameManager.world.playSound(tttPlayer.player.location, reloadSound, SoundCategory.PLAYERS, 1F, 1F)
-
-                if (state.remainingShots == magazineSize) {
-                    this.updateTask.cancel()
-                }
-            },
-                secondsToTicks(RELOAD_TIME_PER_BULLET).toLong(),
-                secondsToTicks(RELOAD_TIME_PER_BULLET).toLong())
+        override fun cancel() {
+            task.cancel()
+            updateTask?.cancel()
         }
     }
 }

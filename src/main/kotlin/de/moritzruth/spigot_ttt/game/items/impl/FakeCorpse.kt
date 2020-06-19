@@ -2,10 +2,13 @@ package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
-import de.moritzruth.spigot_ttt.game.items.Buyable
+import de.moritzruth.spigot_ttt.game.items.ClickEvent
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.TTTItemListener
-import de.moritzruth.spigot_ttt.game.players.*
+import de.moritzruth.spigot_ttt.game.players.PlayerManager
+import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
+import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
@@ -21,24 +24,34 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 
-object FakeCorpse: TTTItem, Buyable {
-    private val DISPLAY_NAME = "${ChatColor.YELLOW}${ChatColor.BOLD}Fake-Leiche"
-
-    override val itemStack = ItemStack(Resourcepack.Items.fakeCorpse).applyMeta {
-        setDisplayName(DISPLAY_NAME)
+object FakeCorpse: TTTItem<FakeCorpse.Instance>(
+    type = Type.SPECIAL,
+    instanceType = Instance::class,
+    shopInfo = ShopInfo(
+        buyableBy = roles(Role.TRAITOR, Role.JACKAL),
+        buyLimit = 3,
+        price = 2
+    ),
+    templateItemStack = ItemStack(Resourcepack.Items.fakeCorpse).applyMeta {
+        setDisplayName(FakeCorpse.DISPLAY_NAME)
         lore = listOf(
-                "",
-                "${ChatColor.GOLD}Spawnt eine Fake-Leiche",
-                "${ChatColor.GOLD}Rolle und Spieler auswählbar"
+            "",
+            "${ChatColor.GOLD}Spawnt eine Fake-Leiche",
+            "${ChatColor.GOLD}Rolle und Spieler auswählbar"
         )
         hideInfo()
     }
-    override val type = TTTItem.Type.SPECIAL
-    override val buyableBy = roles(Role.TRAITOR, Role.JACKAL)
-    override val price = 2
-    override val buyLimit: Int? = 3
+) {
+    private val DISPLAY_NAME = "${ChatColor.YELLOW}${ChatColor.BOLD}Fake-Leiche"
 
-    val isc = InversedStateContainer(State::class)
+    class Instance: TTTItem.Instance(FakeCorpse) {
+        var chosenRole: Role? = null
+        var choosePlayerInventory: Inventory? = null
+
+        override fun onRightClick(event: ClickEvent) {
+            carrier!!.player.openInventory(chooseRoleInventory)
+        }
+    }
 
     private val chooseRoleInventory = plugin.server.createInventory(
         null,
@@ -72,17 +85,17 @@ object FakeCorpse: TTTItem, Buyable {
             .toTypedArray())
     }
 
-    override val listener = object : TTTItemListener(this, true) {
-        override fun onRightClick(data: ClickEventData) {
-            isc.getOrCreate(data.tttPlayer).chosenRole = null
-            data.tttPlayer.player.openInventory(chooseRoleInventory)
-        }
-
+    override val listener = object : TTTItemListener<Instance>(this) {
         @EventHandler
         fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
-            val state = isc.getOrCreate(tttPlayer)
+            val instance = getInstance(tttPlayer) ?: return@handle
 
-            if (!setOf(state.choosePlayerInventory, chooseRoleInventory).contains(event.clickedInventory)) return@handle
+            if (
+                !setOf(
+                    instance.choosePlayerInventory,
+                    chooseRoleInventory
+                ).contains(event.clickedInventory)
+            ) return@handle
             event.isCancelled = true
 
             val item = event.currentItem
@@ -90,11 +103,12 @@ object FakeCorpse: TTTItem, Buyable {
             if (item != null && event.click == ClickType.LEFT) {
                 when (event.clickedInventory) {
                     chooseRoleInventory -> {
-                        state.chosenRole = Role.values()[event.slot]
-                        state.choosePlayerInventory = createChoosePlayerInventory()
-                        tttPlayer.player.openInventory(state.choosePlayerInventory!!)
+                        instance.chosenRole = Role.values()[event.slot]
+                        val choosePlayerInventory = createChoosePlayerInventory()
+                        instance.choosePlayerInventory = choosePlayerInventory
+                        tttPlayer.player.openInventory(choosePlayerInventory)
                     }
-                    state.choosePlayerInventory -> {
+                    instance.choosePlayerInventory -> {
                         tttPlayer.player.closeInventory()
 
                         val corpsePlayer = plugin.server.getPlayer((item.itemMeta as SkullMeta).owningPlayer!!.uniqueId)!!
@@ -103,18 +117,12 @@ object FakeCorpse: TTTItem, Buyable {
                         if (corpseTTTPlayer == null) {
                             tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Das hat nicht funktioniert")
                         } else {
-                            TTTCorpse.spawnFake(state.chosenRole!!, corpseTTTPlayer, tttPlayer.player.location)
-
+                            TTTCorpse.spawnFake(instance.chosenRole!!, corpseTTTPlayer, tttPlayer.player.location)
                             tttPlayer.player.inventory.removeTTTItem(FakeCorpse)
                         }
                     }
                 }
             }
         }
-    }
-
-    class State: IState {
-        var chosenRole: Role? = null
-        var choosePlayerInventory: Inventory? = null
     }
 }
