@@ -37,11 +37,7 @@ open class TTTItemListener<InstanceT: TTTItem.Instance>(private val tttItem: TTT
 
     protected fun handleWithInstance(event: InventoryCloseEvent, handler: (instance: InstanceT) -> Unit) {
         val player = event.player
-        if (player is Player) {
-            val tttPlayer = TTTPlayer.of(player) ?: return
-            val instance = tttItem.getInstance(tttPlayer) ?: return
-            handler(instance)
-        }
+        if (player is Player) handler(TTTPlayer.of(player)?.let { tttItem.getInstance(it) } ?: return)
     }
 
     protected fun handleWithInstance(event: InventoryClickEvent, handler: (instance: InstanceT) -> Unit) {

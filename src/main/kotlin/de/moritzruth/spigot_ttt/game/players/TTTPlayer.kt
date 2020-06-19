@@ -84,7 +84,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         if (GameManager.phase == GamePhase.PREPARING) {
             player.sendMessage("${TTTPlugin.prefix}${ChatColor.GRAY}${ChatColor.ITALIC}Du wirst nach der Vorbereitungsphase wiederbelebt")
 
-            val event = TTTPlayerDeathEvent(
+            val event = TTTPlayerDeathInPreparingEvent(
                 tttPlayer = this,
                 location = player.location,
                 killer = killer,
@@ -98,25 +98,20 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
 
             val onlyRemainingRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
 
-            val firstEvent = TTTPlayerDeathEvent(
-                tttPlayer = this,
-                location = player.location,
-                killer = killer,
-                scream = reallyScream
-            ).call()
-
             val event = TTTPlayerTrueDeathEvent(
                 tttPlayer = this,
                 location = player.location,
                 tttCorpse = tttCorpse,
                 killer = killer,
-                scream = firstEvent.scream,
+                scream = reallyScream,
                 winnerRoleGroup = onlyRemainingRoleGroup
             ).call()
 
             reallyScream = event.scream
             event.winnerRoleGroup?.run { GameManager.letRoleWin(primaryRole) }
         }
+
+        clearInventory(true)
 
         if (reallyScream) GameManager.world.playSound(
             player.location,
@@ -150,7 +145,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         player.scoreboard = scoreboard.scoreboard
     }
 
-    fun getOwningTTTItemInstances() = player.inventory.hotbarContents
+    private fun getOwningTTTItemInstances() = player.inventory.hotbarContents
         .filterNotNull()
         .mapNotNull { ItemManager.getInstanceByItemStack(it) }
 
@@ -195,9 +190,19 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         player.exp = 0F
         player.allowFlight = player.gameMode == GameMode.CREATIVE
         player.foodLevel = 20
-        player.inventory.clear()
 
+        clearInventory(false)
         tttClassInstance.reset()
+    }
+
+    private fun clearInventory(becauseOfDeath: Boolean) {
+        val owningTTTItemInstances = getOwningTTTItemInstances()
+
+        owningTTTItemInstances.forEach {
+            if (!(tttClass.defaultItems.contains(it.tttItem) && GameManager.phase == GamePhase.PREPARING)) {
+                removeItem(it.tttItem, becauseOfDeath = becauseOfDeath)
+            }
+        }
     }
 
     fun checkAddItemPreconditions(tttItem: TTTItem<*>) {
@@ -221,10 +226,13 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         instance.carrier = this
     }
 
-    fun removeItem(item: TTTItem<*>, removeInstance: Boolean = true) {
+    fun removeItem(item: TTTItem<*>, removeInstance: Boolean = true, becauseOfDeath: Boolean = false) {
         item.getInstance(this)?.let {
             it.carrier = null
-            if (removeInstance) item.instancesByUUID.remove(it.uuid)
+            if (removeInstance && (!becauseOfDeath || it.tttItem.removeInstanceOnDeath)) {
+                item.instancesByUUID.remove(it.uuid)
+                it.reset()
+            }
         }
 
         player.inventory.removeTTTItem(item)

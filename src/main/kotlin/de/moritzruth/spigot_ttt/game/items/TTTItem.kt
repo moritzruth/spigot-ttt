@@ -22,7 +22,8 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
     val instanceType: KClass<out InstanceT>,
     val shopInfo: ShopInfo? = null,
     val spawnProbability: Probability? = null,
-    val disableDamage: Boolean = true
+    val disableDamage: Boolean = true,
+    val removeInstanceOnDeath: Boolean = true
 ) {
     open val listener: Listener? = null
     open val packetListener: PacketListener? = null
@@ -34,7 +35,7 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
         itemStack.itemMeta?.persistentDataContainer?.get(ID_KEY, PersistentDataType.STRING)
             ?.let { instancesByUUID[UUID.fromString(it)] }
 
-    fun getInstance(tttPlayer: TTTPlayer) = instancesByUUID.values.find { it.carrier === tttPlayer }
+    open fun getInstance(tttPlayer: TTTPlayer) = instancesByUUID.values.find { it.carrier === tttPlayer }
 
     fun reset() {
         instancesByUUID.values.forEach {
@@ -69,7 +70,10 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
         val ID_KEY = NamespacedKey(plugin, "instance")
     }
 
-    abstract class Instance(val tttItem: TTTItem<*>, droppable: Boolean = true) {
+    abstract class Instance(
+        val tttItem: TTTItem<*>,
+        droppable: Boolean = true
+    ) {
         val uuid = UUID.randomUUID()!!
 
         fun createItemStack() = tttItem.templateItemStack.clone().applyMeta {

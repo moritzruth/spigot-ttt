@@ -40,23 +40,36 @@ object SecondChance: TTTItem<SecondChance.Instance>(
         buyableBy = roles(Role.TRAITOR, Role.JACKAL),
         buyLimit = 1,
         price = 2
-    )
+    ),
+    removeInstanceOnDeath = false
 ) {
     val ON_CORPSE = Resourcepack.Items.arrowDown
     val ON_SPAWN = Resourcepack.Items.dot
     private const val TIMEOUT = 10.0
 
+    override fun getInstance(tttPlayer: TTTPlayer) =
+        instancesByUUID.values.find { it.tttPlayer === tttPlayer }
+
     class Instance: TTTItem.Instance(SecondChance, false) {
         var preventRoundEnd = false; private set
         var timeoutAction: TimeoutAction? = null
+        lateinit var tttPlayer: TTTPlayer
 
         fun possiblyTrigger() {
-            if (Random.nextBoolean()) trigger()
+            if (true || Random.nextBoolean()) trigger()
         }
 
         private fun trigger() {
             preventRoundEnd = true
             timeoutAction = TimeoutAction(this)
+        }
+
+        override fun reset() {
+            timeoutAction?.stop()
+        }
+
+        override fun onCarrierSet(carrier: TTTPlayer, isFirst: Boolean) {
+            tttPlayer = carrier
         }
 
         class TimeoutAction(private val instance: Instance) {
@@ -66,7 +79,11 @@ object SecondChance: TTTItem<SecondChance.Instance>(
                 "${ChatColor.GREEN}${ChatColor.BOLD}Second Chance",
                 BarColor.GREEN,
                 BarStyle.SOLID
-            ).also { it.addPlayer(instance.requireCarrier().player) }
+            ).also { it.addPlayer(instance.tttPlayer.player) }
+
+            init {
+                instance.tttPlayer.player.openInventory(chooseSpawnInventory)
+            }
 
             private var task: BukkitTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
                 val duration = Duration.between(startedAt, Instant.now()).toMillis().toDouble() / 1000
@@ -79,18 +96,16 @@ object SecondChance: TTTItem<SecondChance.Instance>(
                 try {
                     PlayerManager.letRemainingRoleGroupWin()
                 } catch (e: IllegalStateException) {}
-
                 stop()
             }
 
             fun stop() {
-                val carrier = instance.requireCarrier()
                 task.cancel()
-                carrier.player.apply {
+                instance.tttPlayer.player.apply {
                     closeInventory()
                     bossBar.removePlayer(this)
                 }
-                carrier.removeItem(SecondChance)
+                instancesByUUID.remove(instance.uuid)
             }
         }
     }
@@ -127,8 +142,10 @@ object SecondChance: TTTItem<SecondChance.Instance>(
         @EventHandler
         fun onInventoryClose(event: InventoryCloseEvent) {
             if (event.inventory == chooseSpawnInventory) {
-                handleWithInstance(event) { instance ->
-                    nextTick { instance.carrier?.player?.openInventory(chooseSpawnInventory) }
+                nextTick {
+                    handleWithInstance(event) { instance ->
+                        instance.tttPlayer.player.openInventory(chooseSpawnInventory)
+                    }
                 }
             }
         }
@@ -147,7 +164,7 @@ object SecondChance: TTTItem<SecondChance.Instance>(
                 }
 
                 timeoutAction.stop()
-                instance.carrier!!.revive(location)
+                instance.tttPlayer.revive(location)
             }
         }
 

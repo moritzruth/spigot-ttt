@@ -7,7 +7,8 @@ import de.moritzruth.spigot_ttt.game.items.impl.weapons.BaseballBat
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.Knife
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.guns.*
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathEvent
+import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathInPreparingEvent
+import de.moritzruth.spigot_ttt.game.players.TTTPlayerTrueDeathEvent
 import de.moritzruth.spigot_ttt.utils.isLeftClick
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
@@ -16,7 +17,6 @@ import org.bukkit.Material
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.ItemDespawnEvent
@@ -129,16 +129,32 @@ object ItemManager {
             }
         }
 
-        @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-        fun onTTTPlayerDeath(event: TTTPlayerDeathEvent) {
+        @EventHandler
+        fun onTTTPlayerDeathInPreparing(event: TTTPlayerDeathInPreparingEvent) {
             val itemStackInHand = event.tttPlayer.player.inventory.itemInMainHand
             if (itemStackInHand.type != Material.AIR) {
                 val instance = getInstanceByItemStack(itemStackInHand)
-                if (instance != null && instance.notDroppableReason == null)
-                    GameManager.world.dropItem(event.location, instance.createItemStack())
 
-                event.tttPlayer.getOwningTTTItemInstances().forEach {
-                    event.tttPlayer.removeItem(it.tttItem, false)
+                if (
+                    instance != null &&
+                    !event.tttPlayer.tttClass.defaultItems.contains(instance.tttItem) &&
+                    instance.notDroppableReason == null
+                ) {
+                    event.tttPlayer.removeItem(instance.tttItem, removeInstance = false, becauseOfDeath = true)
+                    GameManager.world.dropItem(event.location, instance.createItemStack())
+                }
+            }
+        }
+
+        @EventHandler
+        fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
+            val itemStackInHand = event.tttPlayer.player.inventory.itemInMainHand
+            if (itemStackInHand.type != Material.AIR) {
+                val instance = getInstanceByItemStack(itemStackInHand)
+
+                if (instance != null && instance.notDroppableReason == null) {
+                    event.tttPlayer.removeItem(instance.tttItem, removeInstance = false, becauseOfDeath = true)
+                    GameManager.world.dropItem(event.location, instance.createItemStack())
                 }
             }
         }
