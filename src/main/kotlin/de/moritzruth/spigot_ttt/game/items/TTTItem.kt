@@ -38,9 +38,9 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
     open fun getInstance(tttPlayer: TTTPlayer) = instancesByUUID.values.find { it.carrier === tttPlayer }
 
     fun reset() {
-        instancesByUUID.values.forEach {
+        instancesByUUID.values.toList().forEach {
             it.carrier?.removeItem(it.tttItem, removeInstance = false)
-            it.reset()
+            it.remove()
         }
         instancesByUUID.clear()
     }
@@ -78,6 +78,11 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
 
         fun createItemStack() = tttItem.templateItemStack.clone().applyMeta {
             persistentDataContainer.set(ID_KEY, PersistentDataType.STRING, uuid.toString())
+        }
+
+        fun remove() {
+            tttItem.instancesByUUID.remove(uuid)
+            reset()
         }
 
         private var isFirstCarrier = true
@@ -127,7 +132,7 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
         open fun onLeftClick(event: ClickEvent) { event.isCancelled = false }
         open fun onHandSwap() {}
 
-        open fun reset() {}
+        protected open fun reset() {}
 
         var isSelected = false
             set(value) {

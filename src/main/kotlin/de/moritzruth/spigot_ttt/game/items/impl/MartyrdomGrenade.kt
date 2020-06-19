@@ -5,6 +5,7 @@ import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.TTTPlayerTrueDeathEvent
 import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.plugin
@@ -33,10 +34,12 @@ object MartyrdomGrenade: TTTItem<MartyrdomGrenade.Instance>(
     shopInfo = ShopInfo(
         buyableBy = roles(Role.TRAITOR, Role.JACKAL),
         price = 1
-    )
+    ),
+    removeInstanceOnDeath = false
 ) {
-    class Instance: TTTItem.Instance(MartyrdomGrenade, true) {
+    class Instance: TTTItem.Instance(MartyrdomGrenade) {
         var explodeTask: BukkitTask? = null
+        var tttPlayer: TTTPlayer? = null
 
         override fun reset() {
             explodeTask?.cancel()
@@ -48,7 +51,7 @@ object MartyrdomGrenade: TTTItem<MartyrdomGrenade.Instance>(
         @EventHandler
         fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
             val instance = getInstance(event.tttPlayer) ?: return
-            event.tttPlayer.removeItem(MartyrdomGrenade, false)
+            instance.tttPlayer = event.tttPlayer
 
             instance.explodeTask = plugin.server.scheduler.runTaskLater(plugin, fun() {
                 GameManager.world.playSound(
@@ -59,7 +62,8 @@ object MartyrdomGrenade: TTTItem<MartyrdomGrenade.Instance>(
                     1F
                 )
 
-                createKillExplosion(event.tttPlayer, event.location, 2.5)
+                createKillExplosion(event.tttPlayer, event.location, 5.0)
+                instance.remove()
             }, secondsToTicks(3).toLong())
         }
     }

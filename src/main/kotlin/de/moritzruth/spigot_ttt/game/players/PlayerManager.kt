@@ -7,6 +7,7 @@ import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GameMessenger
 import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.classes.TTTClassManager
+import de.moritzruth.spigot_ttt.game.items.impl.SecondChance
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.noop
@@ -17,11 +18,14 @@ import org.bukkit.entity.Player
 import kotlin.random.Random
 
 object PlayerManager {
-    val tttPlayers= mutableListOf<TTTPlayer>()
+    val tttPlayers = mutableListOf<TTTPlayer>()
 
-    val availablePlayers get() = plugin.server.onlinePlayers.filter { it.gameMode === GameMode.SURVIVAL }
-    val stillLivingRoles get() = tttPlayers.filter { it.alive }.map { it.role }.toSet()
-    private val stillLivingRoleGroups get() = stillLivingRoles.map { it.group }.toSet()
+    private fun getAvailablePlayers() = plugin.server.onlinePlayers.filter { it.gameMode === GameMode.SURVIVAL }
+    private fun getStillLivingRoleGroups() = getStillLivingRoles().map { it.group }.toSet()
+    fun getStillLivingRoles() = tttPlayers.filter {
+        it.alive || SecondChance.getInstance(it)?.preventRoundEnd == true
+    }.map { it.role }.toSet()
+
     private val playersJoinedDuringRound = mutableSetOf<Player>()
 
     fun getPlayersByRole() = mutableMapOf<Role, MutableSet<TTTPlayer>>()
@@ -45,7 +49,7 @@ object PlayerManager {
 
     fun getOnlyRemainingRoleGroup(): RoleGroup? {
         GameManager.ensurePhase(GamePhase.COMBAT)
-        return if (stillLivingRoleGroups.count() == 1) stillLivingRoleGroups.first()
+        return if (getStillLivingRoleGroups().count() == 1) getStillLivingRoleGroups().first()
         else null
     }
 
@@ -93,7 +97,7 @@ object PlayerManager {
     }
 
     fun createTTTPlayers() {
-        val playersWithoutRole = availablePlayers.toMutableSet()
+        val playersWithoutRole = getAvailablePlayers().toMutableSet()
         val playerCount = playersWithoutRole.count()
 
         if (Settings.traitorCount < 1) throw IllegalStateException("roles.traitor.count may not be lower than 1")

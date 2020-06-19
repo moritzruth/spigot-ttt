@@ -136,7 +136,7 @@ object SecondChance: TTTItem<SecondChance.Instance>(
         fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
             val instance = getInstance(event.tttPlayer) ?: return
             instance.possiblyTrigger()
-            if (instancesByUUID.values.find { it.preventRoundEnd } != null) event.winnerRoleGroup = null
+            event.winnerRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
         }
 
         @EventHandler

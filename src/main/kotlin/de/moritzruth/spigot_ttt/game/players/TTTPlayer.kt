@@ -108,7 +108,9 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
             ).call()
 
             reallyScream = event.scream
-            event.winnerRoleGroup?.run { GameManager.letRoleWin(primaryRole) }
+            if (GameManager.phase == GamePhase.COMBAT) {
+                event.winnerRoleGroup?.run { GameManager.letRoleWin(primaryRole) }
+            }
         }
 
         clearInventory(true)
@@ -232,8 +234,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         item.getInstance(this)?.let {
             it.carrier = null
             if (removeInstance && (!becauseOfDeath || it.tttItem.removeInstanceOnDeath)) {
-                item.instancesByUUID.remove(it.uuid)
-                it.reset()
+                it.remove()
             }
         }
 

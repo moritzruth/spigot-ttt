@@ -165,7 +165,7 @@ object GameManager {
         GameMessenger.combatPhaseStarted()
 
         Timers.startCombatPhaseTimer {
-            if (PlayerManager.stillLivingRoles.contains(Role.INNOCENT)) {
+            if (PlayerManager.getStillLivingRoles().contains(Role.INNOCENT)) {
                 letRoleWin(Role.INNOCENT)
             } else {
                 letRoleWin(null)
