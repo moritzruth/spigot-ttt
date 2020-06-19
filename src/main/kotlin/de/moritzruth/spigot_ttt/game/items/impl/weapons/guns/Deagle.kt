@@ -1,14 +1,14 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
 import de.moritzruth.spigot_ttt.Resourcepack
-import de.moritzruth.spigot_ttt.utils.Probability
+import de.moritzruth.spigot_ttt.game.items.SpawnProbability
 import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import org.bukkit.ChatColor
 
 object Deagle: Gun(
     type = Type.PISTOL_LIKE,
     instanceType = Instance::class,
-    spawnProbability = Probability.NORMAL,
+    spawnProbability = SpawnProbability.NORMAL,
     displayName = "${ChatColor.BLUE}${ChatColor.BOLD}Deagle",
     damage = heartsToHealth(3.0),
     cooldown = 1.4,

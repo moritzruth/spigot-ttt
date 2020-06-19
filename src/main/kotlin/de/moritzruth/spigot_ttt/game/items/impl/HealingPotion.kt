@@ -1,10 +1,10 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
+import de.moritzruth.spigot_ttt.game.items.SpawnProbability
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.roles
-import de.moritzruth.spigot_ttt.utils.Probability
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.applyTypedMeta
 import org.bukkit.ChatColor
@@ -21,7 +21,7 @@ import org.bukkit.potion.PotionType
 object HealingPotion: TTTItem<HealingPotion.Instance>(
     instanceType = Instance::class,
     type = Type.SPECIAL,
-    spawnProbability = Probability.VERY_LOW,
+    spawnProbability = SpawnProbability.VERY_LOW,
     templateItemStack = ItemStack(Material.POTION)
         .applyTypedMeta<PotionMeta> { basePotionData = PotionData(PotionType.INSTANT_HEAL, false, true) }
         .applyMeta {

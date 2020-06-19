@@ -2,7 +2,6 @@ package de.moritzruth.spigot_ttt.game.items
 
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.utils.ConfigurationFile
-import de.moritzruth.spigot_ttt.utils.Probability
 import de.moritzruth.spigot_ttt.utils.roundToCenter
 import org.bukkit.Location
 import java.util.*
@@ -27,8 +26,8 @@ object ItemSpawner {
 
     fun spawnWeapons() {
         val spawningItems = mutableListOf<TTTItem<*>>()
-        loop@ for (tttItem in ItemManager.ITEMS) {
-            val count = Probability.values().indexOf(tttItem.spawnProbability) + 1
+        for (tttItem in ItemManager.ITEMS) {
+            val count = tttItem.spawnProbability?.multiplier ?: 0
             spawningItems.addAll(Collections.nCopies(count, tttItem))
         }
 

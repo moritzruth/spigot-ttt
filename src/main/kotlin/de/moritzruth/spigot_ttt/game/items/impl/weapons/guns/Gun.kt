@@ -7,7 +7,7 @@ import de.moritzruth.spigot_ttt.game.items.LoreHelper
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.utils.Probability
+import de.moritzruth.spigot_ttt.game.items.SpawnProbability
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.startExpProgressTask
@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
 abstract class Gun(
     type: Type,
     instanceType: KClass<out Instance>,
-    spawnProbability: Probability? = null,
+    spawnProbability: SpawnProbability? = null,
     shopInfo: ShopInfo? = null,
     material: Material,
     displayName: String,

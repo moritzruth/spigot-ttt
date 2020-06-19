@@ -4,7 +4,7 @@ import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
-import de.moritzruth.spigot_ttt.utils.Probability
+import de.moritzruth.spigot_ttt.game.items.SpawnProbability
 import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.startProgressTask
@@ -18,7 +18,7 @@ private const val MAGAZINE_SIZE = 8
 object Shotgun: Gun(
     type = Type.HEAVY_WEAPON,
     instanceType = Instance::class,
-    spawnProbability = Probability.LOW,
+    spawnProbability = SpawnProbability.LOW,
     displayName = "${ChatColor.YELLOW}${ChatColor.BOLD}Shotgun",
     damage = heartsToHealth(3.0),
     cooldown = 0.9,

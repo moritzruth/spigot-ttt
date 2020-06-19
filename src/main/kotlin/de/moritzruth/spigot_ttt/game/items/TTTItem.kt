@@ -4,7 +4,6 @@ import com.comphenix.protocol.events.PacketListener
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
-import de.moritzruth.spigot_ttt.utils.Probability
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.nextTick
 import org.bukkit.ChatColor
@@ -21,7 +20,7 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
     val templateItemStack: ItemStack,
     val instanceType: KClass<out InstanceT>,
     val shopInfo: ShopInfo? = null,
-    val spawnProbability: Probability? = null,
+    val spawnProbability: SpawnProbability? = null,
     val disableDamage: Boolean = true,
     val removeInstanceOnDeath: Boolean = true
 ) {

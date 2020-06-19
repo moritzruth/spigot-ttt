@@ -1,9 +1,9 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
+import de.moritzruth.spigot_ttt.game.items.SpawnProbability
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.roles
-import de.moritzruth.spigot_ttt.utils.Probability
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -15,7 +15,7 @@ object EnderPearl : TTTItem<EnderPearl.Instance>(
     templateItemStack = ItemStack(Material.ENDER_PEARL).applyMeta {
         setDisplayName("${ChatColor.DARK_GREEN}Enderperle")
     },
-    spawnProbability = Probability.VERY_LOW,
+    spawnProbability = SpawnProbability.VERY_LOW,
     shopInfo = ShopInfo(
         buyableBy = roles(Role.TRAITOR, Role.JACKAL, Role.DETECTIVE),
         price = 1
