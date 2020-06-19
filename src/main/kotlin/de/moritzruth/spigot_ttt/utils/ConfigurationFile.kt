@@ -2,18 +2,18 @@ package de.moritzruth.spigot_ttt.utils
 
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.configuration.file.YamlConfiguration
-import java.nio.file.Paths
+import java.io.File
 
-class ConfigurationFile(name: String): YamlConfiguration() {
-    private val filePath = Paths.get(plugin.dataFolder.absolutePath, "$name.yml").toAbsolutePath().toString()
+class ConfigurationFile(private val file: File): YamlConfiguration() {
+    constructor(name: String) : this(plugin.dataFolder.resolve("$name.yml"))
 
     init {
         try {
-            load(filePath)
+            load(file)
         } catch (e: Exception) {}
     }
 
     fun save() {
-        save(filePath)
+        save(file)
     }
 }

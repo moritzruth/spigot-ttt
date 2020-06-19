@@ -23,12 +23,12 @@ commands:
     description: Add an item spawn
 
   revive:
-    usage: /revive [player] ['here']
+    usage: /revive [Player] ['here']
     permission: ttt.revive
     description: Revive yourself or another player at the world spawn or at your location
 
   info:
-    usage: /info [player]
+    usage: /info [Player]
     permission: ttt.info
     description: Show information about all players or a specific player
 
@@ -45,3 +45,8 @@ commands:
     permission: ttt.reload
     aliases:
       - rt
+
+  world:
+    usage: /world load <Name> OR /world <'join'|'save'> <World ID> OR /world list
+    description: Perform world operations
+    permission: ttt.world
