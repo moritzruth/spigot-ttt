@@ -42,7 +42,12 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         get() = player.walkSpeed
         set(value) { player.walkSpeed = value }
 
-    var credits by Delegates.observable(Settings.initialCredits) { _, _, _ -> scoreboard.updateCredits() }
+    var credits = if (role.canOwnCredits) Settings.initialCredits else 0
+        set(value) {
+            field = value
+            scoreboard.updateCredits()
+        }
+
     val boughtItems = mutableListOf<TTTItem<*>>()
 
     val scoreboard = TTTScoreboard(this)
