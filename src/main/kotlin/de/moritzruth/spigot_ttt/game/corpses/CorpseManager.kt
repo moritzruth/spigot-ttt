@@ -5,7 +5,7 @@ import org.bukkit.entity.Zombie
 import org.bukkit.inventory.Inventory
 
 object CorpseManager {
-    private val corpses = mutableListOf<TTTCorpse>()
+    val corpses = mutableListOf<TTTCorpse>()
 
     fun getTTTCorpse(entity: Entity): TTTCorpse? =
         if (entity is Zombie) corpses.find { it.entity === entity } else null
@@ -17,7 +17,6 @@ object CorpseManager {
     fun isCorpseInventory(inventory: Inventory) = corpses.find { it.inventory == inventory } != null
 
     fun destroyAll() {
-        corpses.forEach(TTTCorpse::destroy)
-        corpses.clear()
+        corpses.toSet().forEach(TTTCorpse::destroy)
     }
 }

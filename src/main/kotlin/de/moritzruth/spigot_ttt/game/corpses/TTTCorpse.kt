@@ -138,6 +138,7 @@ class TTTCorpse private constructor(
         entity.remove()
         updateTimeTask.cancel()
         inventory.viewers.toSet().forEach { it.closeInventory() }
+        CorpseManager.corpses.remove(this)
     }
 
     private fun ensureNotDestroyed() {

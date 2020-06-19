@@ -196,6 +196,8 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
     }
 
     private fun clearInventory(becauseOfDeath: Boolean) {
+        player.closeInventory()
+        Shop.clear(this)
         val owningTTTItemInstances = getOwningTTTItemInstances()
 
         owningTTTItemInstances.forEach {

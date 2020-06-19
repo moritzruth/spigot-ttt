@@ -56,7 +56,7 @@ object SecondChance: TTTItem<SecondChance.Instance>(
         lateinit var tttPlayer: TTTPlayer
 
         fun possiblyTrigger() {
-            if (true || Random.nextBoolean()) trigger()
+            if (Random.nextBoolean()) trigger()
         }
 
         private fun trigger() {

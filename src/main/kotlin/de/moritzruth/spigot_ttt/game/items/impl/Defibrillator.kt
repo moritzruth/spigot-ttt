@@ -45,7 +45,7 @@ object Defibrillator: TTTItem<Defibrillator.Instance>(
             "${ChatColor.BOLD}Defibrillator",
             BarColor.GREEN,
             BarStyle.SOLID
-        )
+        ).also { it.isVisible = false }
 
         override fun onCarrierSet(carrier: TTTPlayer, isFirst: Boolean) {
             bossBar.addPlayer(carrier.player)
@@ -87,7 +87,7 @@ object Defibrillator: TTTItem<Defibrillator.Instance>(
                             )
 
                             action.cancelTask.cancel()
-                            event.tttPlayer.player.inventory.removeTTTItemNextTick(Defibrillator)
+                            event.tttPlayer.removeItem(Defibrillator)
                         } catch(e: TTTPlayer.AlreadyLivingException) {
                             action.cancel()
                         }

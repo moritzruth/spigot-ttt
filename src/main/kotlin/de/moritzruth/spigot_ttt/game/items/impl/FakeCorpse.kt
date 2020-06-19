@@ -33,7 +33,7 @@ object FakeCorpse: TTTItem<FakeCorpse.Instance>(
         price = 2
     ),
     templateItemStack = ItemStack(Resourcepack.Items.fakeCorpse).applyMeta {
-        setDisplayName(FakeCorpse.DISPLAY_NAME)
+        setDisplayName("${ChatColor.YELLOW}${ChatColor.BOLD}Fake-Leiche")
         lore = listOf(
             "",
             "${ChatColor.GOLD}Spawnt eine Fake-Leiche",
@@ -42,7 +42,7 @@ object FakeCorpse: TTTItem<FakeCorpse.Instance>(
         hideInfo()
     }
 ) {
-    private val DISPLAY_NAME = "${ChatColor.YELLOW}${ChatColor.BOLD}Fake-Leiche"
+    private val INVENTORY_TITLE = "${ChatColor.RED}${ChatColor.BOLD}Fake-Leiche"
 
     class Instance: TTTItem.Instance(FakeCorpse) {
         var chosenRole: Role? = null
@@ -56,7 +56,7 @@ object FakeCorpse: TTTItem<FakeCorpse.Instance>(
     private val chooseRoleInventory = plugin.server.createInventory(
         null,
         InventoryType.HOPPER,
-        "${DISPLAY_NAME}${ChatColor.RESET} - Rolle"
+        "${INVENTORY_TITLE}${ChatColor.RESET} - Rolle"
     ).apply {
         addItem(*Role.values()
             .map {
@@ -71,7 +71,7 @@ object FakeCorpse: TTTItem<FakeCorpse.Instance>(
     private fun createChoosePlayerInventory() = plugin.server.createInventory(
         null,
         InventoryType.CHEST,
-        "${DISPLAY_NAME}${ChatColor.RESET} - Spieler"
+        "${INVENTORY_TITLE}${ChatColor.RESET} - Spieler"
     ).apply {
         addItem(*PlayerManager.tttPlayers
             .map {
