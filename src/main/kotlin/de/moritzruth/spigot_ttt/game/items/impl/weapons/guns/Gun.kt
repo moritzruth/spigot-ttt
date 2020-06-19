@@ -10,7 +10,7 @@ import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.utils.Probability
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
-import de.moritzruth.spigot_ttt.utils.startProgressTask
+import de.moritzruth.spigot_ttt.utils.startExpProgressTask
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -170,17 +170,6 @@ abstract class Gun(
             } catch (e: ActionInProgressError) {}
         }
 
-        protected open fun onMovedOutOfHand(tttPlayer: TTTPlayer) {
-            tttPlayer.player.level = 0
-            tttPlayer.player.exp = 0F
-
-            val action = currentAction
-            if (action is Action.Reloading) {
-                currentAction = null
-                action.cancel()
-            }
-        }
-
         override fun onCarrierSet(carrier: TTTPlayer, isFirst: Boolean) {
             setCarrierLevel()
         }
@@ -189,12 +178,16 @@ abstract class Gun(
             setCarrierLevel()
         }
 
-        override fun onCarrierRemoved(oldCarrier: TTTPlayer) {
-            onMovedOutOfHand(oldCarrier)
-        }
-
         override fun onDeselect() {
-            onMovedOutOfHand(carrier!!)
+            val carrier = carrier!!
+            carrier.player.level = 0
+            carrier.player.exp = 0F
+
+            val action = currentAction
+            if (action is Action.Reloading) {
+                currentAction = null
+                action.cancel()
+            }
         }
     }
 
@@ -211,23 +204,16 @@ abstract class Gun(
         open class Reloading(instance: Instance): Action(instance) {
             override val task = createProgressTask()
 
-            protected open fun createProgressTask() = startProgressTask(instance.gun.reloadTime) { data ->
-                val exp = if (data.isComplete) {
+            protected open fun createProgressTask() =
+                instance.startExpProgressTask(instance.gun.reloadTime) {
                     instance.remainingShots = instance.gun.magazineSize
                     instance.currentAction = null
-                    0F
-                } else data.progress.toFloat()
-                if (instance.isSelected) instance.carrier!!.player.exp = exp
-            }
+                }
         }
 
         class Cooldown(instance: Instance): Action(instance) {
-            override val task = startProgressTask(instance.gun.cooldown) { data ->
-                val exp = if (data.isComplete) {
-                    instance.currentAction = null
-                    0F
-                } else data.progress.toFloat()
-                if (instance.isSelected) instance.carrier!!.player.exp = exp
+            override val task = instance.startExpProgressTask(instance.gun.cooldown) {
+                instance.currentAction = null
             }
         }
     }

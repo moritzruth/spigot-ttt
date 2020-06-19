@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.utils
 
+import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.plugin
 import org.bukkit.scheduler.BukkitTask
 import java.time.Duration
@@ -38,4 +39,15 @@ fun startProgressTask(duration: Double, startAt: Double = 0.0, onTick: (data: Ti
 
     }, 0, 1)
     return task
+}
+fun TTTItem.Instance.startExpProgressTask(
+    duration: Double,
+    startAt: Double = 0.0,
+    onFinish: () -> Unit
+) = startProgressTask(duration, startAt) { data ->
+    val exp = if (data.isComplete) {
+        onFinish()
+        0F
+    } else data.progress.toFloat()
+    if (isSelected) carrier!!.player.exp = exp
 }

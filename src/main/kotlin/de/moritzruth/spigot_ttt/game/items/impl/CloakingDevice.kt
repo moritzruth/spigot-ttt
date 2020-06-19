@@ -8,6 +8,7 @@ import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.startExpProgressTask
 import org.bukkit.ChatColor
 import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
@@ -46,8 +47,9 @@ object CloakingDevice: TTTItem<CloakingDevice.Instance>(
             if (cooldownTask == null) setEnabled(carrier!!, !enabled)
         }
 
-        override fun onCarrierRemoved(oldCarrier: TTTPlayer) {
-            setEnabled(oldCarrier, false)
+        override fun onDeselect() {
+            setEnabled(carrier!!, false)
+            carrier!!.player.exp = 0F
         }
 
         private fun setEnabled(tttPlayer: TTTPlayer, value: Boolean) {
@@ -68,7 +70,9 @@ object CloakingDevice: TTTItem<CloakingDevice.Instance>(
                     playSound(location, Resourcepack.Sounds.Item.CloakingDevice.off, SoundCategory.PLAYERS, 1F, 1F)
                 }
 
-                // TODO: Show progress in level bar
+                cooldownTask = startExpProgressTask(COOLDOWN) {
+                    cooldownTask = null
+                }
             }
 
             enabled = value

@@ -41,9 +41,9 @@ object Shotgun: Gun(
             }
         }
 
-        override fun onMovedOutOfHand(tttPlayer: TTTPlayer) {
-            tttPlayer.player.level = 0
-            tttPlayer.player.exp = 0F
+        override fun onDeselect() {
+            carrier!!.player.level = 0
+            carrier!!.player.exp = 0F
 
             val action = currentAction
             if (action is ReloadingAction) {
