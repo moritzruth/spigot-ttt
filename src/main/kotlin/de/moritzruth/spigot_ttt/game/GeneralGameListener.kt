@@ -6,7 +6,9 @@ import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import com.comphenix.protocol.wrappers.EnumWrappers
 import com.comphenix.protocol.wrappers.PlayerInfoData
+import de.moritzruth.spigot_ttt.COMMAND_RESPONSE_PREFIX
 import de.moritzruth.spigot_ttt.TTTPlugin
+import de.moritzruth.spigot_ttt.game.GameManager.TEAM_CHAT_PREFIX
 import de.moritzruth.spigot_ttt.game.players.*
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
@@ -139,6 +141,26 @@ object GeneralGameListener : Listener {
             }
 
             event.isCancelled = true
+        } else {
+            if (event.message.startsWith(TEAM_CHAT_PREFIX)) {
+                if (senderTTTPlayer.role.group.canUseTeamChat) {
+                    PlayerManager.tttPlayers
+                        .filter { senderTTTPlayer.role.group == it.role.group }
+                        .forEach {
+                            it.player.sendMessage(
+                                "${ChatColor.GRAY}[${ChatColor.LIGHT_PURPLE}TEAM${ChatColor.GRAY}] " +
+                                        "${ChatColor.WHITE}<${event.player.displayName}> ${event.message.drop(1)}"
+                            )
+                        }
+                } else {
+                    senderTTTPlayer.player.sendMessage(
+                        "$COMMAND_RESPONSE_PREFIX${ChatColor.RED}Als ${senderTTTPlayer.role.coloredDisplayName}" +
+                                " ${ChatColor.RED}kannst du den Team-Chat nicht verwenden"
+                    )
+                }
+
+                event.isCancelled = true
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package de.moritzruth.spigot_ttt.game
 
 import com.comphenix.protocol.ProtocolLibrary
 import de.moritzruth.spigot_ttt.Settings
+import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.classes.TTTClassManager
 import de.moritzruth.spigot_ttt.game.corpses.CorpseListener
 import de.moritzruth.spigot_ttt.game.corpses.CorpseManager
@@ -20,6 +21,8 @@ import org.bukkit.block.Block
 import kotlin.random.Random
 
 object GameManager {
+    const val TEAM_CHAT_PREFIX = "."
+
     var phase: GamePhase? = null
         private set(value) {
             field = value
@@ -158,7 +161,14 @@ object GameManager {
             if (!it.alive) {
                 it.revive(world.spawnLocation, Settings.initialCredits)
             }
+
+            if (it.role.group.canUseTeamChat) {
+                it.player.sendMessage(
+                    "${TTTPlugin.prefix}Schreibe '$TEAM_CHAT_PREFIX' vor deine Nachrichten, um den Team-Chat" +
+                            "zu verwenden.")
+            }
         }
+
         ScoreboardHelper.forEveryScoreboard { it.updateTeams() }
 
         Timers.playTimerSound()
@@ -183,7 +193,7 @@ object GameManager {
         }
     }
 
-    fun ensurePhase(phase: GamePhase?) {
+    private fun ensurePhase(phase: GamePhase?) {
         if (this.phase !== phase) throw IllegalStateException("The game must be in $phase phase")
     }
 }

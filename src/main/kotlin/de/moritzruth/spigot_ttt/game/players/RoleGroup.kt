@@ -2,8 +2,12 @@ package de.moritzruth.spigot_ttt.game.players
 
 import java.util.*
 
-enum class RoleGroup(val primaryRole: Role, val additionalRoles: EnumSet<Role> = EnumSet.noneOf(Role::class.java)) {
-    INNOCENT(Role.INNOCENT, EnumSet.of(Role.DETECTIVE)),
+enum class RoleGroup(
+    val primaryRole: Role,
+    val additionalRoles: EnumSet<Role> = EnumSet.noneOf(Role::class.java),
+    val canUseTeamChat: Boolean = true
+) {
+    INNOCENT(Role.INNOCENT, EnumSet.of(Role.DETECTIVE), false),
     JACKAL(Role.JACKAL, EnumSet.of(Role.SIDEKICK)),
     TRAITOR(Role.TRAITOR);
 
