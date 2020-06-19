@@ -3,6 +3,7 @@ package de.moritzruth.spigot_ttt.game.corpses
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
+import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -12,6 +13,7 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityTargetEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.bukkit.inventory.EquipmentSlot
 import java.time.Duration
 import java.time.Instant
 
@@ -26,12 +28,20 @@ object CorpseListener: Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler
     fun onPlayerInteractEntity(event: PlayerInteractEntityEvent) {
+        if (event.hand == EquipmentSlot.OFF_HAND) return
         val tttPlayer = TTTPlayer.of(event.player) ?: return
         val tttCorpse = CorpseManager.getTTTCorpse(event.rightClicked) ?: return
 
-        if (Duration.between(tttCorpse.timestamp, Instant.now()).toMillis() < 200) return
+        if (
+            Duration.between(tttCorpse.timestamp, Instant.now()).toMillis() < 200 ||
+                    event.player.location.distance(tttCorpse.location) > 1.5
+        ) return
+
+        if (event.player.inventory.itemInMainHand.type != Material.AIR)
+            tttPlayer.ignoreNextInteract = true
+
         event.isCancelled = true
         plugin.server.pluginManager.callEvent(CorpseClickEvent(tttPlayer, tttCorpse))
     }

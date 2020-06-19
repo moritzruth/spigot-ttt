@@ -10,8 +10,6 @@ fun ItemStack.applyMeta(fn: ItemMeta.() -> Unit): ItemStack {
 
 @Suppress("UNCHECKED_CAST")
 fun <T: Any> ItemStack.applyTypedMeta(fn: T.() -> Unit): ItemStack {
-    val typedMeta = itemMeta as T
-    typedMeta.fn()
-    itemMeta = itemMeta as ItemMeta
+    itemMeta = (itemMeta as T).apply(fn) as ItemMeta
     return this
 }

@@ -7,6 +7,8 @@ import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import org.bukkit.Location
 import org.bukkit.Particle
+import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 
 fun createKillExplosion(tttPlayer: TTTPlayer, location: Location, radius: Double) {
@@ -15,6 +17,14 @@ fun createKillExplosion(tttPlayer: TTTPlayer, location: Location, radius: Double
         location,
         10,
         radius, radius, radius
+    )
+
+    GameManager.world.playSound(
+        location,
+        Sound.ENTITY_GENERIC_EXPLODE,
+        SoundCategory.PLAYERS,
+        1F,
+        1F
     )
 
     GameManager.world.getNearbyEntities(

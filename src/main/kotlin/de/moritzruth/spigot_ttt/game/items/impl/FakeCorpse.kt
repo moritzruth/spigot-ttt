@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
+import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.items.ClickEvent
 import de.moritzruth.spigot_ttt.game.items.TTTItem
@@ -11,11 +12,11 @@ import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.game.players.roles
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.createPlayerHeadInventory
 import de.moritzruth.spigot_ttt.utils.hideInfo
-import de.moritzruth.spigot_ttt.utils.removeTTTItem
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
-import org.bukkit.Material
+import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -68,23 +69,6 @@ object FakeCorpse: TTTItem<FakeCorpse.Instance>(
             .toTypedArray())
     }
 
-    private fun createChoosePlayerInventory() = plugin.server.createInventory(
-        null,
-        InventoryType.CHEST,
-        "${INVENTORY_TITLE}${ChatColor.RESET} - Spieler"
-    ).apply {
-        addItem(*PlayerManager.tttPlayers
-            .map {
-                ItemStack(Material.PLAYER_HEAD).applyMeta {
-                    setDisplayName("${ChatColor.RESET}${it.player.displayName}")
-                    hideInfo()
-                }.apply {
-                    itemMeta = (itemMeta!! as SkullMeta).apply { owningPlayer = it.player }
-                }
-            }
-            .toTypedArray())
-    }
-
     override val listener = object : TTTItemListener<Instance>(this) {
         @EventHandler
         fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
@@ -104,7 +88,10 @@ object FakeCorpse: TTTItem<FakeCorpse.Instance>(
                 when (event.clickedInventory) {
                     chooseRoleInventory -> {
                         instance.chosenRole = Role.values()[event.slot]
-                        val choosePlayerInventory = createChoosePlayerInventory()
+                        val choosePlayerInventory = createPlayerHeadInventory(
+                            "${INVENTORY_TITLE}${ChatColor.RESET} - Spieler",
+                            PlayerManager.tttPlayers.map { it.player }
+                        )
                         instance.choosePlayerInventory = choosePlayerInventory
                         tttPlayer.player.openInventory(choosePlayerInventory)
                     }
@@ -117,8 +104,22 @@ object FakeCorpse: TTTItem<FakeCorpse.Instance>(
                         if (corpseTTTPlayer == null) {
                             tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Das hat nicht funktioniert")
                         } else {
-                            TTTCorpse.spawnFake(instance.chosenRole!!, corpseTTTPlayer, tttPlayer.player.location)
-                            tttPlayer.player.inventory.removeTTTItem(FakeCorpse)
+                            GameManager.world.playSound(
+                                tttPlayer.player.location,
+                                Resourcepack.Sounds.playerDeath,
+                                SoundCategory.PLAYERS,
+                                1F,
+                                1F
+                            )
+
+                            TTTCorpse.spawnFake(
+                                instance.chosenRole!!,
+                                corpseTTTPlayer,
+                                tttPlayer,
+                                tttPlayer.player.location
+                            )
+
+                            tttPlayer.removeItem(FakeCorpse)
                         }
                     }
                 }

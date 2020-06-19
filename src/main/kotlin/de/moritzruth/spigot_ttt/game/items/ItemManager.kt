@@ -30,7 +30,7 @@ object ItemManager {
     val ITEMS: Set<TTTItem<*>> = setOf(
         Deagle, Glock, Pistol, Rifle, SidekickDeagle, BaseballBat, Knife, CloakingDevice, Defibrillator,
         EnderPearl, FakeCorpse, Fireball, HealingPotion, MartyrdomGrenade, Radar, SecondChance, Teleporter,
-        Shotgun, Radar, SecondChance
+        Shotgun, Radar, SecondChance, BoomBody
     )
 
     val listeners get () = ITEMS.mapNotNull { it.listener }.plus(listener)
@@ -51,8 +51,14 @@ object ItemManager {
     }
 
     val listener = object : GameListener() {
-        @EventHandler
-        fun onPlayerInteract(event: PlayerInteractEvent) = handle(event) {
+        @EventHandler(ignoreCancelled = true)
+        fun onPlayerInteract(event: PlayerInteractEvent) = handle(event) { tttPlayer ->
+            if (tttPlayer.ignoreNextInteract) {
+                tttPlayer.ignoreNextInteract = false
+                event.isCancelled = true
+                return@handle
+            }
+
             val instance = event.item?.let { getInstanceByItemStack(it) } ?: return@handle
 
             val clickEvent = ClickEvent()

@@ -6,6 +6,7 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
@@ -32,8 +33,10 @@ object TTTListener: Listener {
         if (event.player.gameMode !== GameMode.CREATIVE) event.isCancelled = true
     }
 
-    @EventHandler
-    fun onBlockBreak(event: PlayerInteractEvent) {
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun onPlayerInteract(event: PlayerInteractEvent) {
+        event.isCancelled = false
+
         if (
             event.player.gameMode != GameMode.CREATIVE &&
             event.action == Action.PHYSICAL &&

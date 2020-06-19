@@ -3,7 +3,6 @@ package de.moritzruth.spigot_ttt.game.corpses
 import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.GameMessenger
-import de.moritzruth.spigot_ttt.game.items.impl.weapons.guns.Pistol
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
@@ -18,6 +17,7 @@ import org.bukkit.entity.Zombie
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
+import org.bukkit.util.Vector
 import java.time.Instant
 
 class TTTCorpse private constructor(
@@ -25,9 +25,11 @@ class TTTCorpse private constructor(
     location: Location,
     private val role: Role,
     private val reason: DeathReason,
-    private var credits: Int
+    private var credits: Int,
+    velocity: Vector = Vector(),
+    val spawnedBy: TTTPlayer? = null
 ) {
-    private var status = Status.UNIDENTIFIED; private set
+    private var status = Status.UNIDENTIFIED
     val entity: Zombie
 
     val inventory = tttPlayer.player.server.createInventory(null, InventoryType.HOPPER, "${role.chatColor}${tttPlayer.player.displayName}")
@@ -46,9 +48,13 @@ class TTTCorpse private constructor(
 
         setItems()
 
-        entity = GameManager.world.spawnEntity(location, EntityType.ZOMBIE) as Zombie
+        entity = GameManager.world.spawnEntity(location.clone().also { it.pitch = 0F }, EntityType.ZOMBIE) as Zombie
         entity.apply {
+            // Does not work for some reason :(
+            // Therefore we have to use setAI(false), which ignores velocity
+//            isAware = false
             setAI(false)
+            this.velocity = velocity
             isSilent = true
             removeWhenFarAway = false
             isBaby = false
@@ -162,19 +168,17 @@ class TTTCorpse private constructor(
             tttPlayer.player.location,
             tttPlayer.role,
             reason,
-            tttPlayer.credits
+            tttPlayer.credits,
+            tttPlayer.player.velocity
         ).also { CorpseManager.add(it) }
 
-        fun spawnFake(role: Role, tttPlayer: TTTPlayer, location: Location) {
-            val loc = location.clone()
-            loc.pitch = 0F
-            CorpseManager.add(TTTCorpse(
-                tttPlayer,
-                loc,
-                role,
-                DeathReason.Item(Pistol),
-                0
-            ))
-        }
+        fun spawnFake(role: Role, tttPlayer: TTTPlayer, spawnedBy: TTTPlayer, location: Location) = TTTCorpse(
+            tttPlayer,
+            location,
+            role,
+            DeathReason.SUICIDE,
+            0,
+            spawnedBy = spawnedBy
+        ).also { CorpseManager.add(it) }
     }
 }

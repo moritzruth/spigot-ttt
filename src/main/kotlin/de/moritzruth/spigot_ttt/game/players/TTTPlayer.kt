@@ -18,11 +18,18 @@ import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
-import kotlin.properties.Delegates
 
 class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TTTClass.None) {
     var alive = true
-    var player by Delegates.observable(player) { _, _, _ -> adjustPlayer() }
+
+    // Used for corpse clicks
+    var ignoreNextInteract = false
+
+    var player= player
+        set(value) {
+            field = value
+            adjustPlayer()
+        }
 
     val tttClassInstance = tttClass.createInstance(this)
 
@@ -73,6 +80,7 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         if (!alive) return
 
         alive = false
+        ignoreNextInteract = false
         player.gameMode = GameMode.SPECTATOR
         Shop.clear(this)
 

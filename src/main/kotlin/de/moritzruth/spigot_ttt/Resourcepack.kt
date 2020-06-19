@@ -29,6 +29,7 @@ object Resourcepack {
         val teleporter = Material.SPRUCE_WOOD
         val martyrdomGrenade = Material.BIRCH_LOG
         val fakeCorpse = Material.SPRUCE_LOG
+        val boomBody = Material.BIRCH_WOOD
         val defibrillator = Material.IRON_INGOT
         val secondChance = Material.GOLD_INGOT
 

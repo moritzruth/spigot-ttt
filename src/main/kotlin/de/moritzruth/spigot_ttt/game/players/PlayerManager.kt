@@ -48,7 +48,6 @@ object PlayerManager {
     }
 
     fun getOnlyRemainingRoleGroup(): RoleGroup? {
-        GameManager.ensurePhase(GamePhase.COMBAT)
         return if (getStillLivingRoleGroups().count() == 1) getStillLivingRoleGroups().first()
         else null
     }

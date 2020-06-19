@@ -63,14 +63,6 @@ object Fireball: TTTItem<Fireball.Instance>(
             if (sender != null) {
                 event.isCancelled = true
 
-                GameManager.world.playSound(
-                    event.entity.location,
-                    Sound.ENTITY_GENERIC_EXPLODE,
-                    SoundCategory.PLAYERS,
-                    1F,
-                    1F
-                )
-
                 createKillExplosion(sender, event.entity.location, 2.5)
             }
         }
