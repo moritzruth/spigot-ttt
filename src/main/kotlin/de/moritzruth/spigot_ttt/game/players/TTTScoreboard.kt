@@ -88,7 +88,7 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
 
         val classDisplayName =
             if (tttPlayer.tttClass == TTTClass.None) TTTClass.None.coloredDisplayName
-            else "${tttPlayer.tttClass.chatColor}${ChatColor.BOLD}${tttPlayer.tttClass.displayName}"
+            else "${tttPlayer.tttClass.chatColor}${ChatColor.BOLD}${tttPlayer.tttClass.name}"
 
         setValue(ValueTeam.CLASS, "Klasse: $classDisplayName")
 
