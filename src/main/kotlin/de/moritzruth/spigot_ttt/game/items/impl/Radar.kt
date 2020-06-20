@@ -87,6 +87,8 @@ object Radar: TTTItem<Radar.Instance>(
 
         override fun reset() {
             task.cancel()
+            active = false
+            carrier?.let { resendEntityMetadata(it) }
         }
     }
 

@@ -2,7 +2,7 @@ package de.moritzruth.spigot_ttt.utils
 
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.classes.impl.Stuntman
-import de.moritzruth.spigot_ttt.game.items.impl.Fireball
+import de.moritzruth.spigot_ttt.game.items.impl.weapons.Fireball
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import org.bukkit.Location

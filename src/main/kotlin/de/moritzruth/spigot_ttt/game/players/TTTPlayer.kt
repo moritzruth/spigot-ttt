@@ -66,22 +66,35 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         tttClassInstance.init()
     }
 
-    fun damage(damage: Double, reason: DeathReason, damager: TTTPlayer, scream: Boolean = true) {
+    fun damage(
+        damage: Double,
+        reason: DeathReason,
+        damager: TTTPlayer,
+        scream: Boolean = true,
+        spawnCorpse: Boolean = true
+    ) {
         if (!alive) return
 
         val event = TTTPlayerDamageEvent(this, damage, reason).call()
         val finalHealth = player.health - event.damage
 
-        if (finalHealth <= 0.0) onDeath(reason, damager, scream)
+        if (finalHealth <= 0.0) onDeath(reason, damager, scream, spawnCorpse)
         else player.damage(damage)
     }
 
-    fun onDeath(reason: DeathReason, killer: TTTPlayer?, scream: Boolean = true) {
+    fun onDeath(
+        reason: DeathReason,
+        killer: TTTPlayer?,
+        scream: Boolean = true,
+        spawnCorpse: Boolean = true
+    ) {
         if (!alive) return
 
         alive = false
         ignoreNextInteract = false
         player.gameMode = GameMode.SPECTATOR
+        player.activePotionEffects.forEach { activePotionEffect -> player.removePotionEffect(activePotionEffect.type) }
+
         Shop.clear(this)
 
         var reallyScream = scream
@@ -106,7 +119,8 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
 
             reallyScream = event.scream
         } else {
-            val tttCorpse = TTTCorpse.spawn(this, reason)
+            val tttCorpse = if (spawnCorpse) TTTCorpse.spawn(this, reason) else null
+
             credits = 0
 
             val onlyRemainingRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
@@ -204,7 +218,6 @@ class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TT
         player.level = 0
         player.exp = 0F
         player.allowFlight = player.gameMode == GameMode.CREATIVE
-        player.foodLevel = 20
 
         clearInventory(false)
         tttClassInstance.reset()

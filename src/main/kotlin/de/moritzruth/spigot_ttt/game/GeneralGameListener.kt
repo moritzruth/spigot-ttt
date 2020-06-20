@@ -21,6 +21,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.entity.EntityDamageByBlockEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.PlayerDeathEvent
@@ -82,6 +83,11 @@ object GeneralGameListener : Listener {
                 nextTick { player.noDamageTicks = 0 }
             }
         }
+    }
+
+    @EventHandler
+    fun onEntityDamageByBlock(event: EntityDamageByBlockEvent) {
+        println(event.damager?.type)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

@@ -4,6 +4,7 @@ import de.moritzruth.spigot_ttt.game.GameListener
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.impl.*
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.BaseballBat
+import de.moritzruth.spigot_ttt.game.items.impl.weapons.Fireball
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.Knife
 import de.moritzruth.spigot_ttt.game.items.impl.weapons.guns.*
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
@@ -30,7 +31,7 @@ object ItemManager {
     val ITEMS: Set<TTTItem<*>> = setOf(
         Deagle, Glock, Pistol, Rifle, SidekickDeagle, BaseballBat, Knife, CloakingDevice, Defibrillator,
         EnderPearl, FakeCorpse, Fireball, HealingPotion, MartyrdomGrenade, Radar, SecondChance, Teleporter,
-        Shotgun, Radar, SecondChance, BoomBody
+        Shotgun, Radar, SecondChance, BoomBody, TreeGun
     )
 
     val listeners get () = ITEMS.mapNotNull { it.listener }.plus(listener)

@@ -1,4 +1,4 @@
-package de.moritzruth.spigot_ttt.game.items.impl
+package de.moritzruth.spigot_ttt.game.items.impl.weapons
 
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.ClickEvent
@@ -12,8 +12,6 @@ import de.moritzruth.spigot_ttt.utils.clearHeldItemSlot
 import de.moritzruth.spigot_ttt.utils.createKillExplosion
 import org.bukkit.ChatColor
 import org.bukkit.Material
-import org.bukkit.Sound
-import org.bukkit.SoundCategory
 import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.entity.ExplosionPrimeEvent

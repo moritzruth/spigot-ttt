@@ -41,8 +41,11 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
             it.carrier?.removeItem(it.tttItem, removeInstance = false)
             it.remove()
         }
+
         instancesByUUID.clear()
     }
+
+    open fun onReset() {}
 
     fun createInstance(): InstanceT = instanceType.primaryConstructor!!.call()
         .also { instancesByUUID[it.uuid] = it }

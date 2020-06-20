@@ -2,6 +2,7 @@ package de.moritzruth.spigot_ttt.game.items.impl
 
 import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.GameManager
+import de.moritzruth.spigot_ttt.game.corpses.TTTCorpse
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.items.TTTItemListener
 import de.moritzruth.spigot_ttt.game.players.*
@@ -11,13 +12,13 @@ import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.setAllToItem
 import org.bukkit.ChatColor
-import org.bukkit.Location
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryType
+import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import java.time.Duration
@@ -55,13 +56,13 @@ object SecondChance: TTTItem<SecondChance.Instance>(
         var timeoutAction: TimeoutAction? = null
         lateinit var tttPlayer: TTTPlayer
 
-        fun possiblyTrigger() {
-            if (Random.nextBoolean()) trigger()
+        fun possiblyTrigger(tttCorpse: TTTCorpse?) {
+            if (Random.nextBoolean()) trigger(tttCorpse)
         }
 
-        private fun trigger() {
+        private fun trigger(tttCorpse: TTTCorpse?) {
             preventRoundEnd = true
-            timeoutAction = TimeoutAction(this)
+            timeoutAction = TimeoutAction(this, tttCorpse)
         }
 
         override fun reset() {
@@ -72,8 +73,7 @@ object SecondChance: TTTItem<SecondChance.Instance>(
             tttPlayer = carrier
         }
 
-        class TimeoutAction(private val instance: Instance) {
-            val deathLocation: Location = instance.requireCarrier().player.location
+        class TimeoutAction(private val instance: Instance, val tttCorpse: TTTCorpse?) {
             private val startedAt = Instant.now()!!
             private var bossBar = plugin.server.createBossBar(
                 "${ChatColor.GREEN}${ChatColor.BOLD}Second Chance",
@@ -82,7 +82,13 @@ object SecondChance: TTTItem<SecondChance.Instance>(
             ).also { it.addPlayer(instance.tttPlayer.player) }
 
             init {
-                instance.tttPlayer.player.openInventory(chooseSpawnInventory)
+                openInventory()
+            }
+
+            fun openInventory() {
+                instance.tttPlayer.player.openInventory(
+                    if (tttCorpse == null) chooseSpawnWithoutCorpseInventory else chooseSpawnInventory
+                )
             }
 
             private var task: BukkitTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
@@ -120,6 +126,23 @@ object SecondChance: TTTItem<SecondChance.Instance>(
             setDisplayName("${ChatColor.GREEN}${ChatColor.BOLD}Bei der Leiche")
         })
 
+        setCommonItems()
+    }
+
+    private val chooseSpawnWithoutCorpseInventory = plugin.server.createInventory(
+        null,
+        InventoryType.CHEST,
+        "${ChatColor.DARK_RED}${ChatColor.BOLD}Second Chance"
+    ).apply {
+        setAllToItem(setOf(0, 1, 2, 9, 10, 11, 18, 19, 20), ItemStack(ON_CORPSE).applyMeta {
+            hideInfo()
+            setDisplayName("${ChatColor.GREEN}${ChatColor.BOLD}Bei der Leiche ${ChatColor.RED}(NICHT VERFÜGBAR)")
+        })
+
+        setCommonItems()
+    }
+
+    private fun Inventory.setCommonItems() {
         setAllToItem(setOf(3, 4, 5, 12, 13, 14, 21, 22, 23), ItemStack(Resourcepack.Items.textureless).applyMeta {
             hideInfo()
             setDisplayName("${ChatColor.RESET}${ChatColor.BOLD}Wo möchtest du spawnen?")
@@ -135,16 +158,16 @@ object SecondChance: TTTItem<SecondChance.Instance>(
         @EventHandler
         fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
             val instance = getInstance(event.tttPlayer) ?: return
-            instance.possiblyTrigger()
+            instance.possiblyTrigger(event.tttCorpse)
             event.winnerRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
         }
 
         @EventHandler
         fun onInventoryClose(event: InventoryCloseEvent) {
-            if (event.inventory == chooseSpawnInventory) {
+            if (event.inventory === chooseSpawnInventory || event.inventory === chooseSpawnWithoutCorpseInventory) {
                 nextTick {
                     handleWithInstance(event) { instance ->
-                        instance.tttPlayer.player.openInventory(chooseSpawnInventory)
+                        instance.timeoutAction?.openInventory()
                     }
                 }
             }
@@ -152,14 +175,14 @@ object SecondChance: TTTItem<SecondChance.Instance>(
 
         @EventHandler
         fun onInventoryClick(event: InventoryClickEvent) {
-            if (event.clickedInventory != chooseSpawnInventory) return
+            if (event.inventory !== chooseSpawnInventory && event.inventory !== chooseSpawnWithoutCorpseInventory) return
 
             handleWithInstance(event) { instance ->
                 val timeoutAction = instance.timeoutAction!!
 
                 val location = when (event.currentItem?.type) {
                     ON_SPAWN -> GameManager.world.spawnLocation
-                    ON_CORPSE -> timeoutAction.deathLocation
+                    ON_CORPSE -> timeoutAction.tttCorpse?.location ?: return@handleWithInstance
                     else -> return@handleWithInstance
                 }
 

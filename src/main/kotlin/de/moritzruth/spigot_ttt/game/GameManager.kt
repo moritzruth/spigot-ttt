@@ -97,8 +97,6 @@ object GameManager {
     fun reset() {
         CorpseManager.destroyAll()
         ItemManager.reset()
-        tttWorld?.unload()
-        tttWorld = null
     }
 
     fun abortGame(broadcast: Boolean = false) {

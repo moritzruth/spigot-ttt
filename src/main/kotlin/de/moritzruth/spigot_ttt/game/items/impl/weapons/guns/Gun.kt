@@ -4,10 +4,10 @@ import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.ClickEvent
 import de.moritzruth.spigot_ttt.game.items.LoreHelper
+import de.moritzruth.spigot_ttt.game.items.SpawnProbability
 import de.moritzruth.spigot_ttt.game.items.TTTItem
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
-import de.moritzruth.spigot_ttt.game.items.SpawnProbability
 import de.moritzruth.spigot_ttt.utils.applyMeta
 import de.moritzruth.spigot_ttt.utils.hideInfo
 import de.moritzruth.spigot_ttt.utils.startExpProgressTask

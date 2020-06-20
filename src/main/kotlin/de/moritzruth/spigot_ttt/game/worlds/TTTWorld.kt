@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.game.worlds
 
+import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.ConfigurationFile
 import org.bukkit.World
@@ -21,8 +22,7 @@ class TTTWorld(private val sourceWorldDir: File) {
     val spawnLocations = SpawnLocationsManager(this)
 
     init {
-        if (world != null) unloadWorld()
-        if (worldDir.exists()) worldDir.deleteRecursively()
+        if (world != null) GameManager.tttWorld = this
     }
 
     fun load() {

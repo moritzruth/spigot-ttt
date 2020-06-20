@@ -36,6 +36,7 @@ object Resourcepack {
         // Weapons
         val deagle = Material.IRON_HOE
         val sidekickDeagle = Material.GOLDEN_HOE
+        val treeGun = Material.OAK_SAPLING
         val glock = Material.STONE_HOE
         val pistol = Material.WOODEN_HOE
         val shotgun = Material.IRON_AXE

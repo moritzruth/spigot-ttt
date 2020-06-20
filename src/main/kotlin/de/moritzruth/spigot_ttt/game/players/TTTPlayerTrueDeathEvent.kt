@@ -10,7 +10,7 @@ class TTTPlayerTrueDeathEvent(
     val location: Location,
     val killer: TTTPlayer?,
     val scream: Boolean = true,
-    val tttCorpse: TTTCorpse,
+    val tttCorpse: TTTCorpse?,
     var winnerRoleGroup: RoleGroup? = null
 ): Event() {
     override fun getHandlers(): HandlerList {
