@@ -22,6 +22,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
     implementation("commons-codec:commons-codec:1.14")
+    compileOnly(files("./libs/ArmorEquipEvent-1.7.2.jar"))
     compileOnly("com.comphenix.protocol", "ProtocolLib", "4.5.0")
     compileOnly("org.spigotmc", "spigot-api", "1.15.2-R0.1-SNAPSHOT")
 }

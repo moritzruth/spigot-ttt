@@ -5,6 +5,7 @@ api-version: "1.15"
 main: de.moritzruth.spigot_ttt.TTTPlugin
 depend:
   - ProtocolLib
+  - ArmorEquipEvent
 
 commands:
   voting:

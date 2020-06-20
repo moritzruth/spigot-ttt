@@ -2,4 +2,5 @@
 /.gradle/
 
 *.jar
+!/libs/*.jar
 !gradle-wrapper.jar

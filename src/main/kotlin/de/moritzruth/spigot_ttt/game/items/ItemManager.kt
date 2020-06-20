@@ -1,5 +1,6 @@
 package de.moritzruth.spigot_ttt.game.items
 
+import com.codingforcookies.armorequip.ArmorEquipEvent
 import de.moritzruth.spigot_ttt.game.GameListener
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.items.impl.*
@@ -14,6 +15,7 @@ import de.moritzruth.spigot_ttt.utils.isLeftClick
 import de.moritzruth.spigot_ttt.utils.isRightClick
 import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Item
@@ -83,6 +85,11 @@ object ItemManager {
                     else -> event.isCancelled = true
                 }
             }
+        }
+
+        @EventHandler
+        fun onArmorEquip(event: ArmorEquipEvent) {
+            if (event.player.gameMode != GameMode.CREATIVE) event.isCancelled = true
         }
 
         @EventHandler(ignoreCancelled = true)
