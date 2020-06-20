@@ -16,7 +16,7 @@ fun createKillExplosion(tttPlayer: TTTPlayer, location: Location, radius: Double
         Particle.EXPLOSION_LARGE,
         location,
         10,
-        radius, radius, radius
+        1.0, 1.0, 1.0
     )
 
     GameManager.world.playSound(

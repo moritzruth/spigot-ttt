@@ -21,6 +21,7 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
+import java.util.*
 
 object BoomBody: TTTItem<BoomBody.Instance>(
     type = Type.SPECIAL,
@@ -52,13 +53,14 @@ object BoomBody: TTTItem<BoomBody.Instance>(
         }
     }
 
-    val boomBodies = mutableSetOf<TTTCorpse>()
+    val boomBodies: MutableSet<TTTCorpse> = Collections.newSetFromMap(WeakHashMap<TTTCorpse, Boolean>())
 
     override val listener = object : TTTItemListener<Instance>(this) {
         @EventHandler
         fun onCorpseClick(event: CorpseClickEvent) {
             if (boomBodies.contains(event.tttCorpse)) {
                 boomBodies.remove(event.tttCorpse)
+                event.tttCorpse.destroy()
                 event.isCancelled = true
                 createKillExplosion(event.tttCorpse.spawnedBy!!, event.tttCorpse.location, 5.0)
             }
