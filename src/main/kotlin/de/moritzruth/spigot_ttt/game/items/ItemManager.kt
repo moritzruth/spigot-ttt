@@ -12,15 +12,20 @@ import de.moritzruth.spigot_ttt.game.players.TTTPlayerDeathInPreparingEvent
 import de.moritzruth.spigot_ttt.game.players.TTTPlayerTrueDeathEvent
 import de.moritzruth.spigot_ttt.utils.isLeftClick
 import de.moritzruth.spigot_ttt.utils.isRightClick
+import de.moritzruth.spigot_ttt.utils.nextTick
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.ItemDespawnEvent
+import org.bukkit.event.inventory.ClickType
+import org.bukkit.event.inventory.InventoryAction
+import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
@@ -52,6 +57,34 @@ object ItemManager {
     }
 
     val listener = object : GameListener() {
+        @EventHandler(priority = EventPriority.LOW)
+        fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
+            if (event.click === ClickType.CREATIVE || event.clickedInventory?.holder != event.whoClicked) return@handle
+
+            if (event.slot in 0..8) {
+                // is in hotbar
+                when(event.action) {
+                    InventoryAction.PICKUP_ALL,
+                    InventoryAction.PICKUP_HALF,
+                    InventoryAction.PICKUP_ONE -> {
+                        event.currentItem?.also { itemStack -> getInstanceByItemStack(itemStack)?.isSelected = false }
+                    }
+                    InventoryAction.PLACE_ALL,
+                    InventoryAction.PLACE_SOME,
+                    InventoryAction.PLACE_ONE -> {
+                        nextTick {
+                            if (event.slot == tttPlayer.player.inventory.heldItemSlot) {
+                                tttPlayer.player.inventory.getItem(event.slot)?.also { itemStack ->
+                                    getInstanceByItemStack(itemStack)?.isSelected = true
+                                }
+                            }
+                        }
+                    }
+                    else -> event.isCancelled = true
+                }
+            }
+        }
+
         @EventHandler(ignoreCancelled = true)
         fun onPlayerInteract(event: PlayerInteractEvent) = handle(event) { tttPlayer ->
             if (tttPlayer.ignoreNextInteract) {

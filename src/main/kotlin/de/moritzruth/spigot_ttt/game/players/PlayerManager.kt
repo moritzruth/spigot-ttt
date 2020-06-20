@@ -71,7 +71,7 @@ object PlayerManager {
         } else {
             tttPlayer.player = player
 
-            player.sendMessage("${TTTPlugin.prefix}${ChatColor.RED}Du bist gestorben, da du das Spiel verlassen hast.")
+            player.sendMessage("${TTTPlugin.prefix}${ChatColor.RED}Du bist tot.")
             when(GameManager.phase) {
                 GamePhase.PREPARING -> noop() // Never happens
                 GamePhase.COMBAT -> {

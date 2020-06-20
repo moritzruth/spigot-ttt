@@ -15,7 +15,12 @@ import org.bukkit.event.inventory.InventoryClickEvent
 object ShopListener: GameListener() {
     @EventHandler(ignoreCancelled = true)
     fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
-        if (event.click === ClickType.CREATIVE || event.clickedInventory?.holder != event.whoClicked) return@handle
+        if (
+            event.click === ClickType.CREATIVE ||
+            event.clickedInventory?.holder != event.whoClicked ||
+            event.slot in 0..8
+        ) return@handle
+
         event.isCancelled = true
 
         val itemStack = event.currentItem

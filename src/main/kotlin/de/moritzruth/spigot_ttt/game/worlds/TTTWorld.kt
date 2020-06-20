@@ -22,7 +22,9 @@ class TTTWorld(private val sourceWorldDir: File) {
     val spawnLocations = SpawnLocationsManager(this)
 
     init {
-        if (world != null) GameManager.tttWorld = this
+        if (world == null) {
+            if (worldDir.exists()) worldDir.deleteRecursively()
+        } else GameManager.tttWorld = this
     }
 
     fun load() {
