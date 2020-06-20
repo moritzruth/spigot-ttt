@@ -5,6 +5,7 @@ import de.moritzruth.spigot_ttt.game.GamePhase
 import de.moritzruth.spigot_ttt.game.Timers
 import de.moritzruth.spigot_ttt.game.classes.TTTClass
 import de.moritzruth.spigot_ttt.plugin
+import de.moritzruth.spigot_ttt.utils.surroundWithGraySquareBrackets
 import org.bukkit.ChatColor
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.RenderType
@@ -73,16 +74,19 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
         }
 
         scoreboard.registerNewTeam(SPECIAL_TEAM_NAME).apply {
-            setAllowFriendlyFire(true)
             setCanSeeFriendlyInvisibles(true)
             setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS)
         }
 
-        scoreboard.registerNewTeam(DEFAULT_TEAM_NAME).apply {
-            setAllowFriendlyFire(true)
+        scoreboard.registerNewTeam(DETECTIVE_TEAM_NAME).apply {
+            color = Role.DETECTIVE.chatColor
+            prefix = surroundWithGraySquareBrackets(Role.DETECTIVE.coloredDisplayName) + " "
             setCanSeeFriendlyInvisibles(false)
-            setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS)
-            setOption(Team.Option.DEATH_MESSAGE_VISIBILITY, Team.OptionStatus.NEVER)
+            setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS)
+        }
+
+        scoreboard.registerNewTeam(DEFAULT_TEAM_NAME).apply {
+            setCanSeeFriendlyInvisibles(false)
             setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
         }
 
@@ -125,31 +129,43 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
 
     fun updateTeams() {
         val defaultTeam = scoreboard.getTeam(DEFAULT_TEAM_NAME)!!
-        val phase = GameManager.phase
+        val detectiveTeam = scoreboard.getTeam(DETECTIVE_TEAM_NAME)!!
+        val specialTeam = scoreboard.getTeam(SPECIAL_TEAM_NAME)!!
 
-        if (phase === GamePhase.COMBAT) {
-            if (tttPlayer.role.group == RoleGroup.JACKAL || tttPlayer.role === Role.TRAITOR) {
-                val specialTeam = scoreboard.getTeam(SPECIAL_TEAM_NAME)!!
+        if (GameManager.phase == GamePhase.PREPARING || GameManager.phase == GamePhase.COMBAT ) {
+            defaultTeam.setOption(
+                Team.Option.NAME_TAG_VISIBILITY,
+                Team.OptionStatus.NEVER
+            )
+
+            if (tttPlayer.role.group.knowEachOther) {
                 specialTeam.color = tttPlayer.role.chatColor
+                specialTeam.prefix = surroundWithGraySquareBrackets(tttPlayer.role.coloredDisplayName) + " "
+
                 defaultTeam.color = Role.INNOCENT.chatColor
 
                 PlayerManager.tttPlayers.forEach {
-                    if (RoleGroup.JACKAL.bothAre(tttPlayer, it) ||
-                        RoleGroup.TRAITOR.bothAre(tttPlayer, it)) {
-                        specialTeam.addEntry(it.player.displayName)
-                    } else {
-                        defaultTeam.addEntry(it.player.displayName)
+                    when {
+                        it.role == Role.DETECTIVE -> detectiveTeam.addEntry(it.player.name)
+                        it.role.group == tttPlayer.role.group -> specialTeam.addEntry(it.player.name)
+                        else -> defaultTeam.addEntry(it.player.name)
                     }
                 }
-
-                return
+            } else {
+                PlayerManager.tttPlayers.forEach {
+                    when (it.role) {
+                        Role.DETECTIVE -> detectiveTeam.addEntry(it.player.name)
+                        else -> defaultTeam.addEntry(it.player.name)
+                    }
+                }
             }
-        }
+        } else {
+            PlayerManager.tttPlayers.forEach { defaultTeam.addEntry(it.player.name) }
 
-        defaultTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, if (phase === null) Team.OptionStatus.ALWAYS else Team.OptionStatus.NEVER)
-
-        PlayerManager.tttPlayers.forEach {
-            defaultTeam.addEntry(it.player.displayName)
+            defaultTeam.setOption(
+                Team.Option.NAME_TAG_VISIBILITY,
+                Team.OptionStatus.ALWAYS
+            )
         }
     }
 
@@ -190,6 +206,7 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
     companion object {
         private const val SPECIAL_TEAM_NAME = "special"
         private const val DEFAULT_TEAM_NAME = "default"
+        private const val DETECTIVE_TEAM_NAME = "detective"
         private const val INACTIVE_OBJECTIVE = "1"
         private const val ACTIVE_OBJECTIVE = "2"
         private const val ACTIVE_WITH_CREDITS_OBJECTIVE = "3"

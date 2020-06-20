@@ -5,11 +5,12 @@ import java.util.*
 enum class RoleGroup(
     val primaryRole: Role,
     val additionalRoles: EnumSet<Role> = EnumSet.noneOf(Role::class.java),
-    val canUseTeamChat: Boolean = true
+    val canUseTeamChat: Boolean,
+    val knowEachOther: Boolean
 ) {
-    INNOCENT(Role.INNOCENT, EnumSet.of(Role.DETECTIVE), false),
-    JACKAL(Role.JACKAL, EnumSet.of(Role.SIDEKICK)),
-    TRAITOR(Role.TRAITOR);
+    INNOCENT(Role.INNOCENT, EnumSet.of(Role.DETECTIVE), canUseTeamChat = false, knowEachOther = false),
+    JACKAL(Role.JACKAL, EnumSet.of(Role.SIDEKICK), canUseTeamChat = true, knowEachOther = true),
+    TRAITOR(Role.TRAITOR, canUseTeamChat = true, knowEachOther = true);
 
     fun bothAre(firstTTTPlayer: TTTPlayer, secondTTTPlayer: TTTPlayer) =
         firstTTTPlayer.role.group == this && secondTTTPlayer.role.group == this
