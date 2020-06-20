@@ -122,7 +122,7 @@ object GeneralGameListener : Listener {
     @EventHandler
     fun onPlayerInteract(event: PlayerInteractEvent) {
         if (event.player.inventory.itemInMainHand.type == Material.AIR && event.action == Action.LEFT_CLICK_BLOCK) {
-            GameManager.destroyBlock(event.clickedBlock!!)
+            GameManager.destroyBlockIfAllowed(event.clickedBlock!!)
         }
     }
 

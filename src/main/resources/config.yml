@@ -12,6 +12,7 @@ duration:
   preparing: 20
   combat: 480
   over: 10
+  map-voting: 10
 
 initial-credits: 2
 credits-per-kill: 1

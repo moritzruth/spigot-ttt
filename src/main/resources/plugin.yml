@@ -7,15 +7,20 @@ depend:
   - ProtocolLib
 
 commands:
+  voting:
+    usage: /voting ['cancel']
+    permission: ttt.voting
+    description: Start (or cancel) the map voting
+
   start:
     usage: /start
     permission: ttt.start
-    description: Starts the TTT game
+    description: Start the TTT game
 
   abort:
     usage: /abort
     permission: ttt.abort
-    description: Aborts the TTT game
+    description: Go back to the lobby world and abort the TTT game, if it is running
 
   additemspawn:
     usage: /additemspawn
@@ -23,12 +28,12 @@ commands:
     description: Add an item spawn
 
   revive:
-    usage: /revive [Player] ['here']
+    usage: /revive [player] ['here']
     permission: ttt.revive
     description: Revive yourself or another player at the world spawn or at your location
 
   info:
-    usage: /info [Player]
+    usage: /info [player]
     permission: ttt.info
     description: Show information about all players or a specific player
 
@@ -45,8 +50,3 @@ commands:
     permission: ttt.reload
     aliases:
       - rt
-
-  world:
-    usage: /world load <Name> OR /world <'join'|'save'> <World ID> OR /world list
-    description: Perform world operations
-    permission: ttt.world

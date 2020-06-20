@@ -23,14 +23,14 @@ class ReviveCommand: CommandExecutor {
                 .map { it.player.name }
 
             if (sender is Player) when (index) {
-                1 -> getPlayers().filter { it != sender.name }.run {
+                0 -> getPlayers().filter { it != sender.name }.run {
                     if (TTTPlayer.of(sender)?.alive == false) plus("here")
                     else this
                 }
-                2 -> listOf("here")
+                1 -> listOf("here")
                 else -> null
             } else when (index) {
-                1 -> getPlayers()
+                0 -> getPlayers()
                 else -> null
             }
         }

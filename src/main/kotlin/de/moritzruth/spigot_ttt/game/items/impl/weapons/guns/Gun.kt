@@ -98,7 +98,7 @@ abstract class Gun(
 
             if (rayTraceResult !== null) {
                 val hitBlock = rayTraceResult.hitBlock
-                if (hitBlock != null) GameManager.destroyBlock(hitBlock)
+                if (hitBlock != null) GameManager.destroyBlockIfAllowed(hitBlock)
 
                 val entity = rayTraceResult.hitEntity
 

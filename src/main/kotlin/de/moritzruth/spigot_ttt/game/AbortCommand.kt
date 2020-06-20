@@ -18,10 +18,11 @@ class AbortCommand: CommandExecutor {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (GameManager.phase === null) {
-            sender.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.RED}Zurzeit läuft kein Spiel.")
-        } else {
-            GameManager.abortGame(true)
-        }
+            val tttWorld = GameManager.tttWorld
+            if (tttWorld == null)
+                sender.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.RED}Zurzeit läuft kein Spiel.")
+            else tttWorld.unload()
+        } else GameManager.abortGame(true)
 
         return true
     }

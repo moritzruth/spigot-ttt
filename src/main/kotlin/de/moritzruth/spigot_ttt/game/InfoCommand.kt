@@ -14,7 +14,7 @@ class InfoCommand: CommandExecutor {
     init {
         val command = plugin.getCommand("info")!!
         command.tabCompleter = createTabCompleter { _, index ->
-            if (index == 1) PlayerManager.tttPlayers.map { it.player.name }
+            if (index == 0) PlayerManager.tttPlayers.map { it.player.name }
             else null
         }
         command.setExecutor(this)

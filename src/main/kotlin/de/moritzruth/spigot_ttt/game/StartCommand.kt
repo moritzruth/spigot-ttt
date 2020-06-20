@@ -18,6 +18,13 @@ class StartCommand: CommandExecutor {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (GameManager.phase === null) {
+            if (GameManager.tttWorld == null) {
+                sender.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.RED}Bitte starte zuerst das Map-Voting mit " +
+                        "${ChatColor.WHITE}/voting")
+
+                return true
+            }
+
             try {
                 GameManager.startPreparingPhase()
             } catch (e: PlayerManager.NotEnoughPlayersException) {

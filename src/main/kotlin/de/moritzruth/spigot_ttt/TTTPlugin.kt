@@ -1,7 +1,8 @@
 package de.moritzruth.spigot_ttt
 
 import de.moritzruth.spigot_ttt.game.GameManager
-import de.moritzruth.spigot_ttt.worlds.WorldManager
+import de.moritzruth.spigot_ttt.game.worlds.MapVoting
+import de.moritzruth.spigot_ttt.game.worlds.WorldManager
 import org.bukkit.ChatColor
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -13,8 +14,8 @@ class TTTPlugin: JavaPlugin() {
     override fun onEnable() {
         saveDefaultConfig()
 
-        WorldManager.removeNeglectedWorlds()
-
+        WorldManager.initialize()
+        MapVoting.registerListener()
         CommandManager.initializeCommands()
         GameManager.initialize()
 
@@ -25,7 +26,7 @@ class TTTPlugin: JavaPlugin() {
     }
 
     override fun onDisable() {
-        GameManager.resetWorld()
+        GameManager.reset()
     }
 
     fun broadcast(message: String, withPrefix: Boolean = true) {

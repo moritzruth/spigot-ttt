@@ -8,10 +8,10 @@ fun createTabCompleter(fn: (sender: CommandSender, index: Int) -> List<String>?)
 
 fun createTabCompleter(fn: (sender: CommandSender, index: Int, args: List<String>) -> List<String>?) =
     TabCompleter { sender, _, _, args ->
-        val index = args.count()
+        val index = args.count() - 1
 
         val completions =
-            if (index == 0) emptyList()
+            if (index < 0) emptyList()
             else fn(sender, index, args.toList()) ?: emptyList()
 
         completions.filter { it.startsWith(args.last(), true) }

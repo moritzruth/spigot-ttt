@@ -12,11 +12,15 @@ import de.moritzruth.spigot_ttt.game.items.shop.Shop
 import de.moritzruth.spigot_ttt.game.items.shop.ShopListener
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.game.players.Role
+import de.moritzruth.spigot_ttt.game.worlds.TTTWorld
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
 import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import de.moritzruth.spigot_ttt.utils.teleportToWorldSpawn
-import org.bukkit.*
+import org.bukkit.GameRule
+import org.bukkit.Material
+import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.block.Block
 import kotlin.random.Random
 
@@ -29,9 +33,13 @@ object GameManager {
             ScoreboardHelper.forEveryScoreboard { it.updateEverything(); it.showCorrectSidebarScoreboard() }
         }
 
-    val world = plugin.server.getWorld("world")!!
+    var tttWorld: TTTWorld? = null
+        set(value) {
+            field = value
+            if (value != null) adjustWorld()
+        }
 
-    val destroyedBlocks = mutableMapOf<Location, Material>()
+    val world get() = tttWorld?.world ?: throw IllegalStateException("The world was not set or is not loaded")
 
     private val listeners = ItemManager.listeners
         .plus(GeneralGameListener)
@@ -43,8 +51,6 @@ object GameManager {
         .plus(GeneralGameListener.packetListener)
 
     fun initialize() {
-        adjustWorld()
-
         listeners.forEach { plugin.server.pluginManager.registerEvents(it, plugin) }
         packetListeners.forEach { ProtocolLibrary.getProtocolManager().addPacketListener(it) }
     }
@@ -64,7 +70,7 @@ object GameManager {
             GameEndEvent(false).call()
 
             phase = null
-            resetWorld()
+            reset()
             PlayerManager.resetAfterGame()
         }
 
@@ -92,21 +98,11 @@ object GameManager {
         }
     }
 
-    fun resetWorld() {
+    fun reset() {
         CorpseManager.destroyAll()
         ItemManager.reset()
-
-        destroyedBlocks.forEach { (location, material) ->
-            world.getBlockAt(location).type = material
-        }
-        destroyedBlocks.clear()
-
-        world.run {
-            setStorm(false)
-            time = 0
-            setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
-            setGameRule(GameRule.DO_WEATHER_CYCLE, false)
-        }
+        tttWorld?.unload()
+        tttWorld = null
     }
 
     fun abortGame(broadcast: Boolean = false) {
@@ -115,8 +111,8 @@ object GameManager {
         GameEndEvent(true).call()
         phase = null
         Timers.cancelCurrentTask()
-        resetWorld()
         PlayerManager.resetAfterGame()
+        reset()
 
         if (broadcast) {
             GameMessenger.aborted()
@@ -179,9 +175,8 @@ object GameManager {
         }
     }
 
-    fun destroyBlock(block: Block) {
+    fun destroyBlockIfAllowed(block: Block) {
         if (phase != null && block.type.toString().contains("glass_pane", true)) {
-            destroyedBlocks[block.location] = block.type
             block.type = Material.AIR
             world.playSound(
                 block.location,

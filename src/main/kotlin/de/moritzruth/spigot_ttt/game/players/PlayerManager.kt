@@ -20,7 +20,11 @@ import kotlin.random.Random
 object PlayerManager {
     val tttPlayers = mutableListOf<TTTPlayer>()
 
-    private fun getAvailablePlayers() = plugin.server.onlinePlayers.filter { it.gameMode === GameMode.SURVIVAL }
+    fun isAvailable(player: Player): Boolean {
+        return player.gameMode === GameMode.SURVIVAL
+    }
+
+    fun getAvailablePlayers() = plugin.server.onlinePlayers.filter { isAvailable(it) }
     private fun getStillLivingRoleGroups() = getStillLivingRoles().map { it.group }.toSet()
     private fun getStillLivingRoles() = tttPlayers.filter {
         it.alive || SecondChance.getInstance(it)?.preventRoundEnd == true

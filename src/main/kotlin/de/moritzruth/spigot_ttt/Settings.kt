@@ -13,6 +13,7 @@ object Settings {
     val preparingPhaseDuration get() = plugin.config.getInt("duration.preparing", 20)
     val combatPhaseDuration get() = plugin.config.getInt("duration.combat", 480) // 8 minutes
     val overPhaseDuration get() = plugin.config.getInt("duration.over", 10)
+    val mapVotingDuration get() = plugin.config.getInt("duration.map-voting", 10)
     val initialCredits get() = plugin.config.getInt("initial-credits", 2)
     val creditsPerKill get() = plugin.config.getInt("credits-per-kill", 1)
 }

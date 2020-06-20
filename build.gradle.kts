@@ -21,7 +21,6 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
     implementation("commons-codec:commons-codec:1.14")
     compileOnly("com.comphenix.protocol", "ProtocolLib", "4.5.0")
     compileOnly("org.spigotmc", "spigot-api", "1.15.2-R0.1-SNAPSHOT")
