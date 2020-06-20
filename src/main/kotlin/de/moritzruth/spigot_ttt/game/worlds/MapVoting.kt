@@ -52,24 +52,7 @@ class MapVoting private constructor() {
 
         timerTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
             if (secondsRemaining == 0) {
-                stop()
-                val votedMaps = votes.values
-                val winnerMap =
-                    if (votedMaps.count() == 0) maps.random()
-                    else {
-                        val mapsSortedByVotes = votedMaps.sortedBy { votedMap -> votedMaps.count { it === votedMap } }
-                        mapsSortedByVotes[0]
-                    }
-
-                plugin.broadcast("${ChatColor.GREEN}Ausgewählte Map: " +
-                        winnerMap.config.getString("title"))
-
-                if (winnerMap.world != null) winnerMap.unload()
-                winnerMap.load()
-                GameManager.tttWorld = winnerMap
-                plugin.server.onlinePlayers.forEach {
-                    it.teleport(winnerMap.world!!.spawnLocation)
-                }
+                finish()
             } else {
                 inventory.setItem(26, ItemStack(Material.CLOCK, secondsRemaining).applyMeta {
                     setDisplayName("${ChatColor.GREEN}Verbleibende Zeit: ${ChatColor.WHITE}${secondsRemaining}s")
@@ -84,9 +67,32 @@ class MapVoting private constructor() {
         }
     }
 
+    private fun finish() {
+        stop()
+        val votedMaps = votes.values
+        val winnerMap =
+            if (votedMaps.count() == 0) maps.random()
+            else {
+                val mapsSortedByVotes = votedMaps.sortedBy { votedMap -> votedMaps.count { it === votedMap } }
+                mapsSortedByVotes[0]
+            }
+
+        plugin.broadcast("${ChatColor.GREEN}Ausgewählte Map: " +
+                winnerMap.config.getString("title"))
+
+        if (winnerMap.world != null) winnerMap.unload()
+        winnerMap.load()
+        GameManager.tttWorld = winnerMap
+        plugin.server.onlinePlayers.forEach {
+            it.teleport(winnerMap.world!!.spawnLocation)
+        }
+    }
+
     fun vote(player: Player, map: TTTWorld) {
         votes[player.uniqueId] = map
         inventory.setItem(maps.indexOf(map), createMapItemStack(map))
+
+        if (votes.keys.containsAll(PlayerManager.getAvailablePlayers().map { it.uniqueId })) finish()
     }
 
     fun cancel() {
