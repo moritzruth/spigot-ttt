@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.game.items.impl.weapons.guns
 
 import de.moritzruth.spigot_ttt.Resourcepack
+import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.DeathReason
 import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
@@ -10,6 +11,7 @@ import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.Material
+import org.bukkit.Particle
 import org.bukkit.block.BlockFace
 import org.bukkit.block.Sign
 import org.bukkit.block.data.type.WallSign
@@ -56,6 +58,13 @@ object TreeGun: Gun(
 
     private fun spawnTree(tttPlayer: TTTPlayer) {
         val centerLocation = tttPlayer.player.location
+
+        GameManager.world.spawnParticle(
+            Particle.SPELL_WITCH,
+            centerLocation.clone().add(0.0, 1.0, 0.0),
+            50,
+            0.5, 0.5, 0.5
+        )
 
         for (y in 0..3) {
             centerLocation.clone().add(0.0, y.toDouble(), 0.0).block.type = Material.OAK_WOOD
