@@ -16,11 +16,7 @@ import de.moritzruth.spigot_ttt.game.worlds.TTTWorld
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
 import de.moritzruth.spigot_ttt.utils.heartsToHealth
-import de.moritzruth.spigot_ttt.utils.teleportToWorldSpawn
-import org.bukkit.GameRule
-import org.bukkit.Material
-import org.bukkit.Sound
-import org.bukkit.SoundCategory
+import org.bukkit.*
 import org.bukkit.block.Block
 import kotlin.random.Random
 
@@ -124,6 +120,7 @@ object GameManager {
 
         PlayerManager.createTTTPlayers()
         phase = GamePhase.PREPARING
+        PlayerManager.teleportPlayersToSpawnLocations()
 
         world.run {
             setStorm(Random.nextInt(4) == 1)
@@ -133,7 +130,6 @@ object GameManager {
         }
 
         PlayerManager.tttPlayers.forEach {
-            it.player.teleportToWorldSpawn()
             it.addDefaultClassItems()
             it.player.health = heartsToHealth(10.0)
         }
@@ -160,8 +156,8 @@ object GameManager {
 
             if (it.role.group.canUseTeamChat) {
                 it.player.sendMessage(
-                    "${TTTPlugin.prefix}Schreibe '$TEAM_CHAT_PREFIX' vor deine Nachrichten, um den Team-Chat" +
-                            "zu verwenden.")
+                    "${TTTPlugin.prefix}${ChatColor.GOLD}Schreibe einen Punkt vor deine Nachrichten, um den " +
+                            "Team-Chat zu verwenden.")
             }
         }
 

@@ -22,10 +22,10 @@ commands:
     permission: ttt.abort
     description: Go back to the lobby world and abort the TTT game, if it is running
 
-  additemspawn:
-    usage: /additemspawn
-    permission: ttt.additemspawn
-    description: Add an item spawn
+  addspawnlocation:
+    usage: /addspawnlocation <'item'|'player'>
+    permission: ttt.addspawnlocation
+    description: Add an item or player spawn
 
   revive:
     usage: /revive [player] ['here']

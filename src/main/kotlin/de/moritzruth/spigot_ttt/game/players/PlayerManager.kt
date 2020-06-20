@@ -133,6 +133,16 @@ object PlayerManager {
         playersWithoutRole.forEach { tttPlayers.add(TTTPlayer(it, Role.INNOCENT, classesIterator.next())) }
     }
 
+    fun teleportPlayersToSpawnLocations() {
+        fun createIterator() = GameManager.tttWorld!!.spawnLocations.getPlayerSpawnLocations().shuffled().iterator()
+        var spawnLocationsIterator = createIterator()
+
+        for (tttPlayer in tttPlayers) {
+            if (!spawnLocationsIterator.hasNext()) spawnLocationsIterator = createIterator()
+            tttPlayer.player.teleport(spawnLocationsIterator.next())
+        }
+    }
+
     class NotEnoughPlayersException(
         val actual: Int,
         val required: Int

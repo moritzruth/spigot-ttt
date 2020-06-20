@@ -18,6 +18,7 @@ class TTTWorld(private val sourceWorldDir: File) {
     private val actualWorldName = "${WORLD_PREFIX}${name}"
     private val worldDir = plugin.server.worldContainer.resolve("./$actualWorldName")
     var world: World? = plugin.server.getWorld(actualWorldName); private set
+    val spawnLocations = SpawnLocationsManager(this)
 
     init {
         if (world != null) unloadWorld()

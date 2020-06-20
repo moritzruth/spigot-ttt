@@ -6,5 +6,6 @@ fun Location.roundToCenter() =
     Location(world,
         roundToHalf(x),
         roundToHalf(y),
-        roundToHalf(z)
+        roundToHalf(z),
+        yaw, pitch
     )
