@@ -67,27 +67,6 @@ class MapVoting private constructor() {
         }
     }
 
-    private fun finish() {
-        stop()
-        val votedMaps = votes.values
-        val winnerMap =
-            if (votedMaps.count() == 0) maps.random()
-            else {
-                val mapsSortedByVotes = votedMaps.sortedBy { votedMap -> votedMaps.count { it === votedMap } }
-                mapsSortedByVotes[0]
-            }
-
-        plugin.broadcast("${ChatColor.GREEN}Ausgewählte Map: " +
-                winnerMap.config.getString("title"))
-
-        if (winnerMap.world != null) winnerMap.unload()
-        winnerMap.load()
-        GameManager.tttWorld = winnerMap
-        plugin.server.onlinePlayers.forEach {
-            it.teleport(winnerMap.world!!.spawnLocation)
-        }
-    }
-
     fun vote(player: Player, map: TTTWorld) {
         votes[player.uniqueId] = map
         inventory.setItem(maps.indexOf(map), createMapItemStack(map))
@@ -107,6 +86,24 @@ class MapVoting private constructor() {
         current = null
         PlayerManager.getAvailablePlayers().forEach { removeVoteItem(it) }
         plugin.server.onlinePlayers.forEach { if (it.openInventory.topInventory === inventory) it.closeInventory() }
+    }
+
+    private fun finish(force: TTTWorld? = null) {
+        stop()
+        val winnerMap = force ?: votes.values.let { votedMaps ->
+            if (votedMaps.count() == 0) maps.random()
+            else votedMaps.sortedBy { votedMap -> votedMaps.count { it === votedMap } }[0]
+        }
+
+        plugin.broadcast("${ChatColor.GREEN}Ausgewählte Map: " +
+                winnerMap.config.getString("title"))
+
+        if (winnerMap.world != null) winnerMap.unload()
+        winnerMap.load()
+        GameManager.tttWorld = winnerMap
+        plugin.server.onlinePlayers.forEach {
+            it.teleport(winnerMap.world!!.spawnLocation)
+        }
     }
 
     companion object {
@@ -148,8 +145,10 @@ class MapVoting private constructor() {
                 if (event.clickedInventory != voting.inventory) return
                 event.isCancelled = true
 
-                if (event.click.isLeftClick) {
-                    val map = voting.maps.getOrNull(event.slot) ?: return
+                val map = voting.maps.getOrNull(event.slot) ?: return
+                if (event.isShiftClick && whoClicked.hasPermission("ttt.force-map")) {
+                    voting.finish(force = map)
+                } else if (event.click.isLeftClick) {
                     voting.vote(whoClicked, map)
                 }
             }
