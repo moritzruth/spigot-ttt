@@ -61,12 +61,14 @@ object CloakingDevice: TTTItem<CloakingDevice.Instance>(
                     isSprinting = false
 
                     addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 0, false, false))
+                    addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, 1000000, 128, false, false))
                     playSound(location, Resourcepack.Sounds.Item.CloakingDevice.on, SoundCategory.PLAYERS, 1F, 1F)
                 }
             } else {
                 tttPlayer.walkSpeed += WALK_SPEED_DECREASE
                 tttPlayer.player.apply {
                     removePotionEffect(PotionEffectType.INVISIBILITY)
+                    removePotionEffect(PotionEffectType.LEVITATION)
                     playSound(location, Resourcepack.Sounds.Item.CloakingDevice.off, SoundCategory.PLAYERS, 1F, 1F)
                 }
 

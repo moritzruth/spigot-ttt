@@ -44,12 +44,11 @@ object Radar: TTTItem<Radar.Instance>(
 ) {
     private const val ACTIVE_DURATION = 10
     private const val COOLDOWN_DURATION = 40
-    private val BOSS_BAR_TITLE = "${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar"
 
     class Instance: TTTItem.Instance(Radar) {
         var active: Boolean = true
         private var timestamp = Instant.now()!!
-        private val bossBar = plugin.server.createBossBar(BOSS_BAR_TITLE, BarColor.BLUE, BarStyle.SOLID)
+        private val bossBar = plugin.server.createBossBar(ACTIVE_TITLE, BarColor.BLUE, BarStyle.SOLID)
 
         private var task: BukkitTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
             val duration = Duration.between(timestamp, Instant.now()).toMillis().toDouble() / 1000
@@ -57,7 +56,7 @@ object Radar: TTTItem<Radar.Instance>(
             if (active) {
                 if (duration > ACTIVE_DURATION) {
                     active = false
-                    bossBar.setTitle(BOSS_BAR_TITLE + "${ChatColor.WHITE} - ${ChatColor.GRAY}Cooldown")
+                    bossBar.setTitle(COOLDOWN_TITLE)
                     carrier?.let { resendEntityMetadata(it) }
                     timestamp = Instant.now()
                 } else {
@@ -66,7 +65,7 @@ object Radar: TTTItem<Radar.Instance>(
             } else {
                 if (duration > COOLDOWN_DURATION) {
                     active = true
-                    bossBar.setTitle(BOSS_BAR_TITLE + "${ChatColor.WHITE} - ${ChatColor.GREEN}Aktiv")
+                    bossBar.setTitle(ACTIVE_TITLE)
                     carrier?.let { resendEntityMetadata(it) }
                     timestamp = Instant.now()
                 } else {
@@ -89,6 +88,12 @@ object Radar: TTTItem<Radar.Instance>(
             task.cancel()
             active = false
             carrier?.let { resendEntityMetadata(it) }
+        }
+
+        companion object {
+            private val BOSS_BAR_TITLE = "${ChatColor.DARK_AQUA}${ChatColor.BOLD}Radar"
+            private val ACTIVE_TITLE = BOSS_BAR_TITLE + "${ChatColor.WHITE} - ${ChatColor.GREEN}Aktiv"
+            private val COOLDOWN_TITLE = BOSS_BAR_TITLE + "${ChatColor.WHITE} - ${ChatColor.GRAY}Cooldown"
         }
     }
 
