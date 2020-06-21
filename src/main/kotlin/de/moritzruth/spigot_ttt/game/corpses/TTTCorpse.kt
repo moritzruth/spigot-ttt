@@ -8,14 +8,17 @@ import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.players.TTTPlayer
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.applyMeta
+import de.moritzruth.spigot_ttt.utils.applyTypedMeta
 import de.moritzruth.spigot_ttt.utils.secondsToTicks
 import de.moritzruth.spigot_ttt.utils.sendActionBarMessage
 import org.bukkit.ChatColor
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Zombie
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.scheduler.BukkitTask
 import org.bukkit.util.Vector
 import java.time.Instant
@@ -59,6 +62,12 @@ class TTTCorpse private constructor(
             removeWhenFarAway = false
             isBaby = false
             isCollidable = false
+        }
+
+        entity.equipment!!.helmet = ItemStack(Material.PLAYER_HEAD).applyTypedMeta<SkullMeta> {
+            // Question mark head
+            @Suppress("DEPRECATION")
+            owner = "MHF_question"
         }
 
         updateTimeTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
@@ -120,10 +129,14 @@ class TTTCorpse private constructor(
             setItems()
         }
 
+        entity.equipment!!.helmet = ItemStack(Material.PLAYER_HEAD).applyTypedMeta<SkullMeta> {
+            owningPlayer = tttPlayer.player
+        }
+
         if (credits != 0 && by.role.canOwnCredits) {
             val c = credits
             credits = 0
-            by.credits += c
+            by.credits += credits
 
             by.player.sendActionBarMessage(
                 if (c > 1) "${ChatColor.GREEN}Du hast $c Credits aufgesammelt"
