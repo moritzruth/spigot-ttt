@@ -57,31 +57,33 @@ object BaseballBat: TTTItem<BaseballBat.Instance>(
         }
     }
 
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler(ignoreCancelled = true)
-        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) = handle(event) { tttPlayer, _ ->
-            event.isCancelled = true
-            if (event.damage != 1.0) return@handle // Cooldown on weapon
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler(ignoreCancelled = true)
+            fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) = handle(event) { tttPlayer, _ ->
+                event.isCancelled = true
+                if (event.damage != 1.0) return@handle // Cooldown on weapon
 
-            val damagedPlayer = event.entity as Player
-            val distance = tttPlayer.player.location.distance(damagedPlayer.location)
+                val damagedPlayer = event.entity as Player
+                val distance = tttPlayer.player.location.distance(damagedPlayer.location)
 
-            if (distance < 2.5) {
-                tttPlayer.removeItem(BaseballBat)
+                if (distance < 2.5) {
+                    tttPlayer.removeItem(BaseballBat)
 
-                GameManager.world.playSound(
-                    damagedPlayer.location,
-                    Resourcepack.Sounds.Item.Weapon.BaseballBat.hit,
-                    SoundCategory.PLAYERS,
-                    1F,
-                    1F
-                )
+                    GameManager.world.playSound(
+                        damagedPlayer.location,
+                        Resourcepack.Sounds.Item.Weapon.BaseballBat.hit,
+                        SoundCategory.PLAYERS,
+                        1F,
+                        1F
+                    )
 
-                event.damage = 0.0
+                    event.damage = 0.0
 
-                val direction = tttPlayer.player.location.direction
-                damagedPlayer.velocity = Vector(direction.x * 5, 8.0, direction.z * 5)
+                    val direction = tttPlayer.player.location.direction
+                    damagedPlayer.velocity = Vector(direction.x * 5, 8.0, direction.z * 5)
+                }
             }
-        }
+        })
     }
 }

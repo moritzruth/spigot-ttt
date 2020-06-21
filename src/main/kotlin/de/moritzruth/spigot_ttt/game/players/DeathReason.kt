@@ -10,5 +10,6 @@ sealed class DeathReason(val displayText: String) {
     object DROWNED: DeathReason("Ertrunken")
     object FIRE: DeathReason("Verbrannt")
     object POISON: DeathReason("Vergiftet")
+    object BEE: DeathReason("Zu Tode gestochen")
     class Item(val item: TTTItem<*>): DeathReason("Getötet mit: ${item.templateItemStack.itemMeta!!.displayName}")
 }

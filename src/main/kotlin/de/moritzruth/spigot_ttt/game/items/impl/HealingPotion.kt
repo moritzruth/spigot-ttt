@@ -39,13 +39,15 @@ object HealingPotion: TTTItem<HealingPotion.Instance>(
         buyLimit = 2
     )
 ) {
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler
-        fun onPlayerItemConsume(event: PlayerItemConsumeEvent) = handle(event) {
-            event.isCancelled = true
-            event.player.inventory.clear(event.player.inventory.indexOf(event.item))
-            event.player.health = event.player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: 100.0
-        }
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler
+            fun onPlayerItemConsume(event: PlayerItemConsumeEvent) = handle(event) {
+                event.isCancelled = true
+                event.player.inventory.clear(event.player.inventory.indexOf(event.item))
+                event.player.health = event.player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: 100.0
+            }
+        })
     }
 
     class Instance: TTTItem.Instance(HealingPotion)

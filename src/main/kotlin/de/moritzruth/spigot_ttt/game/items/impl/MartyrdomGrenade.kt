@@ -47,24 +47,26 @@ object MartyrdomGrenade: TTTItem<MartyrdomGrenade.Instance>(
         }
     }
 
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler
-        fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
-            val instance = getInstance(event.tttPlayer) ?: return
-            instance.tttPlayer = event.tttPlayer
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler
+            fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
+                val instance = getInstance(event.tttPlayer) ?: return
+                instance.tttPlayer = event.tttPlayer
 
-            instance.explodeTask = plugin.server.scheduler.runTaskLater(plugin, fun() {
-                GameManager.world.playSound(
-                    event.location,
-                    Resourcepack.Sounds.grenadeExplode,
-                    SoundCategory.PLAYERS,
-                    1F,
-                    1F
-                )
+                instance.explodeTask = plugin.server.scheduler.runTaskLater(plugin, fun() {
+                    GameManager.world.playSound(
+                        event.location,
+                        Resourcepack.Sounds.grenadeExplode,
+                        SoundCategory.PLAYERS,
+                        1F,
+                        1F
+                    )
 
-                createKillExplosion(event.tttPlayer, event.location, 5.0)
-                instance.remove()
-            }, secondsToTicks(3).toLong())
-        }
+                    createKillExplosion(event.tttPlayer, event.location, 5.0)
+                    instance.remove()
+                }, secondsToTicks(3).toLong())
+            }
+        })
     }
 }

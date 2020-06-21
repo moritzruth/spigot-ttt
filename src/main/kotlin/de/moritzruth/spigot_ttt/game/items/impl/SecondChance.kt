@@ -155,44 +155,46 @@ object SecondChance: TTTItem<SecondChance.Instance>(
         })
     }
 
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler
-        fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
-            val instance = getInstance(event.tttPlayer) ?: return
-            instance.possiblyTrigger(event.tttCorpse)
-            event.winnerRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
-        }
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler
+            fun onTTTPlayerTrueDeath(event: TTTPlayerTrueDeathEvent) {
+                val instance = getInstance(event.tttPlayer) ?: return
+                instance.possiblyTrigger(event.tttCorpse)
+                event.winnerRoleGroup = PlayerManager.getOnlyRemainingRoleGroup()
+            }
 
-        @EventHandler
-        fun onInventoryClose(event: InventoryCloseEvent) {
-            if (event.inventory === chooseSpawnInventory || event.inventory === chooseSpawnWithoutCorpseInventory) {
-                nextTick {
-                    handleWithInstance(event) { instance ->
-                        instance.timeoutAction?.openInventory()
+            @EventHandler
+            fun onInventoryClose(event: InventoryCloseEvent) {
+                if (event.inventory === chooseSpawnInventory || event.inventory === chooseSpawnWithoutCorpseInventory) {
+                    nextTick {
+                        handleWithInstance(event) { instance ->
+                            instance.timeoutAction?.openInventory()
+                        }
                     }
                 }
             }
-        }
 
-        @EventHandler
-        fun onInventoryClick(event: InventoryClickEvent) {
-            if (event.inventory !== chooseSpawnInventory && event.inventory !== chooseSpawnWithoutCorpseInventory) return
+            @EventHandler
+            fun onInventoryClick(event: InventoryClickEvent) {
+                if (event.inventory !== chooseSpawnInventory && event.inventory !== chooseSpawnWithoutCorpseInventory) return
 
-            handleWithInstance(event) { instance ->
-                val timeoutAction = instance.timeoutAction!!
+                handleWithInstance(event) { instance ->
+                    val timeoutAction = instance.timeoutAction!!
 
-                val location = when (event.currentItem?.type) {
-                    ON_SPAWN -> GameManager.world.spawnLocation
-                    ON_CORPSE -> timeoutAction.tttCorpse?.location ?: return@handleWithInstance
-                    else -> return@handleWithInstance
+                    val location = when (event.currentItem?.type) {
+                        ON_SPAWN -> GameManager.world.spawnLocation
+                        ON_CORPSE -> timeoutAction.tttCorpse?.location ?: return@handleWithInstance
+                        else -> return@handleWithInstance
+                    }
+
+                    timeoutAction.stop()
+                    instance.tttPlayer.revive(location)
                 }
-
-                timeoutAction.stop()
-                instance.tttPlayer.revive(location)
             }
-        }
 
-        @EventHandler
-        fun onTTTPlayerRevive(event: TTTPlayerReviveEvent) = handle(event) { it.timeoutAction?.stop() }
+            @EventHandler
+            fun onTTTPlayerRevive(event: TTTPlayerReviveEvent) = handle(event) { it.timeoutAction?.stop() }
+        })
     }
 }

@@ -48,42 +48,44 @@ object Knife: TTTItem<Knife.Instance>(
 ) {
     class Instance: TTTItem.Instance(Knife)
 
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler(ignoreCancelled = true)
-        fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) = handle(event) { damagerTTTPlayer, damagedTTTPlayer ->
-            event.isCancelled = true
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler(ignoreCancelled = true)
+            fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) = handle(event) { damagerTTTPlayer, damagedTTTPlayer ->
+                event.isCancelled = true
 
-            if (event.damage == 1.0) {
-                val distance = damagerTTTPlayer.player.location.distance(damagedTTTPlayer.player.location)
+                if (event.damage == 1.0) {
+                    val distance = damagerTTTPlayer.player.location.distance(damagedTTTPlayer.player.location)
 
-                if (distance <= 1.5) {
-                    damagedTTTPlayer.damage(
-                        1000.0,
-                        DeathReason.Item(Knife),
-                        damagerTTTPlayer,
-                        false
-                    )
+                    if (distance <= 1.5) {
+                        damagedTTTPlayer.damage(
+                            1000.0,
+                            DeathReason.Item(Knife),
+                            damagerTTTPlayer,
+                            false
+                        )
 
-                    GameManager.world.playSound(
-                        damagedTTTPlayer.player.location,
-                        Resourcepack.Sounds.Item.Weapon.Knife.hit,
-                        SoundCategory.PLAYERS,
-                        1F,
-                        1F
-                    )
+                        GameManager.world.playSound(
+                            damagedTTTPlayer.player.location,
+                            Resourcepack.Sounds.Item.Weapon.Knife.hit,
+                            SoundCategory.PLAYERS,
+                            1F,
+                            1F
+                        )
 
-                    damagerTTTPlayer.player.playSound(
-                        damagerTTTPlayer.player.location,
-                        Sound.ENTITY_ITEM_BREAK,
-                        SoundCategory.PLAYERS,
-                        1F,
-                        1F
-                    )
+                        damagerTTTPlayer.player.playSound(
+                            damagerTTTPlayer.player.location,
+                            Sound.ENTITY_ITEM_BREAK,
+                            SoundCategory.PLAYERS,
+                            1F,
+                            1F
+                        )
 
-                    damagerTTTPlayer.removeItem(Knife)
+                        damagerTTTPlayer.removeItem(Knife)
+                    }
                 }
             }
-        }
+        })
     }
 }
 

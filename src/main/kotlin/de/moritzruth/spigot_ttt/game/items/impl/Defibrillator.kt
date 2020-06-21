@@ -65,37 +65,39 @@ object Defibrillator: TTTItem<Defibrillator.Instance>(
         it.stopSound(Resourcepack.Sounds.Item.Defibrillator.use, SoundCategory.PLAYERS)
     }
 
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler(ignoreCancelled = true)
-        fun onCorpseClick(event: CorpseClickEvent) {
-            val instance = getInstance(event.tttPlayer.player.inventory.itemInMainHand) ?: return
-            event.isCancelled = true
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler(ignoreCancelled = true)
+            fun onCorpseClick(event: CorpseClickEvent) {
+                val instance = getInstance(event.tttPlayer.player.inventory.itemInMainHand) ?: return
+                event.isCancelled = true
 
-            when(val action = instance.action) {
-                null -> instance.action = Action.Reviving(event.tttPlayer, instance)
-                is Action.Reviving -> {
-                    action.cancelTask.cancel()
-                    action.cancelTask = action.createCancelTask()
+                when(val action = instance.action) {
+                    null -> instance.action = Action.Reviving(event.tttPlayer, instance)
+                    is Action.Reviving -> {
+                        action.cancelTask.cancel()
+                        action.cancelTask = action.createCancelTask()
 
-                    val progress = action.duration / REVIVE_DURATION
-                    if (progress >= 1) {
-                        try {
-                            event.tttCorpse.revive()
-                            event.tttPlayer.player.sendActionBarMessage(
-                                "${ChatColor.BOLD}${event.tttCorpse.tttPlayer.player.displayName} " +
-                                        "${ChatColor.GREEN}wurde wiederbelebt"
-                            )
+                        val progress = action.duration / REVIVE_DURATION
+                        if (progress >= 1) {
+                            try {
+                                event.tttCorpse.revive()
+                                event.tttPlayer.player.sendActionBarMessage(
+                                    "${ChatColor.BOLD}${event.tttCorpse.tttPlayer.player.displayName} " +
+                                            "${ChatColor.GREEN}wurde wiederbelebt"
+                                )
 
-                            action.cancelTask.cancel()
-                            event.tttPlayer.removeItem(Defibrillator)
-                        } catch(e: TTTPlayer.AlreadyLivingException) {
-                            action.cancel()
-                        }
-                    } else instance.bossBar.progress = progress
+                                action.cancelTask.cancel()
+                                event.tttPlayer.removeItem(Defibrillator)
+                            } catch(e: TTTPlayer.AlreadyLivingException) {
+                                action.cancel()
+                            }
+                        } else instance.bossBar.progress = progress
+                    }
+                    is Action.Canceled -> noop()
                 }
-                is Action.Canceled -> noop()
             }
-        }
+        })
     }
 
     sealed class Action(val tttPlayer: TTTPlayer) {

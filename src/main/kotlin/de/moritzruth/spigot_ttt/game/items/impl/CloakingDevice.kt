@@ -81,10 +81,12 @@ object CloakingDevice: TTTItem<CloakingDevice.Instance>(
         }
     }
 
-    override val listener = object : TTTItemListener<Instance>(CloakingDevice) {
-        @EventHandler
-        fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) = handleWithInstance(event) { instance ->
-            if (event.isSprinting && instance.enabled) event.isCancelled = true
-        }
+    init {
+        addListener(object : TTTItemListener<Instance>(CloakingDevice) {
+            @EventHandler
+            fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) = handleWithInstance(event) { instance ->
+                if (event.isSprinting && instance.enabled) event.isCancelled = true
+            }
+        })
     }
 }

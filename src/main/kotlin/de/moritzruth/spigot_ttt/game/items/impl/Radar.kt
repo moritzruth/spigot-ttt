@@ -106,27 +106,29 @@ object Radar: TTTItem<Radar.Instance>(
         }
     }
 
-    override val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {
-        override fun onPacketSending(event: PacketEvent) {
-            val receivingTTTPlayer = TTTPlayer.of(event.player) ?: return
+    init {
+        addListener(object : PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA) {
+            override fun onPacketSending(event: PacketEvent) {
+                val receivingTTTPlayer = TTTPlayer.of(event.player) ?: return
 
-            val packet = WrapperPlayServerEntityMetadata(event.packet)
-            val tttPlayerOfPacket = plugin.server.onlinePlayers
-                .find { it.entityId == packet.entityID }
-                ?.let { TTTPlayer.of(it) } ?: return
-            val instance = getInstance(receivingTTTPlayer) ?: return
+                val packet = WrapperPlayServerEntityMetadata(event.packet)
+                val tttPlayerOfPacket = plugin.server.onlinePlayers
+                    .find { it.entityId == packet.entityID }
+                    ?.let { TTTPlayer.of(it) } ?: return
+                val instance = getInstance(receivingTTTPlayer) ?: return
 
-            if (tttPlayerOfPacket.alive) {
-                // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
-                try {
-                    val modifiers = packet.metadata[0].value as Byte
-                    packet.metadata[0].value =
-                        if (instance.active) modifiers or 0x40.toByte()
-                        else modifiers and 0b10111111.toByte()
-                } catch (ignored: Exception) {
-                    // Idk why this throws exceptions, but it works anyways
+                if (tttPlayerOfPacket.alive) {
+                    // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
+                    try {
+                        val modifiers = packet.metadata[0].value as Byte
+                        packet.metadata[0].value =
+                            if (instance.active) modifiers or 0x40.toByte()
+                            else modifiers and 0b10111111.toByte()
+                    } catch (ignored: Exception) {
+                        // Idk why this throws exceptions, but it works anyways
+                    }
                 }
             }
-        }
+        })
     }
 }

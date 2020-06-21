@@ -55,52 +55,54 @@ object BoomBody: TTTItem<BoomBody.Instance>(
 
     val boomBodies: MutableSet<TTTCorpse> = Collections.newSetFromMap(WeakHashMap<TTTCorpse, Boolean>())
 
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler
-        fun onCorpseClick(event: CorpseClickEvent) {
-            if (boomBodies.contains(event.tttCorpse)) {
-                boomBodies.remove(event.tttCorpse)
-                event.tttCorpse.destroy()
-                event.isCancelled = true
-                createKillExplosion(event.tttCorpse.spawnedBy!!, event.tttCorpse.location, 5.0)
-            }
-        }
-
-        @EventHandler
-        fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
-            val instance = getInstance(tttPlayer) ?: return@handle
-            if (event.clickedInventory !== instance.choosePlayerInventory) return@handle
-
-            event.isCancelled = true
-
-            val item = event.currentItem
-            if (item != null && event.click == ClickType.LEFT) {
-                tttPlayer.player.closeInventory()
-
-                val corpsePlayer = plugin.server.getPlayer((item.itemMeta as SkullMeta).owningPlayer!!.uniqueId)!!
-                val corpseTTTPlayer = TTTPlayer.of(corpsePlayer)
-
-                if (corpseTTTPlayer == null) {
-                    tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Das hat nicht funktioniert")
-                } else {
-                    GameManager.world.playSound(
-                        tttPlayer.player.location,
-                        Resourcepack.Sounds.playerDeath,
-                        SoundCategory.PLAYERS,
-                        1F,
-                        1F
-                    )
-
-                    boomBodies.add(TTTCorpse.spawnFake(
-                        Role.INNOCENT,
-                        corpseTTTPlayer,
-                        tttPlayer,
-                        tttPlayer.player.location
-                    ))
-
-                    tttPlayer.removeItem(BoomBody)
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler
+            fun onCorpseClick(event: CorpseClickEvent) {
+                if (boomBodies.contains(event.tttCorpse)) {
+                    boomBodies.remove(event.tttCorpse)
+                    event.tttCorpse.destroy()
+                    event.isCancelled = true
+                    createKillExplosion(event.tttCorpse.spawnedBy!!, event.tttCorpse.location, 5.0)
                 }
             }
-        }
+
+            @EventHandler
+            fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
+                val instance = getInstance(tttPlayer) ?: return@handle
+                if (event.clickedInventory !== instance.choosePlayerInventory) return@handle
+
+                event.isCancelled = true
+
+                val item = event.currentItem
+                if (item != null && event.click == ClickType.LEFT) {
+                    tttPlayer.player.closeInventory()
+
+                    val corpsePlayer = plugin.server.getPlayer((item.itemMeta as SkullMeta).owningPlayer!!.uniqueId)!!
+                    val corpseTTTPlayer = TTTPlayer.of(corpsePlayer)
+
+                    if (corpseTTTPlayer == null) {
+                        tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Das hat nicht funktioniert")
+                    } else {
+                        GameManager.world.playSound(
+                            tttPlayer.player.location,
+                            Resourcepack.Sounds.playerDeath,
+                            SoundCategory.PLAYERS,
+                            1F,
+                            1F
+                        )
+
+                        boomBodies.add(TTTCorpse.spawnFake(
+                            Role.INNOCENT,
+                            corpseTTTPlayer,
+                            tttPlayer,
+                            tttPlayer.player.location
+                        ))
+
+                        tttPlayer.removeItem(BoomBody)
+                    }
+                }
+            }
+        })
     }
 }

@@ -55,9 +55,9 @@ object GeneralGameListener : Listener {
 
     @EventHandler
     fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-        val player = event.damager
-        if (player is Player) {
-            if (player.inventory.itemInMainHand.type == Material.AIR) {
+        val damager = event.damager
+        if (damager is Player) {
+            if (damager.inventory.itemInMainHand.type == Material.AIR) {
                 event.damage = 0.2
             }
         }
@@ -77,9 +77,9 @@ object GeneralGameListener : Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     fun onEntityDamageLow(event: EntityDamageEvent) {
         if (ZERO_NO_DAMAGE_TICKS_CAUSES.contains(event.cause)) {
-            val player = event.entity
-            if (player is Player) {
-                nextTick { player.noDamageTicks = 0 }
+            val entity = event.entity
+            if (entity is Player) {
+                nextTick { entity.noDamageTicks = 0 }
             }
         }
     }

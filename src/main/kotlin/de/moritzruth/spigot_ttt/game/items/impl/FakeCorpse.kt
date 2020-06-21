@@ -69,61 +69,63 @@ object FakeCorpse: TTTItem<FakeCorpse.Instance>(
             .toTypedArray())
     }
 
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler
-        fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
-            val instance = getInstance(tttPlayer) ?: return@handle
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler
+            fun onInventoryClick(event: InventoryClickEvent) = handle(event) { tttPlayer ->
+                val instance = getInstance(tttPlayer) ?: return@handle
 
-            if (
-                !setOf(
-                    instance.choosePlayerInventory,
-                    chooseRoleInventory
-                ).contains(event.clickedInventory)
-            ) return@handle
-            event.isCancelled = true
+                if (
+                    !setOf(
+                        instance.choosePlayerInventory,
+                        chooseRoleInventory
+                    ).contains(event.clickedInventory)
+                ) return@handle
+                event.isCancelled = true
 
-            val item = event.currentItem
+                val item = event.currentItem
 
-            if (item != null && event.click == ClickType.LEFT) {
-                when (event.clickedInventory) {
-                    chooseRoleInventory -> {
-                        instance.chosenRole = Role.values()[event.slot]
-                        val choosePlayerInventory = createPlayerHeadInventory(
-                            "${INVENTORY_TITLE}${ChatColor.RESET} - Spieler",
-                            PlayerManager.tttPlayers.map { it.player }
-                        )
-                        instance.choosePlayerInventory = choosePlayerInventory
-                        tttPlayer.player.openInventory(choosePlayerInventory)
-                    }
-                    instance.choosePlayerInventory -> {
-                        tttPlayer.player.closeInventory()
-
-                        val corpsePlayer = plugin.server.getPlayer((item.itemMeta as SkullMeta).owningPlayer!!.uniqueId)!!
-                        val corpseTTTPlayer = TTTPlayer.of(corpsePlayer)
-
-                        if (corpseTTTPlayer == null) {
-                            tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Das hat nicht funktioniert")
-                        } else {
-                            GameManager.world.playSound(
-                                tttPlayer.player.location,
-                                Resourcepack.Sounds.playerDeath,
-                                SoundCategory.PLAYERS,
-                                1F,
-                                1F
+                if (item != null && event.click == ClickType.LEFT) {
+                    when (event.clickedInventory) {
+                        chooseRoleInventory -> {
+                            instance.chosenRole = Role.values()[event.slot]
+                            val choosePlayerInventory = createPlayerHeadInventory(
+                                "${INVENTORY_TITLE}${ChatColor.RESET} - Spieler",
+                                PlayerManager.tttPlayers.map { it.player }
                             )
+                            instance.choosePlayerInventory = choosePlayerInventory
+                            tttPlayer.player.openInventory(choosePlayerInventory)
+                        }
+                        instance.choosePlayerInventory -> {
+                            tttPlayer.player.closeInventory()
 
-                            TTTCorpse.spawnFake(
-                                instance.chosenRole!!,
-                                corpseTTTPlayer,
-                                tttPlayer,
-                                tttPlayer.player.location
-                            )
+                            val corpsePlayer = plugin.server.getPlayer((item.itemMeta as SkullMeta).owningPlayer!!.uniqueId)!!
+                            val corpseTTTPlayer = TTTPlayer.of(corpsePlayer)
 
-                            tttPlayer.removeItem(FakeCorpse)
+                            if (corpseTTTPlayer == null) {
+                                tttPlayer.player.sendActionBarMessage("${ChatColor.RED}Das hat nicht funktioniert")
+                            } else {
+                                GameManager.world.playSound(
+                                    tttPlayer.player.location,
+                                    Resourcepack.Sounds.playerDeath,
+                                    SoundCategory.PLAYERS,
+                                    1F,
+                                    1F
+                                )
+
+                                TTTCorpse.spawnFake(
+                                    instance.chosenRole!!,
+                                    corpseTTTPlayer,
+                                    tttPlayer,
+                                    tttPlayer.player.location
+                                )
+
+                                tttPlayer.removeItem(FakeCorpse)
+                            }
                         }
                     }
                 }
             }
-        }
+        })
     }
 }

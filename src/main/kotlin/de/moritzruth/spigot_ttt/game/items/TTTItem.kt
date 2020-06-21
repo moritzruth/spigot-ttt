@@ -24,8 +24,16 @@ open class TTTItem<InstanceT: TTTItem.Instance>(
     val disableDamage: Boolean = true,
     val removeInstanceOnDeath: Boolean = true
 ) {
-    open val listener: Listener? = null
-    open val packetListener: PacketListener? = null
+    var listeners: Set<Listener> = emptySet(); private set
+    var packetListeners: Set<PacketListener> = emptySet(); private set
+
+    protected fun addListener(listener: Listener) {
+        listeners = listeners + listener
+    }
+
+    protected fun addListener(packetListener: PacketListener) {
+        packetListeners = packetListeners + packetListener
+    }
 
     val material = templateItemStack.type
 

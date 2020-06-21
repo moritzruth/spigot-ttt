@@ -53,16 +53,18 @@ object Fireball: TTTItem<Fireball.Instance>(
 
     val sendersByEntity = WeakHashMap<FireballEntity, TTTPlayer>()
 
-    override val listener = object : TTTItemListener<Instance>(this) {
-        @EventHandler
-        fun onExplosionPrime(event: ExplosionPrimeEvent) {
-            val sender = sendersByEntity[event.entity]
+    init {
+        addListener(object : TTTItemListener<Instance>(this) {
+            @EventHandler
+            fun onExplosionPrime(event: ExplosionPrimeEvent) {
+                val sender = sendersByEntity[event.entity]
 
-            if (sender != null) {
-                event.isCancelled = true
+                if (sender != null) {
+                    event.isCancelled = true
 
-                createKillExplosion(sender, event.entity.location, 2.5)
+                    createKillExplosion(sender, event.entity.location, 2.5)
+                }
             }
-        }
+        })
     }
 }

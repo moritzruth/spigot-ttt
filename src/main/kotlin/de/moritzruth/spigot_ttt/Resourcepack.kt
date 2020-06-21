@@ -32,6 +32,7 @@ object Resourcepack {
         val boomBody = Material.BIRCH_WOOD
         val defibrillator = Material.IRON_INGOT
         val secondChance = Material.GOLD_INGOT
+        val beeBomb = Material.BEEHIVE
 
         // Weapons
         val deagle = Material.IRON_HOE
