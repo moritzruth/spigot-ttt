@@ -36,7 +36,7 @@ object CorpseListener: Listener {
 
         if (
             Duration.between(tttCorpse.timestamp, Instant.now()).toMillis() < 200 ||
-                    event.player.location.distance(tttCorpse.location) > 1.5
+                    event.player.location.distance(tttCorpse.location) > 2.0
         ) return
 
         if (event.player.inventory.itemInMainHand.type != Material.AIR)

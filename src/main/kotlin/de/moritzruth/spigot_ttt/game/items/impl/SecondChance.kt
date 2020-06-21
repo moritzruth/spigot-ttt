@@ -99,6 +99,7 @@ object SecondChance: TTTItem<SecondChance.Instance>(
             }, 0, 1)
 
             private fun onTimeout() {
+                instance.preventRoundEnd = false
                 try {
                     PlayerManager.letRemainingRoleGroupWin()
                 } catch (e: IllegalStateException) {}
