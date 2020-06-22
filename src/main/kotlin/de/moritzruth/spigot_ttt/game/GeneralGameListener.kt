@@ -186,6 +186,7 @@ object GeneralGameListener : Listener {
 
     val packetListener = object : PacketAdapter(plugin, PacketType.Play.Server.PLAYER_INFO) {
         override fun onPacketSending(event: PacketEvent) {
+            val receivingTTTPlayer = TTTPlayer.of(event.player) ?: return
             val packet = WrapperPlayServerPlayerInfo(event.packet)
 
             if (
@@ -196,15 +197,23 @@ object GeneralGameListener : Listener {
                     val tttPlayer = PlayerManager.tttPlayers.find { it.player.uniqueId == info.profile.uuid }
 
                     if (tttPlayer == null) info
-                    else PlayerInfoData(
-                        info.profile,
-                        info.latency,
-                        if (event.player.uniqueId == info.profile.uuid) {
-                            if (event.player.gameMode == GameMode.SPECTATOR) EnumWrappers.NativeGameMode.SPECTATOR
-                            else EnumWrappers.NativeGameMode.SURVIVAL
-                        } else EnumWrappers.NativeGameMode.SURVIVAL,
-                        info.displayName
-                    )
+                    else {
+                        val nativeGameMode = when {
+                            event.player.uniqueId == info.profile.uuid -> {
+                                if (event.player.gameMode == GameMode.SPECTATOR) EnumWrappers.NativeGameMode.SPECTATOR
+                                else EnumWrappers.NativeGameMode.SURVIVAL
+                            }
+                            !receivingTTTPlayer.alive && !tttPlayer.alive -> EnumWrappers.NativeGameMode.SPECTATOR
+                            else -> EnumWrappers.NativeGameMode.SURVIVAL
+                        }
+
+                        PlayerInfoData(
+                            info.profile,
+                            info.latency,
+                            nativeGameMode,
+                            info.displayName
+                        )
+                    }
                 }.toMutableList()
             }
         }

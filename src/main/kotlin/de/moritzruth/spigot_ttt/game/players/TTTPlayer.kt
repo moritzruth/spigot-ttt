@@ -1,5 +1,10 @@
 package de.moritzruth.spigot_ttt.game.players
 
+import com.comphenix.packetwrapper.WrapperPlayServerPlayerInfo
+import com.comphenix.protocol.wrappers.EnumWrappers
+import com.comphenix.protocol.wrappers.PlayerInfoData
+import com.comphenix.protocol.wrappers.WrappedChatComponent
+import com.comphenix.protocol.wrappers.WrappedGameProfile
 import de.moritzruth.spigot_ttt.Resourcepack
 import de.moritzruth.spigot_ttt.Settings
 import de.moritzruth.spigot_ttt.TTTPlugin
@@ -21,6 +26,24 @@ import org.bukkit.entity.Player
 
 class TTTPlayer(player: Player, role: Role, val tttClass: TTTClassCompanion = TTTClass.None) {
     var alive = true
+        set(value) {
+            field = value
+            val packet = WrapperPlayServerPlayerInfo()
+            packet.action = EnumWrappers.PlayerInfoAction.UPDATE_GAME_MODE
+            packet.data = PlayerManager.tttPlayers
+                .map { tttPlayer ->
+                    PlayerInfoData(
+                        WrappedGameProfile.fromPlayer(tttPlayer.player),
+                        1,
+                        if (alive || tttPlayer.alive) EnumWrappers.NativeGameMode.SURVIVAL
+                        else EnumWrappers.NativeGameMode.SPECTATOR,
+                        WrappedChatComponent.fromText(tttPlayer.player.displayName)
+                    ) }
+
+            nextTick {
+                packet.sendPacket(player)
+            }
+        }
 
     // Used for corpse clicks
     var ignoreNextInteract = false
