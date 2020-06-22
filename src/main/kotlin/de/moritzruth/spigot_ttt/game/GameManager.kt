@@ -95,8 +95,13 @@ object GameManager {
     }
 
     fun reset() {
-        CorpseManager.destroyAll()
-        ItemManager.reset()
+        val tttWorld = tttWorld
+        if (tttWorld != null) {
+            CorpseManager.destroyAll()
+            ItemManager.reset()
+            tttWorld.unload()
+            this.tttWorld = null
+        }
     }
 
     fun abortGame(broadcast: Boolean = false) {
@@ -108,9 +113,7 @@ object GameManager {
         PlayerManager.resetAfterGame()
         reset()
 
-        if (broadcast) {
-            GameMessenger.aborted()
-        }
+        if (broadcast) GameMessenger.aborted()
     }
 
     fun startPreparingPhase() {

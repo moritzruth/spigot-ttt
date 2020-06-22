@@ -8,20 +8,15 @@ depend:
   - ArmorEquipEvent
 
 commands:
-  voting:
-    usage: /voting ['cancel']
-    permission: ttt.voting
-    description: Start (or cancel) the map voting
-
   start:
     usage: /start
     permission: ttt.start
-    description: Start the TTT game
+    description: Start the map voting
 
   abort:
     usage: /abort
     permission: ttt.abort
-    description: Go back to the lobby world and abort the TTT game, if it is running
+    description: Cancel the map voting or the current game
 
   addspawnlocation:
     usage: /addspawnlocation <'item'|'player'>

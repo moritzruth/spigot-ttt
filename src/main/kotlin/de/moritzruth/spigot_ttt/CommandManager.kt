@@ -5,7 +5,6 @@ import de.moritzruth.spigot_ttt.game.InfoCommand
 import de.moritzruth.spigot_ttt.game.ReviveCommand
 import de.moritzruth.spigot_ttt.game.StartCommand
 import de.moritzruth.spigot_ttt.game.worlds.AddSpawnLocationCommand
-import de.moritzruth.spigot_ttt.game.worlds.VotingCommand
 
 object CommandManager {
     fun initializeCommands() {
@@ -16,6 +15,5 @@ object CommandManager {
         ResourcepackCommand()
         ReloadTTTConfigCommand()
         InfoCommand()
-        VotingCommand()
     }
 }

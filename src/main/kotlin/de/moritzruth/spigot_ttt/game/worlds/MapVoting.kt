@@ -1,7 +1,6 @@
 package de.moritzruth.spigot_ttt.game.worlds
 
 import de.moritzruth.spigot_ttt.Settings
-import de.moritzruth.spigot_ttt.TTTPlugin
 import de.moritzruth.spigot_ttt.game.GameManager
 import de.moritzruth.spigot_ttt.game.players.PlayerManager
 import de.moritzruth.spigot_ttt.plugin
@@ -25,7 +24,7 @@ import kotlin.math.max
 class MapVoting private constructor() {
     private var secondsRemaining = Settings.mapVotingDuration
     private val maps = WorldManager.tttWorlds.toList()
-    private var timerTask: BukkitTask
+    private var timerTask: BukkitTask? = null
 
     private val inventory = plugin.server.createInventory(
         null,
@@ -48,22 +47,27 @@ class MapVoting private constructor() {
     }
 
     init {
-        maps.forEachIndexed { index, map -> inventory.setItem(index, createMapItemStack(map)) }
+        when (maps.count()) {
+            0 -> throw Error("There are no worlds available")
+            1 -> finish(maps[0])
+            else -> {
+                current = this
+                maps.forEachIndexed { index, map -> inventory.setItem(index, createMapItemStack(map)) }
 
-        timerTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
-            if (secondsRemaining == 0) {
-                finish()
-            } else {
-                inventory.setItem(26, ItemStack(Material.CLOCK, secondsRemaining).applyMeta {
-                    setDisplayName("${ChatColor.GREEN}Verbleibende Zeit: ${ChatColor.WHITE}${secondsRemaining}s")
-                })
-                secondsRemaining -= 1
+                timerTask = plugin.server.scheduler.runTaskTimer(plugin, fun() {
+                    if (secondsRemaining == 0) {
+                        finish()
+                    } else {
+                        inventory.setItem(26, ItemStack(Material.CLOCK, secondsRemaining).applyMeta {
+                            setDisplayName("${ChatColor.GREEN}Verbleibende Zeit: ${ChatColor.WHITE}${secondsRemaining}s")
+                        })
+                        secondsRemaining -= 1
+                    }
+                }, 0, secondsToTicks(1).toLong())
+
+                PlayerManager.getAvailablePlayers().forEach(::giveVoteItem)
+                plugin.broadcast("${ChatColor.GREEN}Das Map-Voting wurde gestartet.")
             }
-        }, 0, secondsToTicks(1).toLong())
-
-        PlayerManager.getAvailablePlayers().forEach {
-            giveVoteItem(it)
-            it.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}Das Map-Voting wurde gestartet.")
         }
     }
 
@@ -75,14 +79,12 @@ class MapVoting private constructor() {
     }
 
     fun cancel() {
-        PlayerManager.getAvailablePlayers().forEach {
-            it.sendMessage("${TTTPlugin.prefix}${ChatColor.RED}Das Map-Voting wurde abgebrochen.")
-        }
+        plugin.broadcast("${ChatColor.RED}Das Map-Voting wurde abgebrochen.")
         stop()
     }
 
     private fun stop() {
-        timerTask.cancel()
+        timerTask?.cancel()
         current = null
         PlayerManager.getAvailablePlayers().forEach { removeVoteItem(it) }
         plugin.server.onlinePlayers.forEach { if (it.openInventory.topInventory === inventory) it.closeInventory() }
@@ -95,14 +97,21 @@ class MapVoting private constructor() {
             else votedMaps.sortedBy { votedMap -> votedMaps.count { it === votedMap } }[0]
         }
 
-        plugin.broadcast("${ChatColor.GREEN}Ausgewählte Map: " +
-                winnerMap.config.getString("title"))
+        if (runCatching { PlayerManager.checkEnoughPlayers() }.isFailure) {
+            plugin.broadcast(
+                "${ChatColor.RED}Das Spiel konnte nicht gestartet werden, da nicht genügend " +
+                        "Spieler online sind."
+            )
+        } else {
+            plugin.broadcast("${ChatColor.GREEN}Ausgewählte Map: " +
+                    winnerMap.config.getString("title"))
 
-        if (winnerMap.world != null) winnerMap.unload()
-        winnerMap.load()
-        GameManager.tttWorld = winnerMap
-        plugin.server.onlinePlayers.forEach {
-            it.teleport(winnerMap.world!!.spawnLocation)
+            if (winnerMap.world != null) winnerMap.unload()
+            winnerMap.load()
+
+            GameManager.tttWorld = winnerMap
+            plugin.server.onlinePlayers.forEach { it.teleport(winnerMap.world!!.spawnLocation) }
+            GameManager.startPreparingPhase()
         }
     }
 
@@ -124,7 +133,7 @@ class MapVoting private constructor() {
 
         fun start(): MapVoting? {
             if (current != null) throw IllegalStateException("There is already a map voting in progress")
-            return MapVoting().also { current = it }
+            return MapVoting()
         }
 
         private val listener = object : Listener {

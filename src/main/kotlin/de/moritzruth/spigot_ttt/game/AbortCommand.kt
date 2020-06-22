@@ -1,6 +1,7 @@
 package de.moritzruth.spigot_ttt.game
 
 import de.moritzruth.spigot_ttt.COMMAND_RESPONSE_PREFIX
+import de.moritzruth.spigot_ttt.game.worlds.MapVoting
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.EmptyTabCompleter
 import org.bukkit.ChatColor
@@ -18,10 +19,10 @@ class AbortCommand: CommandExecutor {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (GameManager.phase == null) {
-            val tttWorld = GameManager.tttWorld
-            if (tttWorld == null)
+            val voting = MapVoting.current
+            if (voting == null)
                 sender.sendMessage("$COMMAND_RESPONSE_PREFIX${ChatColor.RED}Zurzeit läuft kein Spiel.")
-            else tttWorld.unload()
+            else voting.cancel()
         } else GameManager.abortGame(true)
 
         return true

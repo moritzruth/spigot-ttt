@@ -21,7 +21,7 @@ object PlayerManager {
     val tttPlayers = mutableListOf<TTTPlayer>()
 
     fun isAvailable(player: Player): Boolean {
-        return player.gameMode === GameMode.SURVIVAL
+        return player.gameMode == GameMode.SURVIVAL || player.gameMode == GameMode.CREATIVE
     }
 
     fun getAvailablePlayers() = plugin.server.onlinePlayers.filter { isAvailable(it) }
@@ -64,6 +64,7 @@ object PlayerManager {
                 player.teleportToWorldSpawn()
                 player.gameMode = GameMode.SURVIVAL
             } else {
+                player.teleport(GameManager.world.spawnLocation)
                 player.gameMode = GameMode.SPECTATOR
                 playersJoinedDuringRound.add(player)
                 player.sendMessage("${TTTPlugin.prefix}${ChatColor.GREEN}Du schaust jetzt zu.")
@@ -99,10 +100,7 @@ object PlayerManager {
         }
     }
 
-    fun createTTTPlayers() {
-        val playersWithoutRole = getAvailablePlayers().toMutableSet()
-        val playerCount = playersWithoutRole.count()
-
+    fun checkEnoughPlayers(playerCount: Int = getAvailablePlayers().count()) {
         if (Settings.traitorCount < 1) throw IllegalStateException("roles.traitor.count may not be lower than 1")
 
         var requiredPlayerCount = Settings.traitorCount
@@ -110,6 +108,12 @@ object PlayerManager {
         if (Settings.jackalMode != JackalMode.NEVER) requiredPlayerCount += 1
         requiredPlayerCount += 1 // Innocent
         if (playerCount < requiredPlayerCount) throw NotEnoughPlayersException(playerCount, requiredPlayerCount)
+    }
+
+    fun createTTTPlayers() {
+        val playersWithoutRole = getAvailablePlayers().toMutableSet()
+        val playerCount = playersWithoutRole.count()
+        checkEnoughPlayers(playerCount)
 
         val classesIterator = TTTClassManager.createClassesIterator(playerCount)
 
