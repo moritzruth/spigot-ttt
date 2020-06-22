@@ -15,7 +15,6 @@ import de.moritzruth.spigot_ttt.game.players.Role
 import de.moritzruth.spigot_ttt.game.worlds.TTTWorld
 import de.moritzruth.spigot_ttt.plugin
 import de.moritzruth.spigot_ttt.utils.call
-import de.moritzruth.spigot_ttt.utils.heartsToHealth
 import org.bukkit.*
 import org.bukkit.block.Block
 import kotlin.random.Random
@@ -130,10 +129,7 @@ object GameManager {
             setGameRule(GameRule.DO_WEATHER_CYCLE, true)
         }
 
-        PlayerManager.tttPlayers.forEach {
-            it.addDefaultClassItems()
-            it.player.health = heartsToHealth(10.0)
-        }
+        PlayerManager.tttPlayers.forEach { it.addDefaultClassItems() }
 
         GameMessenger.preparingPhaseStarted()
         Timers.playTimerSound()
@@ -148,17 +144,15 @@ object GameManager {
         ensurePhase(GamePhase.PREPARING)
         phase = GamePhase.COMBAT
 
-        PlayerManager.tttPlayers.forEach {
-            Shop.setItems(it)
+        for (tttPlayer in PlayerManager.tttPlayers) {
+            Shop.setItems(tttPlayer)
 
-            if (!it.alive) {
-                it.revive(world.spawnLocation, Settings.initialCredits)
-            }
+            if (tttPlayer.alive) tttPlayer.player.health = 20.0
+            else tttPlayer.revive(world.spawnLocation, Settings.initialCredits)
 
-            if (it.role.group.canUseTeamChat) {
-                it.player.sendMessage(
-                    "${TTTPlugin.prefix}${ChatColor.GOLD}Schreibe einen Punkt vor deine Nachrichten, um den " +
-                            "Team-Chat zu verwenden.")
+            if (tttPlayer.role.group.canUseTeamChat) {
+                tttPlayer.player.sendMessage("${TTTPlugin.prefix}${ChatColor.GOLD}Schreibe einen Punkt vor deine " +
+                        "Nachrichten, um den Team-Chat zu verwenden.")
             }
         }
 
