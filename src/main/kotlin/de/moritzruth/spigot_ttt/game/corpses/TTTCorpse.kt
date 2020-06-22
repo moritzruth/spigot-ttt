@@ -96,13 +96,16 @@ class TTTCorpse private constructor(
 
     private fun setReasonItem() {
         if (status == Status.INSPECTED) {
-            val reasonItemStack = if (reason is DeathReason.Item) reason.item.templateItemStack.clone() else ItemStack(Resourcepack.Items.deathReason)
+            val reasonItemStack =
+                if (reason is DeathReason.Item) reason.item.templateItemStack.clone()
+                else ItemStack(Resourcepack.Items.deathReason)
+
             inventory.setItem(REASON_SLOT, reasonItemStack.applyMeta {
                 setDisplayName("${ChatColor.RESET}" + reason.displayText)
                 lore = listOf("${ChatColor.GRAY}Grund des Todes")
             })
         } else {
-            inventory.setItem(REASON_SLOT, ItemStack(Resourcepack.Items.questionMark).applyMeta {
+            inventory.setItem(REASON_SLOT, ItemStack(Resourcepack.Items.censored).applyMeta {
                 setDisplayName("${ChatColor.GRAY}${ChatColor.MAGIC}##########")
                 lore = listOf("${ChatColor.GRAY}Grund des Todes")
             })

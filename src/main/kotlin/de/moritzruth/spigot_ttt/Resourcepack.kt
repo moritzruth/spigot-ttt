@@ -5,13 +5,13 @@ import org.bukkit.Material
 
 object Resourcepack {
     const val url = "https://github.com/moritzruth/spigot-ttt/raw/master/resourcepack.zip"
-    val checksum = Hex.decodeHex("9333ca9c1e5f6ade64575b6007ded85a94450753")
+    val checksum = Hex.decodeHex("bdca89e23401ec196aa3e3dbba36a1526754591d")!!
     private const val NAMESPACE = "ttt:"
 
     object Items {
         val textureless = Material.WHITE_STAINED_GLASS_PANE
         val deathReason = Material.GRAY_STAINED_GLASS_PANE
-        val questionMark = Material.STONE
+        val censored = Material.STONE
         val time = Material.CLOCK
         val dot = Material.GRAY_STAINED_GLASS
         val arrowDown = Material.WHITE_STAINED_GLASS
@@ -29,10 +29,9 @@ object Resourcepack {
         val teleporter = Material.SPRUCE_WOOD
         val martyrdomGrenade = Material.BIRCH_LOG
         val fakeCorpse = Material.SPRUCE_LOG
-        val boomBody = Material.BIRCH_WOOD
+        val boomBody = Material.TNT
         val defibrillator = Material.IRON_INGOT
         val secondChance = Material.GOLD_INGOT
-        val beeBomb = Material.BEEHIVE
 
         // Weapons
         val deagle = Material.IRON_HOE
