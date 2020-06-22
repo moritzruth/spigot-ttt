@@ -140,8 +140,6 @@ class TTTScoreboard(private val tttPlayer: TTTPlayer) {
 
             if (tttPlayer.role.group.knowEachOther) {
                 specialTeam.color = tttPlayer.role.chatColor
-                specialTeam.prefix = surroundWithGraySquareBrackets(tttPlayer.role.coloredDisplayName) + " "
-
                 defaultTeam.color = Role.INNOCENT.chatColor
 
                 PlayerManager.tttPlayers.forEach {
